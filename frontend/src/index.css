@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+:root {
+  /* Background colors */
+  --bg-base: #242D34;         /* Page background */
+  --bg-overlay: #1E242C;      /* Modal overlays */
+  --card-bg: #2F3438;         /* Card/widget background - verified */
+  --bg-subcard: #252A30;      /* Sub-card/inner card background */
+  --stats-card-bg: #232529;   /* Statistics card background - from analysis */
+  --ring-bg: #2B2F34;         /* Chart/ring track background */
+  
+  /* Brand/feature colors */
+  --recovery-green: #3FB65E;
+  --strain-blue: #5D8DEE;
+  --stress-yellow: #FFCD4C;
+  --alert-red: #FF4F4F;
+  --steps-orange: #FF6A2C;
+  --positive-green: #4CD964;  /* Up arrow / positive trend */
+  
+  /* Text colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #9CA3AF;
+  --text-subvalue: #A0A0A0;   /* From analysis - baseline values */
+  --text-title: #6B7280;      /* From analysis - section titles */
+  
+  /* Typography */
+  --font-whoops: 'Plus Jakarta Sans', 'Inter', 'SF Pro', system-ui, sans-serif;
+  --font-title: 1.5rem;
+  --font-metric: 1.5rem;      /* 24px - Main metric values */
+  --font-metric-xl: 2rem;     /* 32px - Larger metrics */
+  --font-section: 0.875rem;   /* 14px - Section headers */
+  --font-metric-title: 0.875rem; /* 14px - Metric titles (HRV, etc) */
+  --font-body: 0.875rem;      /* Regular text */
+  --font-small: 0.75rem;      /* 12px - Subvalues/baseline */
+  
+  /* Font weights */
+  --weight-metric: 700;       /* Main values */
+  --weight-title: 600;        /* Metric titles */
+  --weight-section: 500;      /* Section headers */
+  --weight-regular: 400;      /* Regular text */
+  
+  /* Letter spacing */
+  --tracking-section: 0.1em;  /* Section headings - widest */
+  --tracking-metric: 0.05em;  /* Metric titles - wide */
+  --tracking-button: 0.075em; /* Button labels - wider */
+  
+  /* Layout */
+  --radius-card: 0.875rem;    /* 14px - Card corners */
+  --radius-button: 1.5rem;    /* Button radius */
+  --card-padding: 1.25rem;    /* 20px - Standard padding */
+  --card-gap: 1rem;           /* Gap between cards */
+  --shadow-whoop-card: 0 2px 6px rgba(0, 0, 0, 0.1); /* Lighter shadow based on analysis */
+  --customize-gradient: linear-gradient(90deg, #FF61E6, #B86CFE);
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-whoops);
+}
+
+/* Card components */
+.whoops-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  padding: var(--card-padding);
+  box-shadow: var(--shadow-whoop-card);
+}
+
+.stats-card {
+  background: var(--stats-card-bg);
+  border-radius: var(--radius-card);
+  padding: var(--card-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.whoops-card-secondary {
+  background: var(--bg-subcard);
+  border-radius: var(--radius-card);
+  padding: var(--card-padding);
+}
+
+/* Typography components */
+.metric-value {
+  font-size: var(--font-metric);
+  font-weight: var(--weight-metric);
+}
+
+.metric-value-xl {
+  font-size: var(--font-metric-xl);
+  font-weight: var(--weight-metric);
+}
+
+.metric-title {
+  font-size: var(--font-metric-title);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--tracking-metric);
+  text-transform: uppercase;
+}
+
+.metric-label {
+  font-size: var(--font-body);
+  color: var(--text-secondary);
+}
+
+.baseline-value {
+  font-size: var(--font-small);
+  color: var(--text-subvalue);
+  font-weight: var(--weight-regular);
+}
+
+.section-header {
+  font-size: var(--font-section);
+  font-weight: var(--weight-section);
+  letter-spacing: var(--tracking-section);
+  text-transform: uppercase;
+  color: var(--text-title);
+  margin-bottom: 0.75rem;
+}
+
+/* UI Components */
+.tab-button {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.tab-active {
+  border-bottom: 2px solid var(--text-primary);
+}
+
+.primary-button {
+  background: var(--customize-gradient);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-button);
+  font-weight: 500;
+  letter-spacing: var(--tracking-button);
+}
+
+.secondary-button {
+  background: var(--card-bg);
+  color: white;
+  border: 1px solid var(--strain-blue);
+  border-radius: var(--radius-button);
+  padding: 0.5rem 1rem;
+}
+
+.pill-tag {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-small);
+}
+
+/* Trend indicators */
+.trend-up {
+  color: var(--positive-green);
+}
+
+.trend-down-good {
+  color: var(--recovery-green);
+}
+
+.trend-down-bad {
+  color: var(--alert-red);
+}
+
+/* Recovery statistics specific styles */
+.recovery-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.recovery-stat-row:last-child {
+  border-bottom: none;
+}
+
+.recovery-stat-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recovery-stat-values {
+  text-align: right;
+}
