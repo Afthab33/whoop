@@ -1,161 +1,212 @@
 // src/components/dashboard/recovery/Recovery.jsx
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { ChevronRight, Info } from 'lucide-react';
 import RecoveryRing from './RecoveryRing';
 import HrvTrendChart from './charts/HrvTrendChart';
 import RestingHeartRateChart from './charts/RestingHeartRateChart';
 import RespiratoryRateChart from './charts/RespiratoryRateChart';
 import RecoveryTrendChart from './charts/RecoveryTrendChart';
+import AiInsightCard from '../common/AiInsightCard';
+import whoopData from '../../../data/day_wise_whoop_data.json';
 
-const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
-  const getTrendIcon = () => {
-    if (trend === 'up') {
-      return <svg className="text-[var(--recovery-green)]" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 19V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M5 12L12 5L19 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>;
-    } else if (trend === 'down') {
-      return <svg className="text-[var(--alert-red)]" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M19 12L12 19L5 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>;
-    }
-    return null;
-  };
-
+// Component for comparison bars (as seen in the image)
+const ComparisonBars = ({ title, currentValue, baselineValue, unit = "", height = 150 }) => {
+  // Calculate percentage for visual height - don't exceed 100%
+  const currentHeight = Math.min((currentValue / Math.max(currentValue, baselineValue)) * 100, 100);
+  const baselineHeight = Math.min((baselineValue / Math.max(currentValue, baselineValue)) * 100, 100);
+  
+  // Determine color based on comparison
+  const barColor = currentValue >= baselineValue ? 'bg-[#3FB65E]' : 'bg-[#6EA3C3]';
+  const baselineBarColor = 'bg-gray-300';
+  
   return (
-    <div className="whoops-card flex flex-col px-6 py-5">
-      <div className="flex items-center mb-2">
-        <div className="mr-3 text-[var(--text-secondary)]">{icon}</div>
-        <h3 className="uppercase text-xl font-medium text-[var(--text-secondary)]">{title}</h3>
-      </div>
-      
-      <div className="flex items-end justify-between">
-        <div className="flex items-center">
-          <span className={`text-6xl font-bold ${color}`}>{value}</span>
-          <span className="ml-2">{getTrendIcon()}</span>
+    <div className="flex flex-col items-center">
+      <h3 className="text-lg font-medium text-[var(--text-primary)] mb-4">{title}</h3>
+      <div className="w-full flex justify-center items-end h-[150px] gap-12 mb-3">
+        {/* Current value bar */}
+        <div className="flex flex-col items-center">
+          <div 
+            className={`w-14 ${barColor} rounded-t-sm`} 
+            style={{ height: `${currentHeight}%` }}
+          ></div>
+          <div className="mt-2">
+            <span className="text-2xl font-bold text-[var(--text-primary)]">{currentValue}</span>
+            <span className="text-sm text-[var(--text-secondary)]">{unit}</span>
+          </div>
         </div>
-        <span className="text-2xl text-[var(--text-muted)]">{baseline}</span>
+        
+        {/* Baseline value bar */}
+        <div className="flex flex-col items-center">
+          <div 
+            className={`w-14 ${baselineBarColor} rounded-t-sm`} 
+            style={{ height: `${baselineHeight}%` }}
+          ></div>
+          <div className="mt-2">
+            <span className="text-2xl font-bold text-[var(--text-muted)]">{baselineValue}</span>
+            <span className="text-sm text-[var(--text-secondary)]">{unit}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const Recovery = () => {
+const Recovery = ({ selectedDate = new Date() }) => {
+  const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+  const [timePeriod, setTimePeriod] = useState('1d');
+  
+  // Get the selected day's data
+  const dayData = useMemo(() => {
+    if (!dateStr || !whoopData[dateStr]) return null;
+    return whoopData[dateStr];
+  }, [dateStr]);
+
+  // Use default data if no day data is available
+  const recoveryData = dayData?.recovery || {
+    score: 67,
+    hrv: 66,
+    baselineHrv: 70,
+    restingHr: 53,
+    baselineRestingHr: 60,
+    sleepPerformance: 36,
+    baselineSleepPerformance: 80
+  };
+
+  // Formatted date for display
+  const formattedDate = selectedDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Add this function to track time period changes from the chart
+  const handleTimePeriodChange = (newPeriod) => {
+    setTimePeriod(newPeriod);
+  };
+
   return (
     <div className="p-4 max-w-screen-xl mx-auto">
+      {/* Header with date display */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">RECOVERY STATISTICS</h1>
         <div className="flex justify-between items-center">
-          <p className="text-[var(--text-secondary)]">Detailed recovery metrics from your last sleep</p>
-          <p className="text-[var(--text-secondary)]">VS. PREVIOUS 30 DAYS</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Recovery</h1>
+          <div className="flex items-center">
+            <p className="text-[var(--text-secondary)] mr-2">Insights for</p>
+            <span className="bg-[var(--card-bg)] text-white px-3 py-1 rounded-full text-sm font-medium">
+              {formattedDate}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Insight Card */}
+      <div className="flex justify-center mb-6">
+        <div className="w-full max-w-6xl">
+          <AiInsightCard type="recovery" />
         </div>
       </div>
 
       {/* Recovery Ring and Metrics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
-        
-        {/* Metric Cards */}
-        <div className="space-y-4 lg:col-span-3">
-          <MetricCard 
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 12h4l3-9 4 18 3-9h4" strokeLinecap="round" strokeLinejoin="round" />
+      <div className="mb-6">
+        <div className="whoops-card p-6">
+          <div className="mb-4">
+            <div className="flex items-center">
+              <svg className="mr-4 text-[var(--text-secondary)]" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                <path d="M12 6v6l4 2" />
               </svg>
-            }
-            title="HRV" 
-            value="78" 
-            baseline="61" 
-            trend="up" 
-            color="text-[var(--text-primary)]" 
-          />
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Day Recovery</h2>
+            </div>
+            <div className="flex justify-between items-center">
+              <p className="text-[var(--text-secondary)]">Fri, May 2nd vs Thu, May 1st</p>
+              <div className="flex bg-[var(--bg-subcard)] rounded-full overflow-hidden">
+                {['6m', '3m', '1m', '2w', '1w', '1d'].map((period) => (
+                  <button 
+                    key={period}
+                    className={`px-3 py-1 text-sm ${timePeriod === period ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-secondary)]'}`}
+                    onClick={() => handleTimePeriodChange(period)}
+                  >
+                    {period}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           
-          <MetricCard 
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                <path d="M12 5.67V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            }
-            title="RHR" 
-            value="63" 
-            baseline="66" 
-            trend="down" 
-            color="text-[var(--text-primary)]" 
-          />
-          
-          <MetricCard 
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6.38 6.98C7.03 5.14 8.83 3.88 10.88 3.88C13.5 3.88 15.63 6.01 15.63 8.63C15.63 11.25 18.25 13.01 20.88 11.63" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M5.91 15.75C7.15 18.01 9.35 19.13 11.38 19.13C14 19.13 16.13 17 16.13 14.38C16.13 11.75 18.75 10 21.38 11.38" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 8.25C4.24 10.51 6.44 11.63 8.47 11.63C11.09 11.63 13.22 9.5 13.22 6.88C13.22 4.25 15.84 2.5 18.47 3.88" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 17.25C4.24 19.51 6.44 20.63 8.47 20.63C11.09 20.63 13.22 18.5 13.22 15.88C13.22 13.25 15.84 11.5 18.47 12.88" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            }
-            title="RESPIRATORY RATE" 
-            value="13.1" 
-            baseline="12.9" 
-            trend="up" 
-            color="text-[var(--text-primary)]" 
-          />
+          {/* Comparison bars section as in the image */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+            <ComparisonBars 
+              title="Heart Rate Variability" 
+              currentValue={recoveryData.hrv} 
+              baselineValue={recoveryData.baselineHrv}
+            />
+            
+            <ComparisonBars 
+              title="Resting Heart Rate" 
+              currentValue={recoveryData.restingHr} 
+              baselineValue={recoveryData.baselineRestingHr}
+            />
+            
+            <ComparisonBars 
+              title="Sleep Performance" 
+              currentValue={recoveryData.sleepPerformance} 
+              baselineValue={recoveryData.baselineSleepPerformance}
+              unit="%"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Recovery Trend Chart */}
-      <div className="mb-8">
-        <RecoveryTrendChart />
+      {/* Metrics Charts - 2x2 Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="whoops-card p-6">
+          <HrvTrendChart />
+        </div>
+        
+        <div className="whoops-card p-6">
+          <RestingHeartRateChart />
+        </div>
+        
+        <div className="whoops-card p-6">
+          <RespiratoryRateChart />
+        </div>
+        
+        <div className="whoops-card p-6">
+          <RecoveryTrendChart />
+        </div>
       </div>
 
-      {/* Charts Grid - HRV, RHR, Respiratory Rate */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <HrvTrendChart />
-        <RestingHeartRateChart />
-        <RespiratoryRateChart />
-        
-        {/* Recovery Insights Card */}
+      {/* Additional recovery statistics if needed */}
+      <div className="mb-6">
         <div className="whoops-card p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">Recovery Insights</h2>
-            <Info className="text-[var(--text-muted)]" size={20} />
+          <div className="flex items-center mb-4">
+            <svg className="mr-4 text-[var(--text-secondary)]" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 19c0-4.971-4.029-9-9-9 4.971 0 9-4.029 9-9 0 4.971 4.029 9 9 9-4.971 0-9 4.029-9 9z" />
+            </svg>
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Recovery Score Breakdown</h3>
           </div>
           
-          <div className="space-y-4">
-            <div className="p-4 bg-[var(--bg-subcard)] rounded-lg">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-[var(--recovery-green)] rounded-full flex items-center justify-center mr-4">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[var(--text-primary)] font-bold">Your HRV is above baseline</h3>
-                  <p className="text-[var(--text-secondary)]">Your nervous system is showing positive recovery signs</p>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center justify-center">
+              <RecoveryRing value={recoveryData.score} size={140} />
+              <p className="text-center text-[var(--text-secondary)] mt-2">Overall Recovery</p>
             </div>
             
-            <div className="p-4 bg-[var(--bg-subcard)] rounded-lg">
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-[var(--alert-red)] rounded-full flex items-center justify-center mr-4">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[var(--text-primary)] font-bold">Your sleep performance is declining</h3>
-                  <p className="text-[var(--text-secondary)]">Consider adjusting your sleep schedule</p>
-                </div>
+            <div className="md:col-span-2">
+              <p className="text-[var(--text-primary)] mb-4">
+                Your body is moderately recovered. Your HRV is slightly below your baseline which indicates you may still be processing yesterday's strain. Consider moderate intensity activities today.
+              </p>
+              
+              <div className="flex justify-between text-sm text-[var(--text-secondary)]">
+                <span>Last Updated: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                <button className="text-[var(--primary-light)] flex items-center">
+                  Learn More <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Day Statistics removed since we have individual charts */}
     </div>
   );
 };

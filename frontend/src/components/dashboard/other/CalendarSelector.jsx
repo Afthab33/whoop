@@ -3,7 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import whoopData from '../../../data/day_wise_whoop_data.json';
 
-const CalendarSelector = ({ selectedDate, onDateSelect, onClose, anchorRef }) => {
+const CalendarSelector = ({ 
+  selectedDate, 
+  onDateSelect, 
+  onClose, 
+  anchorRef,
+  activeTab = 'overview',
+  setActiveTab
+}) => {
   // Start with the month containing the selected date as the middle month
   const initialDate = new Date(selectedDate);
   const initialMonth = initialDate.getMonth();
@@ -57,6 +64,17 @@ const CalendarSelector = ({ selectedDate, onDateSelect, onClose, anchorRef }) =>
     const newStartMonth = new Date(startMonth);
     newStartMonth.setMonth(startMonth.getMonth() + 3);
     setStartMonth(newStartMonth);
+  };
+  
+  // Handle overview click
+  const handleOverviewClick = () => {
+    if (setActiveTab) {
+      setActiveTab('overview');
+      onClose();
+      console.log('Returning to overview'); // Add this for debugging
+    } else {
+      console.warn('setActiveTab function is not available');
+    }
   };
   
   // Check if a date has data
@@ -162,22 +180,23 @@ const CalendarSelector = ({ selectedDate, onDateSelect, onClose, anchorRef }) =>
     >
       {/* Calendar Header with navigation */}
       <div className="flex items-center justify-between border-b border-gray-700 px-4 py-3">
-        <button 
-          onClick={goToPreviousMonths}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10"
-        >
-          <ChevronLeft size={18} className="text-white" />
-        </button>
+        <div className="flex-1 text-center text-sm font-medium text-white">Calendar</div>
         
-        {/* Month names moved to each calendar section to avoid duplication */}
-        <div className="flex-1"></div>
-        
-        <button 
-          onClick={goToNextMonths}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10"
-        >
-          <ChevronRight size={18} className="text-white" />
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={goToPreviousMonths}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10 hover:bg-opacity-15 transition-colors"
+          >
+            <ChevronLeft size={18} className="text-white" />
+          </button>
+          
+          <button 
+            onClick={goToNextMonths}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10 hover:bg-opacity-15 transition-colors"
+          >
+            <ChevronRight size={18} className="text-white" />
+          </button>
+        </div>
       </div>
       
       {/* Calendar Grid */}
@@ -190,7 +209,11 @@ const CalendarSelector = ({ selectedDate, onDateSelect, onClose, anchorRef }) =>
       </div>
       
       {/* Footer with legend */}
-      <div className="flex justify-end px-4 py-3 items-center">
+      <div className="flex justify-between px-4 py-3 items-center">
+        <div className="text-xs text-gray-400">
+          {activeTab !== 'overview' ? 'Select a date or return to Overview' : 'Select a date'}
+        </div>
+        
         <div className="flex items-center">
           <div className="w-3 h-3 bg-[#5D8DEE] rounded-full mr-2"></div>
           <span className="text-xs text-gray-300">Strain 10.0+</span>

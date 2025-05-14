@@ -1,6 +1,7 @@
 import React from 'react';
+import { ChevronRight } from 'lucide-react';
 
-const SleepPerformanceRing = ({ value = 81, max = 100, size = 120 }) => {
+const SleepPerformanceRing = ({ value = 81, max = 100, size = 120, isInteractive = false }) => {
   // SVG parameters
   const strokeWidth = size * 0.067; // Scaling stroke width proportionally
   const radius = (size - strokeWidth) / 2;
@@ -57,8 +58,16 @@ const SleepPerformanceRing = ({ value = 81, max = 100, size = 120 }) => {
         </div>
       </div>
 
-      {/* Label - sleep blue to match image */}
-      <div className="text-[#6EA3C3] text-sm font-medium mt-1">Sleep</div>
+      {/* Label with interactive indicator */}
+      <div className="flex items-center text-[#6EA3C3] text-sm font-medium mt-1 group">
+        Sleep
+        {isInteractive && (
+          <ChevronRight 
+            size={14} 
+            className="ml-0.5 transition-transform group-hover:translate-x-0.5" 
+          />
+        )}
+      </div>
     </div>
   );
 };

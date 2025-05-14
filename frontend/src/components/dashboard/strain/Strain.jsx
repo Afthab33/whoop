@@ -5,6 +5,7 @@ import StrainTrendChart from './charts/StrainTrendChart';
 import CaloriesChart from './charts/CaloriesChart';
 import AverageHrChart from './charts/AverageHrChart';
 import StrainRing from './StrainRing';
+import AiInsightCard from '../common/AiInsightCard';
 
 const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
   const getTrendIcon = () => {
@@ -139,6 +140,13 @@ const ActivityStatCard = () => {
 const Strain = ({ selectedDate }) => {
   return (
     <div className="p-4 max-w-screen-xl mx-auto">
+      {/* AI Insight Card */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-6xl">
+          <AiInsightCard type="strain" />
+        </div>
+      </div>
+      
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">STRAIN STATISTICS</h1>
         <div className="flex justify-between items-center">

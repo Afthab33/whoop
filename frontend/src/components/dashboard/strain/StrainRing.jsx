@@ -1,6 +1,7 @@
 import React from 'react';
+import { ChevronRight } from 'lucide-react';
 
-const StrainRing = ({ value = 7.6, max = 21, size = 120 }) => {
+const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }) => {
   // SVG parameters
   const strokeWidth = size * 0.067; // Scaling stroke width proportionally
   const radius = (size - strokeWidth) / 2;
@@ -55,8 +56,16 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120 }) => {
         </div>
       </div>
 
-      {/* Label - darker strain blue to match image */}
-      <div className="text-[#5D8DEE] text-sm font-medium mt-1">Strain</div>
+      {/* Label with interactive indicator */}
+      <div className="flex items-center text-[#5D8DEE] text-sm font-medium mt-1 group">
+        Strain
+        {isInteractive && (
+          <ChevronRight 
+            size={14} 
+            className="ml-0.5 transition-transform group-hover:translate-x-0.5" 
+          />
+        )}
+      </div>
     </div>
   );
 };

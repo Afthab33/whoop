@@ -1,8 +1,7 @@
 // src/components/dashboard/Dashboard.jsx
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, LayoutDashboard } from 'lucide-react';
 import TopMetricsCard from './other/TopMetricsCard';
-import NavigationTabs from './other/NavigationTabs';
 import CalendarSelector from './other/CalendarSelector';
 import whoopData from '../../data/day_wise_whoop_data.json';
 
@@ -112,13 +111,29 @@ const Dashboard = () => {
       <TopMetricsCard 
         selectedDate={selectedDate} 
         setSelectedDate={setSelectedDate} 
-        setActiveTab={setActiveTab} // Pass the setActiveTab function
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
       />
-      <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       
       {/* Calendar and Navigation Button Group */}
       <div className="flex justify-center mt-4">
         <div className="flex items-center relative">
+          {/* Overview button - Only visible when not on overview page */}
+          {activeTab !== 'overview' && (
+            <button
+              onClick={() => setActiveTab('overview')}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full mr-3 transition-colors"
+              style={{
+                background: "var(--strain-blue)",
+                color: "white",
+              }}
+              title="Return to Overview"
+            >
+              <LayoutDashboard size={16} />
+              <span className="font-medium">Overview</span>
+            </button>
+          )}
+          
           {/* Previous date button */}
           <button
             onClick={() => navigateDate('prev')}
@@ -171,6 +186,8 @@ const Dashboard = () => {
               onDateSelect={handleDateSelect}
               onClose={handleCloseCalendar}
               anchorRef={calendarButtonRef}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
             />
           )}
         </div>
