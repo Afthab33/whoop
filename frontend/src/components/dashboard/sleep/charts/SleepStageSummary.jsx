@@ -84,7 +84,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
   ];
   
   // Calculate donut chart segments
-  const radius = 36;
+  const radius = 40; // Increased from 36 to make the pie chart larger
   const circumference = 2 * Math.PI * radius;
   
   // We need to calculate stroke-dasharray and stroke-dashoffset for each segment
@@ -99,12 +99,15 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
   });
   
   return (
-    <div className="bg-[var(--card-bg)] rounded-xl p-3 h-full flex flex-col justify-between">
-      <div className="text-sm font-medium text-white mb-2">Sleep Stages</div>
+    <div className="bg-[var(--card-bg)] rounded-xl p-4 h-full flex flex-col justify-between">
+      <div className="text-sm font-medium text-white mb-3">Sleep Stages</div>
       
-      {/* Enhanced Donut Chart */}
-      <div className="flex justify-center mb-4">
-        <div className="relative w-32 h-32">
+      {/* Enhanced Donut Chart - Made Larger */}
+      <div className="flex justify-center mb-5">
+        <div className="relative w-40 h-40"> {/* Increased from w-32 h-32 */}
+          {/* Subtle glow effect behind the chart */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[rgba(40,50,60,0.1)] rounded-full blur-xl"></div>
+          
           <svg className="w-full h-full" viewBox="0 0 100 100">
             {/* Background circle */}
             <circle 
@@ -113,7 +116,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               r={radius} 
               fill="transparent" 
               stroke="#2A3339" 
-              strokeWidth="8"
+              strokeWidth="9" // Increased from 8
             />
             
             {/* Donut chart segments with enhanced effects */}
@@ -123,7 +126,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               const endAngle = (segment.offset + segment.angle) * (Math.PI / 180);
               
               // Calculate segment points with slight offset for active segments
-              const radiusOffset = isActive ? 2 : 0;
+              const radiusOffset = isActive ? 2.5 : 0;
               const startX = 50 + (radius + radiusOffset) * Math.sin(startAngle);
               const startY = 50 - (radius + radiusOffset) * Math.cos(startAngle);
               const endX = 50 + (radius + radiusOffset) * Math.sin(endAngle);
@@ -147,21 +150,31 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
                     d={path}
                     fill={segment.color}
                     stroke={isActive ? "#fff" : "transparent"}
-                    strokeWidth={isActive ? 0.5 : 0}
+                    strokeWidth={isActive ? 0.8 : 0}
                     opacity={activeStage && !isActive ? 0.4 : 0.95}
-                    className="transition-all duration-200"
+                    className="transition-all duration-300"
                   />
                   
-                  {/* Add subtle glow effect for active segment */}
+                  {/* Add more pronounced glow effect for active segment */}
                   {isActive && (
-                    <path
-                      d={path}
-                      fill="none"
-                      stroke={segment.color}
-                      strokeWidth="1"
-                      opacity="0.6"
-                      filter="blur(3px)"
-                    />
+                    <>
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={segment.color}
+                        strokeWidth="1.5"
+                        opacity="0.6"
+                        filter="blur(3px)"
+                      />
+                      <path
+                        d={path}
+                        fill="none"
+                        stroke={segment.color}
+                        strokeWidth="0.8"
+                        opacity="0.4"
+                        filter="blur(6px)"
+                      />
+                    </>
                   )}
                 </g>
               );
@@ -171,7 +184,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
             <circle 
               cx="50" 
               cy="50" 
-              r="22" 
+              r="24" // Increased from 22
               fill="#242D34" 
               stroke={activeStage ? "transparent" : "#333"}
               strokeWidth="0.5"
@@ -184,7 +197,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               y="45" 
               textAnchor="middle" 
               className="fill-gray-400"
-              style={{ fontSize: '7px' }}
+              style={{ fontSize: '8px' }} // Increased from 7px
             >
               Time In Bed
             </text>
@@ -194,16 +207,28 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               y="58" 
               textAnchor="middle" 
               className="font-bold fill-white"
-              style={{ fontSize: '12px' }}
+              style={{ fontSize: '13px' }} // Increased from 12px
             >
               {formatTime(sleepData.totalInBed)}
             </text>
           </svg>
+          
+          {/* Add a subtle pulse animation for the active segment */}
+          {activeStage && (
+            <div 
+              className="absolute inset-0 rounded-full animate-pulse-slow"
+              style={{
+                backgroundColor: stageColors[activeStage],
+                opacity: 0.05,
+                animationDuration: '3s'
+              }}
+            />
+          )}
         </div>
       </div>
       
       {/* Stage List - Enhanced with animation and better visual feedback */}
-      <div className="space-y-1.5">
+      <div className="space-y-2"> {/* Increased spacing between items */}
         {segments.map((stage) => {
           const isActive = activeStage === stage.id;
           const percentage = Math.round((stage.minutes / sleepData.totalInBed) * 100);
@@ -212,30 +237,34 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
             <div 
               key={stage.id}
               onClick={() => handleStageClick(stage.id)}
-              className={`relative flex justify-between px-2 py-1.5 rounded-md cursor-pointer transition-all duration-200 ${
+              className={`relative flex justify-between px-3 py-2 rounded-md cursor-pointer transition-all duration-200 ${
                 isActive ? 'bg-[#2A3339]' : 'hover:bg-[#2A3339] hover:bg-opacity-50'
               }`}
               style={{ 
                 opacity: activeStage && activeStage !== stage.id ? 0.6 : 1,
+                transform: isActive ? 'translateX(2px)' : 'none'
               }}
             >
               {/* Background progress indicator */}
               <div 
-                className="absolute inset-0 left-0 top-0 bottom-0 opacity-10 rounded-md transition-all duration-300"
+                className="absolute inset-0 left-0 top-0 bottom-0 opacity-15 rounded-md transition-all duration-300"
                 style={{ 
                   width: `${percentage}%`, 
                   backgroundColor: stage.color,
-                  transform: isActive ? 'scaleX(1)' : 'scaleX(0.8)',
+                  transform: isActive ? 'scaleX(1.02)' : 'scaleX(0.96)',
                   transformOrigin: 'left',
                 }}
               />
               
               <div className="flex items-center z-10">
                 <div
-                  className={`w-2.5 h-2.5 rounded-full mr-2 transition-transform duration-200 ${
-                    isActive ? 'scale-125' : ''
+                  className={`w-3 h-3 rounded-full mr-2.5 transition-all duration-200 ${
+                    isActive ? 'scale-125 shadow-glow' : ''
                   }`}
-                  style={{ backgroundColor: stage.color }}
+                  style={{ 
+                    backgroundColor: stage.color,
+                    boxShadow: isActive ? `0 0 8px ${stage.color}70` : 'none'
+                  }}
                 />
                 <span className={`text-xs transition-colors ${
                   isActive ? 'text-white font-medium' : 'text-gray-300'
@@ -246,11 +275,13 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               
               <div className="flex items-center z-10">
                 <span className={`text-xs transition-colors ${
-                  isActive ? 'text-white' : 'text-gray-400'
+                  isActive ? 'text-white font-medium' : 'text-gray-400'
                 }`}>
                   {stage.time}
                 </span>
-                <span className="text-xs text-gray-500 ml-1.5">
+                <span className={`text-xs ml-1.5 ${
+                  isActive ? 'text-gray-300' : 'text-gray-500'
+                }`}>
                   {percentage}%
                 </span>
               </div>
@@ -261,5 +292,14 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
     </div>
   );
 };
+
+// Add this to your CSS or tailwind config
+// @keyframes pulse-slow {
+//   0%, 100% { opacity: 0.05; }
+//   50% { opacity: 0.15; }
+// }
+// .animate-pulse-slow {
+//   animation: pulse-slow 3s infinite;
+// }
 
 export default SleepStageSummary;
