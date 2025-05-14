@@ -7,6 +7,7 @@ import SleepStatistics from './charts/SleepStatistics';
 const Sleep = ({ selectedDate = new Date() }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   const [activeStage, setActiveStage] = useState(null);
+  const [timePeriod, setTimePeriod] = useState('1d');
   
   // Get the selected day's data
   const dayData = useMemo(() => {
@@ -20,6 +21,11 @@ const Sleep = ({ selectedDate = new Date() }) => {
     month: 'long',
     day: 'numeric'
   });
+
+  // Add this function to track time period changes from the chart
+  const handleTimePeriodChange = (newPeriod) => {
+    setTimePeriod(newPeriod);
+  };
 
   return (
     <div className="p-3">
@@ -44,6 +50,7 @@ const Sleep = ({ selectedDate = new Date() }) => {
             selectedDate={selectedDate}
             activeStageFromParent={activeStage}
             onStageChange={setActiveStage}
+            onTimePeriodChange={handleTimePeriodChange}
           />
         </div>
         
@@ -65,6 +72,7 @@ const Sleep = ({ selectedDate = new Date() }) => {
           dayData={dayData} 
           dateStr={dateStr} 
           compactLayout={true} 
+          timePeriod={timePeriod}
         />
       </div>
     </div>

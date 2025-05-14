@@ -11,9 +11,9 @@ import {
   Info
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import whoopData from '../../../../data/day_wise_whoop_data.json';
+import whoopData from '../../../../../data/day_wise_whoop_data.json';
 
-// Sleep Metrics Grid Card Component - Now in one horizontal row
+// Sleep Metrics Grid Card Component
 const SleepMetricsGrid = ({ metrics, compactLayout = false }) => {
   return (
     <div className="bg-[var(--card-bg)] rounded-xl p-3 shadow-[var(--shadow-whoop-card)]">
@@ -65,13 +65,12 @@ const SleepMetricsGrid = ({ metrics, compactLayout = false }) => {
 
 const SleepStatistics = ({ selectedDate, dayData, dateStr, compactLayout = false, timePeriod = '1d' }) => {
   // Get comparison data based on timePeriod
-  const prevDayData = useMemo(() => {
+  const comparisonData = useMemo(() => {
     if (!dateStr || !selectedDate) return { data: null, dateStr: null, rangeStart: null };
     
-    // For single day view - get exactly one day before
+    // For single day view - get previous day
     if (timePeriod === '1d') {
-      const prevDate = new Date(selectedDate);
-      prevDate.setDate(prevDate.getDate() - 1); // Use exact day calculation to avoid skipping days
+      const prevDate = subDays(new Date(dateStr), 1);
       const prevDateStr = format(prevDate, 'yyyy-MM-dd');
       
       return { 
@@ -85,19 +84,17 @@ const SleepStatistics = ({ selectedDate, dayData, dateStr, compactLayout = false
     let daysToSubtract = 0;
     
     switch (timePeriod) {
-      case '1w': daysToSubtract = 6; break;  // 7 days including current day, so subtract 6
-      case '2w': daysToSubtract = 13; break; // 14 days including current day, so subtract 13
-      case '1m': daysToSubtract = 29; break; // 30 days including current day, so subtract 29
-      case '3m': daysToSubtract = 89; break; // 90 days including current day, so subtract 89
-      case '6m': daysToSubtract = 179; break; // 180 days including current day, so subtract 179
-      default: daysToSubtract = 6; // Default to 1 week
+      case '1w': daysToSubtract = 7; break;
+      case '2w': daysToSubtract = 14; break;
+      case '1m': daysToSubtract = 30; break;
+      case '3m': daysToSubtract = 90; break;
+      case '6m': daysToSubtract = 180; break;
+      default: daysToSubtract = 7; // Default to 1 week
     }
     
-    const rangeStartDate = new Date(selectedDate);
-    rangeStartDate.setDate(rangeStartDate.getDate() - daysToSubtract);
+    const rangeStartDate = subDays(new Date(dateStr), daysToSubtract);
     const rangeStartStr = format(rangeStartDate, 'yyyy-MM-dd');
     
-    // We don't have specific day data for ranges, but we store the range start date
     return {
       data: null, // Not applicable for ranges
       dateStr: null, // Not applicable for ranges
@@ -114,7 +111,7 @@ const SleepStatistics = ({ selectedDate, dayData, dateStr, compactLayout = false
     return `${hours}:${mins.toString().padStart(2, '0')}`;
   };
   
-  // Format dates for the comparison title based on selected time period
+  // Format dates for the comparison title
   const formattedDates = useMemo(() => {
     if (!selectedDate) return { current: '', previous: '', range: '' };
     
@@ -122,36 +119,17 @@ const SleepStatistics = ({ selectedDate, dayData, dateStr, compactLayout = false
     
     // For single day view
     if (timePeriod === '1d') {
-      // Make sure we have a valid previous date
-      if (prevDayData.dateStr) {
-        const previousDate = new Date(prevDayData.dateStr);
-        const previous = format(previousDate, 'EEE, MMM do');
-        return { current, previous, range: '' };
-      }
-      return { current, previous: '', range: '' };
+      const previous = comparisonData.dateStr 
+        ? format(new Date(comparisonData.dateStr), 'EEE, MMM do') 
+        : '';
+      
+      return { current, previous, range: '' };
     }
     
     // For range views
-    if (prevDayData.rangeStart) {
-      const rangeStartDate = new Date(prevDayData.rangeStart);
-      const rangeStartFormatted = format(rangeStartDate, 'MMM do');
-      const rangeEndFormatted = format(selectedDate, 'MMM do'); 
-      
-      // For longer periods, include month in the start date if it's different
-      if (timePeriod === '2w' || timePeriod === '1m' || timePeriod === '3m' || timePeriod === '6m') {
-        const startMonth = rangeStartDate.getMonth();
-        const endMonth = selectedDate.getMonth();
-        
-        if (startMonth !== endMonth) {
-          // Different months, include month name in start date
-          const rangeStartWithMonth = format(rangeStartDate, 'MMM do');
-          return { 
-            current, 
-            previous: '', 
-            range: `${rangeStartWithMonth} – ${rangeEndFormatted}`
-          };
-        }
-      }
+    if (comparisonData.rangeStart) {
+      const rangeStartFormatted = format(new Date(comparisonData.rangeStart), 'MMM do');
+      const rangeEndFormatted = format(selectedDate, 'MMM do');
       
       return { 
         current, 
@@ -161,87 +139,85 @@ const SleepStatistics = ({ selectedDate, dayData, dateStr, compactLayout = false
     }
     
     return { current, previous: '', range: '' };
-  }, [selectedDate, prevDayData, timePeriod]);
-  
-  // Sleep metrics data comparing to previous day instead of 30-day average
+  }, [selectedDate, comparisonData, timePeriod]);
+
+  // Sleep metrics data comparing to previous day or date range
   const sleepMetrics = useMemo(() => {
-    if (!dayData) {
-      return [];
-    }
+    if (!dayData) return [];
     
     const sleepData = dayData.sleep_summary || {};
     const physioData = dayData.physiological_summary || {};
     
-    // Previous day values
-    const prevSleepData = prevDayData.data?.sleep_summary || {};
-    const prevPhysioData = prevDayData.data?.physiological_summary || {};
+    // Comparison values
+    const compSleepData = comparisonData.data?.sleep_summary || {};
+    const compPhysioData = comparisonData.data?.physiological_summary || {};
     
     return [
       {
         icon: <Clock size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Time in Bed",
         value: formatMinutes(sleepData["In bed duration (min)"]) || "0:00",
-        comparison: formatMinutes(prevSleepData["In bed duration (min)"]) || "0:00",
+        comparison: formatMinutes(compSleepData["In bed duration (min)"]) || "0:00",
         valueColor: "text-[var(--text-primary)]",
-        trend: sleepData["In bed duration (min)"] > prevSleepData["In bed duration (min)"] ? "up" : 
-              sleepData["In bed duration (min)"] < prevSleepData["In bed duration (min)"] ? "down" : "neutral",
-        trendColor: sleepData["In bed duration (min)"] > prevSleepData["In bed duration (min)"] ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
+        trend: sleepData["In bed duration (min)"] > compSleepData["In bed duration (min)"] ? "up" : 
+              sleepData["In bed duration (min)"] < compSleepData["In bed duration (min)"] ? "down" : "neutral",
+        trendColor: sleepData["In bed duration (min)"] > compSleepData["In bed duration (min)"] ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
       },
       {
         icon: <MoveHorizontal size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Disturbances",
         value: (sleepData["Disturbances"] || 0).toString(),
-        comparison: (prevSleepData["Disturbances"] || 0).toString(),
+        comparison: (compSleepData["Disturbances"] || 0).toString(),
         valueColor: "text-[var(--text-primary)]",
-        trend: (sleepData["Disturbances"] || 0) > (prevSleepData["Disturbances"] || 0) ? "up" : 
-              (sleepData["Disturbances"] || 0) < (prevSleepData["Disturbances"] || 0) ? "down" : "neutral",
-        trendColor: (sleepData["Disturbances"] || 0) > (prevSleepData["Disturbances"] || 0) ? "text-[var(--alert-red)]" : "text-[var(--recovery-green)]"
+        trend: (sleepData["Disturbances"] || 0) > (compSleepData["Disturbances"] || 0) ? "up" : 
+              (sleepData["Disturbances"] || 0) < (compSleepData["Disturbances"] || 0) ? "down" : "neutral",
+        trendColor: (sleepData["Disturbances"] || 0) > (compSleepData["Disturbances"] || 0) ? "text-[var(--alert-red)]" : "text-[var(--recovery-green)]"
       },
       {
         icon: <FileWarning size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Sleep Latency",
         value: formatMinutes(sleepData["Sleep latency (min)"] || 0),
-        comparison: formatMinutes(prevSleepData["Sleep latency (min)"] || 0),
+        comparison: formatMinutes(compSleepData["Sleep latency (min)"] || 0),
         valueColor: "text-[var(--text-primary)]",
-        trend: (sleepData["Sleep latency (min)"] || 0) > (prevSleepData["Sleep latency (min)"] || 0) ? "up" : 
-              (sleepData["Sleep latency (min)"] || 0) < (prevSleepData["Sleep latency (min)"] || 0) ? "down" : "neutral",
-        trendColor: (sleepData["Sleep latency (min)"] || 0) > (prevSleepData["Sleep latency (min)"] || 0) ? "text-[var(--alert-red)]" : "text-[var(--recovery-green)]"
+        trend: (sleepData["Sleep latency (min)"] || 0) > (compSleepData["Sleep latency (min)"] || 0) ? "up" : 
+              (sleepData["Sleep latency (min)"] || 0) < (compSleepData["Sleep latency (min)"] || 0) ? "down" : "neutral",
+        trendColor: (sleepData["Sleep latency (min)"] || 0) > (compSleepData["Sleep latency (min)"] || 0) ? "text-[var(--alert-red)]" : "text-[var(--recovery-green)]"
       },
       {
         icon: <BadgePercent size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Sleep Efficiency",
         value: `${sleepData["Sleep efficiency %"] || 0}%`,
-        comparison: `${prevSleepData["Sleep efficiency %"] || 0}%`,
+        comparison: `${compSleepData["Sleep efficiency %"] || 0}%`,
         valueColor: "text-[var(--text-primary)]",
-        trend: (sleepData["Sleep efficiency %"] || 0) > (prevSleepData["Sleep efficiency %"] || 0) ? "up" : 
-              (sleepData["Sleep efficiency %"] || 0) < (prevSleepData["Sleep efficiency %"] || 0) ? "down" : "neutral",
-        trendColor: (sleepData["Sleep efficiency %"] || 0) > (prevSleepData["Sleep efficiency %"] || 0) ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
+        trend: (sleepData["Sleep efficiency %"] || 0) > (compSleepData["Sleep efficiency %"] || 0) ? "up" : 
+              (sleepData["Sleep efficiency %"] || 0) < (compSleepData["Sleep efficiency %"] || 0) ? "down" : "neutral",
+        trendColor: (sleepData["Sleep efficiency %"] || 0) > (compSleepData["Sleep efficiency %"] || 0) ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
       },
       {
         icon: <Repeat size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Sleep Consistency",
         value: `${physioData["Sleep consistency %"] || 0}%`,
-        comparison: `${prevPhysioData["Sleep consistency %"] || 0}%`,
+        comparison: `${compPhysioData["Sleep consistency %"] || 0}%`,
         valueColor: "text-[var(--text-primary)]",
-        trend: (physioData["Sleep consistency %"] || 0) > (prevPhysioData["Sleep consistency %"] || 0) ? "up" : 
-              (physioData["Sleep consistency %"] || 0) < (prevPhysioData["Sleep consistency %"] || 0) ? "down" : "neutral",
-        trendColor: (physioData["Sleep consistency %"] || 0) > (prevPhysioData["Sleep consistency %"] || 0) ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
+        trend: (physioData["Sleep consistency %"] || 0) > (compPhysioData["Sleep consistency %"] || 0) ? "up" : 
+              (physioData["Sleep consistency %"] || 0) < (compPhysioData["Sleep consistency %"] || 0) ? "down" : "neutral",
+        trendColor: (physioData["Sleep consistency %"] || 0) > (compPhysioData["Sleep consistency %"] || 0) ? "text-[var(--recovery-green)]" : "text-[var(--alert-red)]"
       },
       {
         icon: <Wind size={20} className="stroke-current" strokeWidth={1.5} />,
         title: "Respiratory Rate",
         value: (sleepData["Respiratory rate (rpm)"] || 0).toFixed(1),
-        comparison: (prevSleepData["Respiratory rate (rpm)"] || 0).toFixed(1),
+        comparison: (compSleepData["Respiratory rate (rpm)"] || 0).toFixed(1),
         valueColor: "text-[var(--text-primary)]",
-        trend: (sleepData["Respiratory rate (rpm)"] || 0) > (prevSleepData["Respiratory rate (rpm)"] || 0) ? "up" : 
-              (sleepData["Respiratory rate (rpm)"] || 0) < (prevSleepData["Respiratory rate (rpm)"] || 0) ? "down" : "neutral",
+        trend: (sleepData["Respiratory rate (rpm)"] || 0) > (compSleepData["Respiratory rate (rpm)"] || 0) ? "up" : 
+              (sleepData["Respiratory rate (rpm)"] || 0) < (compSleepData["Respiratory rate (rpm)"] || 0) ? "down" : "neutral",
         trendColor: "text-[var(--text-muted)]" // Neutral color for respiratory rate as neither direction is inherently good/bad
       }
     ];
-  }, [dayData, prevDayData.data]);
+  }, [dayData, comparisonData.data]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mt-6">
       <div className="flex justify-between items-center mb-1">
         <h2 className="text-sm font-bold text-[var(--text-primary)]">SLEEP METRICS</h2>
         
