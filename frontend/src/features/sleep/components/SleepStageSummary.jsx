@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import whoopData from '../../../../data/day_wise_whoop_data.json';
+import whoopData from '../../../data/day_wise_whoop_data.json';
 
 const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
   const [sleepData, setSleepData] = useState(null);

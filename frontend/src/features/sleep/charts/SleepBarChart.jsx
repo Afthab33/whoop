@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { format } from 'date-fns';
-import { stageColors } from '../../../../../utils/constants';
+import { stageColors } from '../../../utils/constants';
 
 const SleepBarChart = ({ chartData, onBarHover, onBarClick, hiddenStages = [] }) => {
   const [hoveredBar, setHoveredBar] = useState(null);

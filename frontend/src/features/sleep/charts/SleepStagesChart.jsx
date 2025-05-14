@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
-import TimePeriodSelector from './components/TimePeriodSelector';
-import ChartTooltip from './components/ChartTooltip';
-import DailyBpmChart from './components/DailyBpmChart';
-import SleepBarChart from './components/SleepBarChart';
-import SleepStatistics from './components/SleepStatistics'; // Import the newly created SleepStatistics component
-import { generateChartData, generateTrendChartData, loadTrendData } from '../../../../utils/sleepChartUtils';
-import whoopData from '../../../../data/day_wise_whoop_data.json';
+import TimePeriodSelector from '../../../components/charts/TimePeriodSelector';
+import ChartTooltip from '../../../components/charts/ChartTooltip';
+import DailyBpmChart from './DailyBpmChart';
+import SleepBarChart from './SleepBarChart';
+import SleepStatistics from '../components/SleepStatistics';
+import { generateChartData, generateTrendChartData, loadTrendData } from '../../../utils/sleepChartUtils';
+import whoopData from '../../../data/day_wise_whoop_data.json';
 
 const SleepStagesChart = ({ selectedDate, activeStageFromParent, onStageChange, onTimePeriodChange }) => {
   const [localActiveStage, setLocalActiveStage] = useState(null);

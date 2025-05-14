@@ -1,5 +1,5 @@
 import React from 'react';
-import { stageColors } from '../../../../../utils/constants';
+import { stageColors } from '../../../utils/constants';
 
 const DailyBpmChart = ({ chartData, activeStage, hoveredTime }) => {
   // Safety check to prevent rendering errors

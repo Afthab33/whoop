@@ -11,7 +11,7 @@ import {
   Info
 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import whoopData from '../../../../data/day_wise_whoop_data.json';
+import whoopData from '../../../data/day_wise_whoop_data.json';
 
 // Sleep Metrics Grid Card Component - Now in one horizontal row
 const SleepMetricsGrid = ({ metrics, compactLayout = false }) => {

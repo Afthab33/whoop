@@ -1,7 +1,7 @@
 // src/components/dashboard/other/CalendarSelector.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import whoopData from '../../../data/day_wise_whoop_data.json';
+import whoopData from '../../data/day_wise_whoop_data.json';
 
 const CalendarSelector = ({ 
   selectedDate, 

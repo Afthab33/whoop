@@ -1,13 +1,13 @@
 // src/components/dashboard/recovery/Recovery.jsx
 import React, { useMemo, useState } from 'react';
 import { ChevronRight, Info } from 'lucide-react';
-import RecoveryRing from './RecoveryRing';
+import RecoveryRing from './components/RecoveryRing';
 import HrvTrendChart from './charts/HrvTrendChart';
 import RestingHeartRateChart from './charts/RestingHeartRateChart';
 import RespiratoryRateChart from './charts/RespiratoryRateChart';
 import RecoveryTrendChart from './charts/RecoveryTrendChart';
-import AiInsightCard from '../common/AiInsightCard';
-import whoopData from '../../../data/day_wise_whoop_data.json';
+import AiInsightCard from '../../components/cards/AiInsightCard';
+import whoopData from '../../data/day_wise_whoop_data.json';
 
 // Component for comparison bars (as seen in the image)
 const ComparisonBars = ({ title, currentValue, baselineValue, unit = "", height = 150 }) => {

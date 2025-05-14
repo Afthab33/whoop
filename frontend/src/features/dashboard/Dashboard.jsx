@@ -1,16 +1,15 @@
 // src/components/dashboard/Dashboard.jsx
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, LayoutDashboard } from 'lucide-react';
-import TopMetricsCard from './other/TopMetricsCard';
-import CalendarSelector from './other/CalendarSelector';
+import TopMetricsCard from '../../components/cards/TopMetricsCard';
+import CalendarSelector from '../../components/layout/CalendarSelector';
 import whoopData from '../../data/day_wise_whoop_data.json';
 
 // Import content components
-import Overview from './overview/Overview';
-import Sleep from './sleep/Sleep';
-import Recovery from './recovery/Recovery';
-import Strain from './strain/Strain';
-import ProfileSection from './other/ProfileSection';
+import Overview from '../overview/Overview';
+import Sleep from '../sleep/Sleep';
+import Recovery from '../recovery/Recovery';
+import Strain from '../strain/Strain';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');

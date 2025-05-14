@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { ChevronDown, Info, User, Calendar, LayoutDashboard, ChevronLeft } from 'lucide-react';
-import StrainRing from '../strain/StrainRing'; 
-import RecoveryRing from '../recovery/RecoveryRing';
-import SleepPerformanceRing from '../sleep/SleepPerformanceRing';
-import whoopLogo from '../../../assets/whoop.svg';
-import whoopData from '../../../data/day_wise_whoop_data.json';
+import StrainRing from '../../features/strain/components/StrainRing';
+import RecoveryRing from '../../features/recovery/components/RecoveryRing';
+import SleepPerformanceRing from '../../features/sleep/components/SleepPerformanceRing';
+import whoopLogo from '../../assets/whoop.svg';
+import whoopData from '../../data/day_wise_whoop_data.json';
 
 const TopMetricsCard = ({
   userData = {

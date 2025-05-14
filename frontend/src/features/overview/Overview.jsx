@@ -1,8 +1,8 @@
 // src/components/dashboard/overview/Overview.jsx
 import React from 'react';
 import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info } from 'lucide-react';
-import StrainRecoveryChart from './chats/StrainRecoveryChart';
-import StressMonitorChart from './chats/StressMonitorChart';
+import StrainRecoveryChart from './charts/StrainRecoveryChart';
+import StressMonitorChart from './charts/StressMonitorChart';
 
 const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
   return (

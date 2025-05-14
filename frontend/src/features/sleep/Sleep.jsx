@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import SleepStagesChart from './charts/SleepStagesChart';
 import SleepStageSummary from './components/SleepStageSummary';
-import whoopData from '../../../data/day_wise_whoop_data.json';
+import whoopData from '../../data/day_wise_whoop_data.json';
 import SleepStatistics from './components/SleepStatistics';
-import AiInsightCard from '../common/AiInsightCard';
+import AiInsightCard from '../../components/cards/AiInsightCard';
 
 const Sleep = ({ selectedDate = new Date() }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;

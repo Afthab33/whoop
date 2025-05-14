@@ -4,8 +4,8 @@ import { ChevronRight, Info } from 'lucide-react';
 import StrainTrendChart from './charts/StrainTrendChart';
 import CaloriesChart from './charts/CaloriesChart';
 import AverageHrChart from './charts/AverageHrChart';
-import StrainRing from './StrainRing';
-import AiInsightCard from '../common/AiInsightCard';
+import StrainRing from './components/StrainRing';
+import AiInsightCard from '../../components/cards/AiInsightCard';
 
 const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
   const getTrendIcon = () => {

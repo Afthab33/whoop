@@ -1,6 +1,6 @@
 import React from 'react';
 // Make sure this import path is correct
-import { stageColors } from '../../../../../utils/constants';
+import { stageColors } from '../../utils/constants';
 // If the above import fails, define stageColors directly:
 /*
 const stageColors = {
