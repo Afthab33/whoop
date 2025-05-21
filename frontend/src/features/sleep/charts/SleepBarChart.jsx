@@ -74,8 +74,23 @@ const SleepBarChart = ({ chartData, onBarHover, onBarClick, hiddenStages = [] })
 
   return (
     <div className="absolute inset-0 overflow-hidden chart-container">
-      {/* Simplified horizontal grid lines - only show essential lines */}
-
+      {/* Grid lines - combined from SleepTrendChart */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[14, 12, 10, 8, 6, 4, 2, 0].map((value, i) => (
+          <div
+            key={i}
+            className={`border-b w-full h-0 absolute ${
+              value === 0 ? 'border-gray-500/70' : 'border-gray-700/30'
+            }`}
+            style={{ 
+              top: value === 0 ? '100%' : `${(i * 100) / 8}%`, 
+              left: 0,
+              right: 0,
+              borderBottomWidth: value === 0 ? '1.5px' : '1px'
+            }}
+          />
+        ))}
+      </div>
       
       {/* BARS CONTAINER - Enhanced interactive version */}
       <div className="absolute inset-x-0 bottom-0 top-0">
@@ -307,7 +322,7 @@ const SleepBarChart = ({ chartData, onBarHover, onBarClick, hiddenStages = [] })
         </div>
       )}
       
-      {/* Date labels */}
+      {/* Date labels - merged from SleepTrendChart */}
       <div className="absolute left-0 right-0 top-full">
         {chartData.dateLabels && chartData.dateLabels.map((label, i) => (
           <div 

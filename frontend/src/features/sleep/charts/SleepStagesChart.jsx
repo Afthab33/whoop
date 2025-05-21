@@ -4,7 +4,6 @@ import TimePeriodSelector from '../../../components/charts/TimePeriodSelector';
 import ChartTooltip from '../../../components/charts/ChartTooltip';
 import DailyBpmChart from './DailyBpmChart';
 import SleepBarChart from './SleepBarChart';
-import SleepStatistics from '../components/SleepStatistics';
 import { generateChartData, generateTrendChartData, loadTrendData } from '../../../utils/sleepChartUtils';
 import whoopData from '../../../data/day_wise_whoop_data.json';
 
