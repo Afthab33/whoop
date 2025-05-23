@@ -3,227 +3,246 @@ import { format, subMonths, addDays, isSameDay, startOfDay } from 'date-fns';
 import whoopData from '../../../data/day_wise_whoop_data.json';
 import TimePeriodSelector from '../../../components/charts/TimePeriodSelector';
 
-const Recovery3MonthsChart = ({ 
-  selectedDate = new Date(), 
+// --- Utility Functions ---
+const getRecoveryColor = (score) => {
+  if (score >= 67) return '#70E000';
+  if (score >= 34) return '#FFE86A';
+  return '#FF6370';
+};
+
+const getZone = (score) => {
+  if (score >= 67) return 'green';
+  if (score >= 34) return 'yellow';
+  return 'red';
+};
+
+const yAxisLabels = [
+  { value: 100, label: '100%', color: '#70E000' },
+  { value: 83, label: '83%', color: '#70E000' },
+  { value: 67, label: '67%', color: '#70E000' },
+  { value: 50, label: '50%', color: '#FFE86A' },
+  { value: 33, label: '33%', color: '#FF6370' },
+  { value: 17, label: '17%', color: '#FF6370' },
+  { value: 0, label: '0%', color: '#FF6370' }
+];
+
+// --- Main Chart Component ---
+const Recovery3MonthsChart = ({
+  selectedDate = new Date(),
   timePeriod = '3m',
   onTimePeriodChange = () => {}
 }) => {
-  // Determine number of months based on timePeriod
+  // --- Data Preparation ---
   const monthsToShow = timePeriod === '6m' ? 6 : 3;
-  
-  // Generate appropriate data based on timePeriod
+
   const chartData = useMemo(() => {
     const endDate = startOfDay(selectedDate);
     const startDate = subMonths(endDate, monthsToShow);
-    const days = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const dates = [];
-    
-    // Generate array of dates
+    const days = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+    const data = [];
+
     for (let i = 0; i <= days; i++) {
       const date = addDays(startDate, i);
       const dateStr = format(date, 'yyyy-MM-dd');
-      
-      // Generate realistic recovery scores with weekly patterns
-      const dayOfWeek = format(date, 'E');
-      let baseScore = Math.floor(Math.random() * 50) + 30;
-      
-      if (dayOfWeek === 'Sat' || dayOfWeek === 'Sun') {
-        baseScore = Math.max(20, baseScore - 15);
-      } else if (dayOfWeek === 'Wed' || dayOfWeek === 'Thu') {
-        baseScore = Math.min(95, baseScore + 15);
+      const whoop = whoopData[dateStr]?.physiological_summary;
+
+      // Use real data if available, else fallback to demo
+      let score = whoop?.['Recovery score'];
+      if (typeof score !== 'number') {
+        // Demo: weekly pattern, slight upward trend
+        const dayOfWeek = format(date, 'E');
+        let base = Math.floor(Math.random() * 50) + 30;
+        if (dayOfWeek === 'Sat' || dayOfWeek === 'Sun') base -= 10;
+        if (dayOfWeek === 'Wed' || dayOfWeek === 'Thu') base += 10;
+        base += (i / days) * 10 - 5;
+        score = Math.max(10, Math.min(98, Math.round(base)));
       }
-      
-      if (i % 23 === 0) baseScore = Math.max(10, baseScore - 40);
-      if (i % 17 === 0) baseScore = Math.min(98, baseScore + 30);
-      
-      const timeProgress = i / days;
-      baseScore = Math.min(98, Math.max(10, baseScore + (timeProgress * 10) - 5));
-      
-      const recoveryScore = Math.round(baseScore);
-      
-      dates.push({
+
+      data.push({
         date,
         dateStr,
-        dayName: format(date, 'EEE'),
-        dayNumber: format(date, 'd'),
-        month: format(date, 'MMM'),
-        fullDate: format(date, 'MMM d'),
+        score,
+        color: getRecoveryColor(score),
+        zone: getZone(score),
+        isToday: isSameDay(date, new Date()),
         isSunday: format(date, 'EEEE') === 'Sunday',
-        isFirstOfMonth: format(date, 'd') === '1',
-        recoveryScore,
-        recoveryColor: getRecoveryColor(recoveryScore),
-        isToday: isSameDay(date, new Date())
+        isFirstOfMonth: format(date, 'd') === '1'
       });
     }
-    
-    return dates;
+    return data;
   }, [selectedDate, monthsToShow]);
 
-  function getRecoveryColor(score) {
-    if (score >= 67) return '#70E000';
-    if (score >= 34) return '#FFE86A';
-    return '#FF6370';
-  }
-  
-  const yAxisLabels = [
-    { value: 100, label: '100 %', color: '#70E000' },
-    { value: 83, label: '83 %', color: '#70E000' },
-    { value: 67, label: '67 %', color: '#70E000' },
-    { value: 50, label: '50 %', color: '#FFE86A' },
-    { value: 33, label: '33 %', color: '#FF6370' },
-    { value: 17, label: '17 %', color: '#FF6370' },
-    { value: 0, label: '0 %', color: '#FF6370' }
-  ];
+  // --- X-Axis Label Logic ---
+  const xLabels = useMemo(() => {
+    // Show Sundays, 1st of month, and today
+    return chartData
+      .map((d, i) => {
+        if (
+          d.isSunday ||
+          d.isFirstOfMonth ||
+          d.isToday ||
+          i === 0 ||
+          i === chartData.length - 1
+        ) {
+          return {
+            index: i,
+            label: `${format(d.date, 'MMM d')}${d.isToday ? ' (Today)' : ''}`
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }, [chartData]);
 
-  // For 6m view, we need to be more selective with Sunday labels
-  // to prevent overcrowding
-  const sundayLabels = useMemo(() => {
-    const allSundays = chartData.filter(day => day.isSunday);
-    
-    if (timePeriod === '6m') {
-      // For 6m view, show only first Sunday of each month or special dates
-      return allSundays.filter((sunday, index) => 
-        sunday.isFirstOfMonth || // First day of month  
-        index === 0 || // First Sunday
-        index === allSundays.length - 1 || // Last Sunday
-        index % 4 === 0 // Every 4th Sunday
-      ).map(day => ({
-        date: day.date,
-        position: chartData.indexOf(day) / (chartData.length - 1)
-      }));
-    } else {
-      // For 3m view, show all Sundays
-      return allSundays.map(day => ({
-        date: day.date,
-        position: chartData.indexOf(day) / (chartData.length - 1)
-      }));
-    }
-  }, [chartData, timePeriod]);
+  // --- SVG Helpers ---
+  const getX = (i) => (i / (chartData.length - 1)) * 100;
+  const getY = (score) => 100 - score;
 
+  // --- UI ---
   return (
-    <div className="whoops-card p-6 bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 h-full">
+    <section className="bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/20 p-6 h-full flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <header className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-bold text-[var(--text-primary)]">
-            {timePeriod === '6m' ? '6 Months' : '3 Months'} Recovery Score
+            {monthsToShow} Month{monthsToShow > 1 ? 's' : ''} Recovery Score
           </h2>
-          <p className="text-[var(--text-secondary)] text-sm mt-1">
-            Aftab Hussain
-          </p>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">Aftab Hussain</p>
         </div>
-        
-        <div className="bg-[var(--bg-subcard)] rounded-full overflow-hidden shadow-inner border border-gray-800/20">
-          <TimePeriodSelector 
-            selectedPeriod={timePeriod}
-            onPeriodChange={onTimePeriodChange}
-          />
-        </div>
-      </div>
-      
-      {/* Chart container */}
-      <div className="relative h-[400px] pb-10">
+        <TimePeriodSelector
+          selectedPeriod={timePeriod}
+          onPeriodChange={onTimePeriodChange}
+        />
+      </header>
+
+      {/* Chart */}
+      <div className="relative flex-1 min-h-[320px]">
         {/* Y-axis labels */}
-        <div className="absolute left-0 h-full flex flex-col justify-between text-xs">
-          {yAxisLabels.map((item, i) => (
-            <span key={i} className="transform -translate-y-1/2" style={{ color: item.color }}>
+        <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between z-10">
+          {yAxisLabels.map((item) => (
+            <span
+              key={item.value}
+              className="text-xs font-medium"
+              style={{ color: item.color, opacity: 0.85 }}
+            >
               {item.label}
             </span>
           ))}
         </div>
-        
-        {/* Chart grid and content */}
-        <div 
-          className="ml-12 h-full relative border-b border-gray-700/20 overflow-hidden"
-          style={{ 
-            backgroundImage: `linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px)`,
-            backgroundSize: "100% 16.67%", 
-            backgroundPosition: "bottom"
-          }}
-        >
-          {/* Zone indicators */}
-          <div className="absolute left-0 right-0 top-0 h-[33.3%] bg-green-900/5 border-b border-green-500/10" />
-          <div className="absolute left-0 right-0 top-[33.3%] h-[33.4%] bg-yellow-900/5 border-b border-yellow-500/10" />
-          <div className="absolute left-0 right-0 top-[66.7%] h-[33.3%] bg-red-900/5" />
-          
-          {/* Horizontal grid lines */}
-          {yAxisLabels.map((label, i) => (
-            <div 
-              key={i}
+
+        {/* Chart grid and SVG */}
+        <div className="ml-12 h-full relative">
+          {/* Grid lines */}
+          {yAxisLabels.map((item) => (
+            <div
+              key={item.value}
               className="absolute left-0 right-0 border-b border-gray-700/10"
-              style={{ bottom: `${(label.value / 100) * 100}%` }}
+              style={{
+                bottom: `calc(${item.value}% - 1px)`,
+                zIndex: 1
+              }}
             />
           ))}
-          
-          {/* Vertical grid lines - more for 6m */}
-          <div className={`absolute inset-0 grid grid-cols-${timePeriod === '6m' ? '24' : '12'} gap-0`}>
-            {[...Array(timePeriod === '6m' ? 24 : 12)].map((_, i) => (
-              <div key={i} className="border-r border-gray-700/10 h-full" />
-            ))}
-          </div>
-          
+
           {/* SVG Chart */}
-          <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Connection lines */}
-            <polyline 
-              points={chartData.map((day, index) => {
-                const x = (index / (chartData.length - 1)) * 100;
-                const y = 100 - day.recoveryScore;
-                return `${x},${y}`;
-              }).join(' ')}
-              fill="none"
-              strokeWidth={timePeriod === '6m' ? '0.4' : '0.5'}
-              stroke="#999"
-              strokeOpacity="0.3"
-              vectorEffect="non-scaling-stroke"
-            />
-            
-            {/* Data points - thinner circles for 6m */}
-            {chartData.map((day, index) => {
-              // For 6m view, only render every other data point to improve performance
-              if (timePeriod === '6m' && index % 2 !== 0 && !day.isSunday && !day.isFirstOfMonth) {
-                return null;
+          <svg
+            className="absolute inset-0 w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            {/* Area gradient */}
+            <defs>
+              <linearGradient id="recoveryArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#70E000" stopOpacity="0.12" />
+                <stop offset="60%" stopColor="#FFE86A" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#FF6370" stopOpacity="0.06" />
+              </linearGradient>
+            </defs>
+            {/* Area under curve */}
+            <polygon
+              points={
+                chartData
+                  .map((d, i) => `${getX(i)},${getY(d.score)}`)
+                  .join(' ') +
+                ` 100,100 0,100`
               }
-              
-              const x = (index / (chartData.length - 1)) * 100;
-              const y = 100 - day.recoveryScore;
-              return (
-                <circle 
-                  key={index} 
-                  cx={x} 
-                  cy={y} 
-                  r={timePeriod === '6m' ? '0.8' : '1'}
-                  stroke={day.recoveryColor}
-                  strokeWidth={timePeriod === '6m' ? '0.4' : '0.5'}
-                  fill="transparent"
-                  className="transition-all duration-200"
-                />
-              );
+              fill="url(#recoveryArea)"
+              opacity="0.6"
+            />
+            {/* Line - made thinner and more elegant */}
+            <polyline
+              points={chartData.map((d, i) => `${getX(i)},${getY(d.score)}`).join(' ')}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="0.4"
+              style={{ 
+                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))',
+                opacity: 0.9
+              }}
+            />
+            {/* Dots - made more aesthetic with glow effect */}
+            {chartData.map((d, i) => {
+              // Only show dots for Sundays, 1st of month, and today for clarity
+              if (d.isSunday || d.isFirstOfMonth || d.isToday) {
+                return (
+                  <g key={i}>
+                    {/* Outer glow */}
+                    <circle
+                      cx={getX(i)}
+                      cy={getY(d.score)}
+                      r={d.isToday ? 2.5 : 2}
+                      fill={d.color}
+                      opacity="0.3"
+                    />
+                    {/* Main dot */}
+                    <circle
+                      cx={getX(i)}
+                      cy={getY(d.score)}
+                      r={d.isToday ? 1.5 : 1.2}
+                      fill={d.isToday ? "#ffffff" : d.color}
+                      stroke={d.isToday ? d.color : "#ffffff"}
+                      strokeWidth="0.4"
+                      style={{ 
+                        filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))'
+                      }}
+                    />
+                    {/* Inner highlight for today */}
+                    {d.isToday && (
+                      <circle
+                        cx={getX(i)}
+                        cy={getY(d.score)}
+                        r={0.6}
+                        fill={d.color}
+                        opacity="0.8"
+                      />
+                    )}
+                  </g>
+                );
+              }
+              return null;
             })}
           </svg>
-          
+
           {/* X-axis labels */}
-          <div className="absolute left-0 right-0 bottom-[-32px] flex justify-between text-2xs text-gray-400">
-            {sundayLabels.map((sunday, i) => (
-              <div 
-                key={i}
-                className="text-center"
+          <div className="absolute left-0 right-0 bottom-[-28px] flex justify-between text-xs text-gray-400 pointer-events-none select-none">
+            {xLabels.map(({ index, label }) => (
+              <div
+                key={index}
+                className="absolute text-center"
                 style={{
-                  position: 'absolute',
-                  left: `${sunday.position * 100}%`,
-                  transform: 'translateX(-50%)'
+                  left: `calc(${getX(index)}% - 18px)`,
+                  width: 36
                 }}
               >
-                <div>Sun</div>
-                <div className="text-gray-500 mt-0.5">
-                  {format(sunday.date, 'MMM d')}
-                </div>
+                <span className={chartData[index].isToday ? 'text-blue-400 font-semibold' : ''}>
+                  {label}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

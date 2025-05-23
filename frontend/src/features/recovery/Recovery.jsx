@@ -5,12 +5,13 @@ import RecoveryStatistics from './components/RecoveryStatistics';
 import RecoveryComparisonChart from './charts/RecoveryComparisonChart';
 import RecoveryWeeklyChart from './charts/RecoveryWeeklyChart';
 import Recovery3MonthsChart from './charts/Recovery3MonthsChart';
+import RecoveryChart from './charts/RecoveryChart';
 import AiInsightCard from '../../components/cards/AiInsightCard';
 import whoopData from '../../data/day_wise_whoop_data.json';
 
 const Recovery = ({ selectedDate = new Date() }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
-  const [timePeriod, setTimePeriod] = useState('1d');
+  const [timePeriod, setTimePeriod] = useState('1w'); // Changed from 1d to 1w as default
   
   // Get the selected day's data
   const dayData = useMemo(() => {
@@ -65,14 +66,16 @@ const Recovery = ({ selectedDate = new Date() }) => {
       );
     }
     
-    // Show comparison chart for single day view - note: no wrapping card element now
+    // Show comparison chart for single day view
     return (
-      <RecoveryComparisonChart
-        selectedDate={selectedDate}
-        metrics={comparisonMetrics}
-        timePeriod={timePeriod}
-        onTimePeriodChange={handleTimePeriodChange}
-      />
+      <div className="p-6">
+        <RecoveryComparisonChart
+          selectedDate={selectedDate}
+          metrics={comparisonMetrics}
+          timePeriod={timePeriod}
+          onTimePeriodChange={handleTimePeriodChange}
+        />
+      </div>
     );
   };
 
@@ -110,12 +113,19 @@ const Recovery = ({ selectedDate = new Date() }) => {
             compactLayout={true}
           />
         </div>
-        
-        {/* Chart area - 80% width - no wrapping card element */}
-        <div className="md:w-[75%] lg:w-[80%] bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30">
+         
+        {/* Chart area - 80% width */}
+        <div className="md:w-[75%] lg:w-[80%] bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 overflow-hidden">
           {renderRecoveryChart()}
         </div>
       </div>
+      
+      {/* Unified Recovery Chart Card
+      <div className="mb-6">
+        <div className="bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 h-[400px]">
+          <RecoveryChart selectedDate={selectedDate} />
+        </div>
+      </div> */}
       
       {/* Rest of recovery components... */}
     </div>
