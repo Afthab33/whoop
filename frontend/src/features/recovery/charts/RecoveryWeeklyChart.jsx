@@ -329,9 +329,6 @@ const RecoveryWeeklyChart = ({
       <div className="flex justify-between items-center mb-6 p-6 pb-0">
         <div>
           <h2 className="text-lg font-bold text-[var(--text-primary)]">{chartTitle()}</h2>
-          <p className="text-[var(--text-secondary)] text-sm mt-1">
-            Aftab Hussain
-          </p>
         </div>
         
         {/* TimePeriodSelector */}

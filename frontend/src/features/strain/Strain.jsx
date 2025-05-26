@@ -1,12 +1,14 @@
 // src/components/dashboard/strain/Strain.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { ChevronRight, Info } from 'lucide-react';
 import StrainTrendChart from './charts/StrainTrendChart';
 import CaloriesChart from './charts/CaloriesChart';
 import AverageHrChart from './charts/AverageHrChart';
-import DailyStrainChart from './charts/DailyStrainChart';
+import DetailedHeartRateChart from './charts/DetailedHeartRateChart';
 import StrainRing from './components/StrainRing';
 import AiInsightCard from '../../components/cards/AiInsightCard';
+import StrainStatistics from './components/StrainStatistics';
 
 const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
   const getTrendIcon = () => {
@@ -60,10 +62,13 @@ const ActivityStatCard = () => {
   );
 };
 
-const Strain = ({ selectedDate }) => {
+const Strain = ({ selectedDate = new Date() }) => {
   // Example strain data - In a real application, this would come from your API or state
   const [activeWorkout, setActiveWorkout] = useState(null);
   const [hoveredTime, setHoveredTime] = useState(null);
+  // Set 'detailed' as the default and only chart type
+  const [chartType] = useState('detailed'); // Remove the setter as we no longer need to change this
+  const [timePeriod, setTimePeriod] = useState('1w'); // Add this for consistency
 
   // Sample strain data for the chart
   const sampleStrainData = [
@@ -82,6 +87,18 @@ const Strain = ({ selectedDate }) => {
     { time: '7:12 PM', strain: 120, activity: 'rest' },
   ];
 
+  // Example data for statistics
+  const today = new Date();
+  const dayData = {
+    maxHr: 165,
+    avgHr: 79,
+    calories: 2114,
+    activities: 1,
+  };
+
+  // Format dateStr consistently with Recovery.jsx
+  const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+
   return (
     <div className="p-4 max-w-screen-xl mx-auto">
       {/* AI Insight Card */}
@@ -91,47 +108,44 @@ const Strain = ({ selectedDate }) => {
         </div>
       </div>
 
-      {/* Strain Chart */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Daily Strain</h2>
-        <DailyStrainChart 
-          strainData={sampleStrainData}
-          activeWorkout={activeWorkout}
-          hoveredTime={hoveredTime}
-          onWorkoutHover={setActiveWorkout}
-          viewMode="time"
-          chartMode="raw"
-          timePeriod="1d"
-        />
+      {/* Header with date display - similar to Recovery.jsx */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Strain</h1>
+          <div className="flex items-center">
+            <p className="text-[var(--text-secondary)] mr-2">Insights for</p>
+            <span className="bg-[var(--card-bg)] text-white px-3 py-1 rounded-full text-sm font-medium">
+              {format(selectedDate, 'EEEE, MMMM d')}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Additional strain metrics can be added below */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <MetricCard 
-          icon={<Info size={24} />}
-          title="Day Strain"
-          value="15.2"
-          baseline="21.0"
-          trend="up"
-          color="text-[var(--strain-blue)]"
-        />
-        <MetricCard 
-          icon={<Info size={24} />}
-          title="Average HR"
-          value="122"
-          baseline="bpm"
-          trend="none"
-          color="text-[var(--alert-red)]"
-        />
-        <MetricCard 
-          icon={<Info size={24} />}
-          title="Calories"
-          value="2,854"
-          baseline="kcal"
-          trend="down"
-          color="text-[var(--steps-orange)]"
-        />
+      {/* Split layout with sidebar and chart - similar to Recovery.jsx */}
+      <div className="flex flex-col md:flex-row gap-5 mb-6">
+        {/* Sidebar with strain statistics - 20% width */}
+        <div className="md:w-[25%] lg:w-[20%]">
+          <StrainStatistics
+            selectedDate={today}
+            dayData={dayData}
+            dateStr={dateStr}
+            timePeriod={timePeriod}
+            compactLayout={true}
+          />
+        </div>
+         
+        {/* Chart area - 80% width */}
+        <div className="md:w-[75%] lg:w-[80%] bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+              Heart Rate Analysis
+            </h2>
+            <DetailedHeartRateChart />
+          </div>
+        </div>
       </div>
+      
+      {/* You can add additional sections below if needed */}
     </div>
   );
 };

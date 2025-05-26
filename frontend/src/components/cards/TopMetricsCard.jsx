@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronDown, Info, User, Calendar, LayoutDashboard, ChevronLeft } from 'lucide-react';
+import { ChevronDown, Info, User, Calendar, LayoutDashboard, ChevronLeft, Bot } from 'lucide-react';
 import StrainRing from '../../features/strain/components/StrainRing';
 import RecoveryRing from '../../features/recovery/components/RecoveryRing';
 import SleepPerformanceRing from '../../features/sleep/components/SleepPerformanceRing';
@@ -100,7 +100,23 @@ const TopMetricsCard = ({
         
         {/* Right section - Empty or reserved for future use */}
         <div className="flex-1 flex justify-end">
-          {/* Placeholder for future elements (notifications, settings, etc.) */}
+          {/* AI Coach button */}
+          <button
+            onClick={() => setActiveTab('ai-coach')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+              activeTab === 'ai-coach' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-[var(--card-bg)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+            }`}
+            style={{
+              background: activeTab === 'ai-coach' ? '#8754e0' : 'var(--card-bg)',
+              boxShadow: activeTab === 'ai-coach' ? '0 2px 8px rgba(135, 84, 224, 0.3)' : 'none'
+            }}
+            title="Chat with your AI Coach"
+          >
+            <Bot size={16} className={activeTab === 'ai-coach' ? 'text-white' : 'text-purple-400'} />
+            <span className="text-sm font-medium">AI Coach</span>
+          </button>
         </div>
       </div>
       

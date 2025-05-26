@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
   Heart, 
-  Zap, 
   Flame,
   Dumbbell,
   ArrowUp,
@@ -24,18 +23,6 @@ const StrainStatistics = ({
   prevDay.setDate(prevDay.getDate() - 1);
   const formattedPrevDate = format(prevDay, 'EEE, MMM do');
   
-  // Get date range for comparison period
-  const getDateRangeText = () => {
-    if (timePeriod === '1d') {
-      return `${formattedDate} vs ${formattedPrevDate}`;
-    } 
-    
-    // For longer time periods, show a date range
-    const startDate = new Date(selectedDate);
-    startDate.setDate(startDate.getDate() - 7); // Example: 7 days before
-    return `${format(startDate, 'MMM do')} — ${format(selectedDate, 'MMM do')}`;
-  };
-
   // Use these metrics or get them from dayData if available
   const metrics = [
     {
@@ -44,7 +31,7 @@ const StrainStatistics = ({
       value: "165",
       comparison: "161",
       trend: "up",
-      valueColor: "text-blue-400"
+      valueColor: "text-[var(--text-primary)]"
     },
     {
       icon: <Heart size={20} className="stroke-current" strokeWidth={1.5} />,
@@ -52,7 +39,7 @@ const StrainStatistics = ({
       value: "79",
       comparison: "77",
       trend: "up",
-      valueColor: "text-blue-400"
+      valueColor: "text-[var(--text-primary)]"
     },
     {
       icon: <Flame size={20} className="stroke-current" strokeWidth={1.5} />,
@@ -60,7 +47,7 @@ const StrainStatistics = ({
       value: "2,114",
       comparison: "1,957",
       trend: "up",
-      valueColor: "text-blue-400"
+      valueColor: "text-[var(--text-primary)]"
     },
     {
       icon: <Dumbbell size={20} className="stroke-current" strokeWidth={1.5} />,
@@ -68,7 +55,7 @@ const StrainStatistics = ({
       value: "1",
       comparison: "1.0",
       trend: "neutral",
-      valueColor: "text-blue-400"
+      valueColor: "text-[var(--text-primary)]"
     }
   ];
 
@@ -78,14 +65,12 @@ const StrainStatistics = ({
       <div className="flex items-center mb-4 border-b border-gray-800/20 pb-3">
         <Calendar size={16} className="text-[var(--text-secondary)] mr-2" />
         <h3 className="text-sm font-medium text-[var(--text-primary)]">
-          Day Statistics
+          {formattedDate} <span className="text-[var(--text-muted)]">vs</span> {formattedPrevDate}
         </h3>
       </div>
       
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-sm font-bold text-blue-400">
-          {getDateRangeText()}
-        </h2>
+        <h2 className="text-sm font-bold text-[var(--text-primary)]">STRAIN METRICS</h2>
         
         <div className="flex items-center space-x-1">
           <Info size={12} className="text-[var(--text-muted)]" />
@@ -96,43 +81,43 @@ const StrainStatistics = ({
       </div>
       
       <div className="bg-[var(--card-bg)] rounded-xl shadow-[var(--shadow-whoop-card)]">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {metrics.map((metric, index) => (
             <div 
               key={index} 
               className="flex flex-col items-center p-3 bg-[var(--bg-subcard)] rounded-lg transition-all duration-200 hover:bg-[#2A3339]"
             >
-              <div className="text-gray-400 mb-2">
+              <div className="text-[var(--strain-blue)] mb-1">
                 {metric.icon}
               </div>
               <div className="text-center">
-                <div className="text-xl font-bold mb-1 flex items-center justify-center">
-                  <span className={metric.valueColor}>
+                <div className="flex items-center justify-center">
+                  <span className={`text-lg font-semibold ${metric.valueColor}`}>
                     {metric.value}
                   </span>
                   {metric.trend === 'up' && 
                     <ArrowUp 
                       size={12} 
-                      className="text-gray-400 ml-1"
+                      className="text-[var(--recovery-green)]"
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'down' && 
                     <ArrowDown 
                       size={12} 
-                      className="text-gray-400 ml-1"
+                      className="text-[var(--alert-red)]"
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'neutral' && 
-                    <div className="w-2 h-2 bg-gray-400 rounded-full ml-1"></div>
+                    <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full ml-1"></span>
                   }
                 </div>
-                <div className="text-gray-400 text-sm">
-                  {metric.comparison}
+                <div className="text-[var(--text-subvalue)] text-xs">
+                  vs {metric.comparison}
                 </div>
               </div>
-              <div className="text-xs text-[var(--text-secondary)] mt-2 font-medium">
+              <div className="text-xs text-[var(--text-secondary)] mt-1 font-medium uppercase tracking-tight">
                 {metric.title}
               </div>
             </div>
