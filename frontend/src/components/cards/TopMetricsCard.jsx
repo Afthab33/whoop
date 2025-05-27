@@ -47,6 +47,15 @@ const TopMetricsCard = ({
     day: 'numeric'
   });
   
+  // Get recovery color based on value
+  const getRecoveryColor = (value) => {
+    if (value >= 67) return "#16EC06"; // High Recovery
+    if (value >= 34) return "#FFDE00"; // Medium Recovery
+    return "#FF0026"; // Low Recovery
+  };
+  
+  const recoveryColor = getRecoveryColor(metrics.recovery);
+
   return (
     <div className="font-['Plus_Jakarta_Sans']">
       {/* Header with centered logo and user profile on left */}
@@ -136,9 +145,9 @@ const TopMetricsCard = ({
                   ? 'translateY(-5px) scale(1.04)' 
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'strain' 
-                ? 'drop-shadow(0 8px 16px rgba(93, 141, 238, 0.25))' 
+                ? 'drop-shadow(0 8px 16px rgba(0, 147, 231, 0.25))' 
                 : hoveredRing === 'strain'
-                  ? 'drop-shadow(0 6px 12px rgba(93, 141, 238, 0.15))'
+                  ? 'drop-shadow(0 6px 12px rgba(0, 147, 231, 0.15))'
                   : 'none',
               zIndex: (activeTab === 'strain' || hoveredRing === 'strain') ? 10 : 1
             }}
@@ -156,7 +165,7 @@ const TopMetricsCard = ({
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
-                    background: 'radial-gradient(circle, rgba(93, 141, 238, 0.08) 0%, rgba(93, 141, 238, 0) 70%)',
+                    background: 'radial-gradient(circle, rgba(0, 147, 231, 0.08) 0%, rgba(0, 147, 231, 0) 70%)',
                     transform: 'scale(1.12)',
                     animation: 'pulse 2s infinite'
                   }}
@@ -165,7 +174,7 @@ const TopMetricsCard = ({
             </div>
           </div>
           
-          {/* Recovery Ring - Enhanced interactive effects */}
+          {/* Recovery Ring - Enhanced interactive effects with dynamic colors */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('recovery')}
@@ -178,9 +187,9 @@ const TopMetricsCard = ({
                   ? 'translateY(-5px) scale(1.04)' 
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'recovery' 
-                ? 'drop-shadow(0 8px 16px rgba(63, 182, 94, 0.25))' 
+                ? `drop-shadow(0 8px 16px ${recoveryColor}40)` 
                 : hoveredRing === 'recovery'
-                  ? 'drop-shadow(0 6px 12px rgba(63, 182, 94, 0.15))'
+                  ? `drop-shadow(0 6px 12px ${recoveryColor}30)`
                   : 'none',
               zIndex: (activeTab === 'recovery' || hoveredRing === 'recovery') ? 10 : 1
             }}
@@ -197,7 +206,7 @@ const TopMetricsCard = ({
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
-                    background: 'radial-gradient(circle, rgba(63, 182, 94, 0.08) 0%, rgba(63, 182, 94, 0) 70%)',
+                    background: `radial-gradient(circle, ${recoveryColor}14 0%, ${recoveryColor}00 70%)`,
                     transform: 'scale(1.12)',
                     animation: 'pulse 2s infinite'
                   }}
@@ -220,9 +229,9 @@ const TopMetricsCard = ({
                   ? 'translateY(-5px) scale(1.04)' 
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'sleep' 
-                ? 'drop-shadow(0 8px 16px rgba(110, 163, 195, 0.25))' 
+                ? 'drop-shadow(0 8px 16px rgba(123, 161, 187, 0.25))' 
                 : hoveredRing === 'sleep'
-                  ? 'drop-shadow(0 6px 12px rgba(110, 163, 195, 0.15))'
+                  ? 'drop-shadow(0 6px 12px rgba(123, 161, 187, 0.15))'
                   : 'none',
               zIndex: (activeTab === 'sleep' || hoveredRing === 'sleep') ? 10 : 1
             }}
@@ -240,7 +249,7 @@ const TopMetricsCard = ({
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
-                    background: 'radial-gradient(circle, rgba(110, 163, 195, 0.08) 0%, rgba(110, 163, 195, 0) 70%)',
+                    background: 'radial-gradient(circle, rgba(123, 161, 187, 0.08) 0%, rgba(123, 161, 187, 0) 70%)',
                     transform: 'scale(1.12)',
                     animation: 'pulse 2s infinite'
                   }}

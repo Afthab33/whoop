@@ -29,25 +29,32 @@
   --text-title: #6B7280;      /* From analysis - section titles */
 
   /* Typography */
-  --font-whoops: 'Plus Jakarta Sans', 'Inter', 'SF Pro', system-ui, sans-serif;
+  --font-headline: 'Proxima Nova', system-ui, sans-serif;
+  --font-body: 'Proxima Nova', system-ui, sans-serif;
+  --font-numbers: 'DINPro', system-ui, sans-serif;
+  --font-fallback: 'Helvetica Neue', 'Helvetica', 'Arial', system-ui, sans-serif;
+  
   --font-title: 1.5rem;
   --font-metric: 1.5rem;      /* 24px - Main metric values */
   --font-metric-xl: 2rem;     /* 32px - Larger metrics */
   --font-section: 0.875rem;   /* 14px - Section headers */
   --font-metric-title: 0.875rem; /* 14px - Metric titles (HRV, etc) */
-  --font-body: 0.875rem;      /* Regular text */
+  --font-body-size: 0.875rem;      /* Regular text */
   --font-small: 0.75rem;      /* 12px - Subvalues/baseline */
 
   /* Font weights */
-  --weight-metric: 700;       /* Main values */
-  --weight-title: 600;        /* Metric titles */
+  --weight-bold: 700;         /* Bold weight */
+  --weight-semibold: 600;     /* Semibold weight */
+  --weight-metric: var(--weight-bold);       /* Main values */
+  --weight-title: var(--weight-semibold);    /* Metric titles */
   --weight-section: 500;      /* Section headers */
   --weight-regular: 400;      /* Regular text */
 
   /* Letter spacing */
-  --tracking-section: 0.1em;  /* Section headings - widest */
-  --tracking-metric: 0.05em;  /* Metric titles - wide */
-  --tracking-button: 0.075em; /* Button labels - wider */
+  --tracking-headlines: 0.1em;  /* 10% for headlines */
+  --tracking-section: 0.1em;    /* Section headings - widest */
+  --tracking-metric: 0.05em;    /* Metric titles - wide */
+  --tracking-button: 0.075em;   /* Button labels - wider */
 
   /* Layout */
   --radius-card: 0.875rem;    /* 14px - Card corners */
@@ -93,7 +100,7 @@
 body {
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-whoops);
+  font-family: var(--font-body);
 }
 
 /* Card components */
@@ -120,17 +127,38 @@ body {
 }
 
 /* Typography components */
+.headline {
+  font-family: var(--font-headline);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-headlines);
+  text-transform: uppercase;
+}
+
+.body-text {
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  font-size: var(--font-body-size);
+}
+
+.number {
+  font-family: var(--font-numbers);
+  font-weight: var(--weight-bold);
+}
+
 .metric-value {
+  font-family: var(--font-numbers);
   font-size: var(--font-metric);
   font-weight: var(--weight-metric);
 }
 
 .metric-value-xl {
+  font-family: var(--font-numbers);
   font-size: var(--font-metric-xl);
   font-weight: var(--weight-metric);
 }
 
 .metric-title {
+  font-family: var(--font-headline);
   font-size: var(--font-metric-title);
   font-weight: var(--weight-title);
   letter-spacing: var(--tracking-metric);
@@ -138,17 +166,20 @@ body {
 }
 
 .metric-label {
-  font-size: var(--font-body);
+  font-family: var(--font-body);
+  font-size: var(--font-body-size);
   color: var(--text-secondary);
 }
 
 .baseline-value {
+  font-family: var(--font-body);
   font-size: var(--font-small);
   color: var(--text-subvalue);
   font-weight: var(--weight-regular);
 }
 
 .section-header {
+  font-family: var(--font-headline);
   font-size: var(--font-section);
   font-weight: var(--weight-section);
   letter-spacing: var(--tracking-section);

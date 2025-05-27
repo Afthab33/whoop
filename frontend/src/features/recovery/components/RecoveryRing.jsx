@@ -13,16 +13,34 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
   const displaySize = size <= 120 ? 'w-24 h-24' : 'w-32 h-32';
   const fontSize = size <= 120 ? 'text-4xl' : 'text-5xl';
   const percentSize = size <= 120 ? 'text-xl' : 'text-2xl';
+  
+  // Recovery color based on value range
+  const getRecoveryColor = (value) => {
+    if (value >= 67) return "#16EC06"; // High Recovery: 100-67%
+    if (value >= 34) return "#FFDE00"; // Medium Recovery: 66-34%
+    return "#FF0026"; // Low Recovery: 33-0%
+  };
+  
+  const recoveryColor = getRecoveryColor(value);
+  
+  // Recovery level text
+  const getRecoveryLevelText = (value) => {
+    if (value >= 67) return "High";
+    if (value >= 34) return "Medium";
+    return "Low";
+  };
+  
+  const recoveryLevel = getRecoveryLevelText(value);
 
   return (
     <div className="flex flex-col items-center justify-center text-white">
       <div className={`relative ${displaySize}`}>
         <svg className="w-full h-full" viewBox={`0 0 ${size} ${size}`}>
-          {/* Define gradient - darker green tones */}
+          {/* Define gradient based on recovery level */}
           <defs>
             <linearGradient id="recoveryGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#2A9645" stopOpacity="1" />
-              <stop offset="100%" stopColor="#3FB65E" stopOpacity="1" />
+              <stop offset="0%" stopColor={recoveryColor} stopOpacity="0.85" />
+              <stop offset="100%" stopColor={recoveryColor} stopOpacity="1" />
             </linearGradient>
           </defs>
           
@@ -59,14 +77,19 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
       </div>
 
       {/* Label with interactive indicator */}
-      <div className="flex items-center text-[#3FB65E] text-sm font-medium mt-1 group">
-        Recovery
-        {isInteractive && (
-          <ChevronRight 
-            size={14} 
-            className="ml-0.5 transition-transform group-hover:translate-x-0.5" 
-          />
-        )}
+      <div className="flex flex-col items-center">
+        <div 
+          className="flex items-center text-sm font-medium mt-1 group"
+          style={{ color: recoveryColor }}
+        >
+          Recovery
+          {isInteractive && (
+            <ChevronRight 
+              size={14} 
+              className="ml-0.5 transition-transform group-hover:translate-x-0.5" 
+            />
+          )}
+        </div>
       </div>
     </div>
   );

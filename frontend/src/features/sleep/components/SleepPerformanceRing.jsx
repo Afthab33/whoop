@@ -18,11 +18,11 @@ const SleepPerformanceRing = ({ value = 81, max = 100, size = 120, isInteractive
     <div className="flex flex-col items-center justify-center text-white">
       <div className={`relative ${displaySize}`}>
         <svg className="w-full h-full" viewBox={`0 0 ${size} ${size}`}>
-          {/* Define gradient - blue tones based on #6EA3C3 */}
+          {/* Define gradient - blue tones based on #7BA1BB */}
           <defs>
             <linearGradient id="sleepGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#5A8CA9" stopOpacity="1" />
-              <stop offset="100%" stopColor="#6EA3C3" stopOpacity="1" />
+              <stop offset="0%" stopColor="#6B91A7" stopOpacity="1" />
+              <stop offset="100%" stopColor="#7BA1BB" stopOpacity="1" />
             </linearGradient>
           </defs>
           
@@ -59,7 +59,7 @@ const SleepPerformanceRing = ({ value = 81, max = 100, size = 120, isInteractive
       </div>
 
       {/* Label with interactive indicator */}
-      <div className="flex items-center text-[#6EA3C3] text-sm font-medium mt-1 group">
+      <div className="flex items-center text-sm font-medium mt-1 group" style={{ color: '#7BA1BB' }}>
         Sleep
         {isInteractive && (
           <ChevronRight 

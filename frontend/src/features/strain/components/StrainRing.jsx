@@ -17,11 +17,11 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }
     <div className="flex flex-col items-center justify-center text-white">
       <div className={`relative ${displaySize}`}>
         <svg className="w-full h-full" viewBox={`0 0 ${size} ${size}`}>
-          {/* Define gradient - darker blue tones */}
+          {/* Define gradient - blues around #0093E7 */}
           <defs>
             <linearGradient id="strainGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#2A62C8" stopOpacity="1" />
-              <stop offset="100%" stopColor="#5D8DEE" stopOpacity="1" />
+              <stop offset="0%" stopColor="#007BC1" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0093E7" stopOpacity="1" />
             </linearGradient>
           </defs>
           
@@ -57,7 +57,7 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }
       </div>
 
       {/* Label with interactive indicator */}
-      <div className="flex items-center text-[#5D8DEE] text-sm font-medium mt-1 group">
+      <div className="flex items-center text-sm font-medium mt-1 group" style={{ color: "#0093E7" }}>
         Strain
         {isInteractive && (
           <ChevronRight 

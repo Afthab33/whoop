@@ -1,6 +1,6 @@
 // src/components/dashboard/overview/Overview.jsx
 import React from 'react';
-import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info } from 'lucide-react';
+import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info, Activity, Heart } from 'lucide-react';
 import StrainRecoveryChart from './charts/StrainRecoveryChart';
 import StressMonitorChart from './charts/StressMonitorChart';
 import IndexChart from './charts/Index'; // Import the Index chart component
@@ -31,38 +31,55 @@ const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
 
 const Overview = () => {
   return (
-    <div className="p-4 max-w-screen-xl mx-auto">
-      <div className="flex flex-col gap-6">
-        {/* Daily Outlook Card */}
-        <div className="bg-gradient-to-r from-blue-900 to-purple-900 rounded-2xl p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="h-10 w-10 bg-[#232529] rounded-full flex items-center justify-center mr-3">
-                <span className="font-bold">W</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
+      <div className="p-6 max-w-screen-xl mx-auto">
+        <div className="flex flex-col gap-8">
+
+          {/* Daily Outlook Card - Enhanced */}
+          <div 
+            className="whoops-card relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, var(--strain-blue) 0%, var(--ai-coach-purple) 100%)',
+              boxShadow: '0 8px 32px rgba(93, 141, 238, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)'
+            }}
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div 
+                  className="h-12 w-12 rounded-full flex items-center justify-center shadow-lg"
+                  style={{ background: 'rgba(255, 255, 255, 0.15)' }}
+                >
+                  <Activity className="text-white" size={20} />
+                </div>
+                <div>
+                  <span className="text-white font-bold text-xl tracking-wide">Daily Outlook</span>
+                  <div className="text-white/80 text-sm mt-1">Your health at a glance</div>
+                </div>
               </div>
-              <span className="text-white font-bold text-lg uppercase">Daily Outlook</span>
-            </div>
-            <ChevronRight className="text-white" size={24} />
-          </div>
-        </div>
-        
-        {/* Heart Rate Chart Section */}
-        <div className="whoops-card bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 overflow-hidden">
-          <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[var(--text-primary)]">Heart Rate Analysis</h2>
-              <div className="flex items-center space-x-1">
-                <Info size={14} className="text-[var(--text-muted)]" />
-                <span className="text-[var(--text-muted)] text-sm">
-                  View trends over time
-                </span>
-              </div>
+              <ChevronRight className="text-white/80 hover:text-white transition-colors" size={24} />
             </div>
             
-            {/* Embed the Index chart with styling adjustments */}
-            <div className="bg-[var(--card-bg)]">
-              <IndexChart />
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 w-32 h-32 border border-white/20 rounded-full"></div>
+              <div className="absolute bottom-4 right-8 w-20 h-20 border border-white/10 rounded-full"></div>
             </div>
+          </div>
+
+          {/* Heart Rate Analysis Section - Seamless Integration */}
+          <div className="space-y-6">
+            {/* Section divider with subtle styling */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--text-muted)]/20 to-transparent"></div>
+              <div className="flex items-center space-x-2 px-4 py-2 rounded-full" style={{ background: 'var(--bg-subcard)' }}>
+                <Heart size={16} className="text-[var(--strain-blue)]" />
+                <span className="text-[var(--text-muted)] text-sm font-medium">Health Analytics</span>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--text-muted)]/20 to-transparent"></div>
+            </div>
+            
+            {/* Index Chart Component - Direct integration without extra wrapper */}
+            <IndexChart />
           </div>
         </div>
       </div>
