@@ -10,259 +10,300 @@ import {
   Area,
   BarChart,
   Bar,
-  Legend,
   AreaChart,
 } from 'recharts';
+import { Activity, Heart, TrendingUp, Clock, Zap, Calendar } from 'lucide-react';
 
-// Import the TimePeriodSelector component instead of using custom DurationButton
 import TimePeriodSelector from '../../../components/charts/TimePeriodSelector';
-import { Switch } from '../../../components/ui/switch';
+import whoopData from '../../../data/day_wise_whoop_data.json';
 
-// Define the cn utility function if not imported
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
 
-// Sample data generation for Heart Rate
-const generateHrData = () => {
-  const data = [];
-  const startTime = new Date();
-  startTime.setHours(17, 45, 0, 0); // 5:45 PM
-
-  for (let i = 0; i < 61; i++) { // 61 points for 1 hour
-    const currentTime = new Date(startTime.getTime() + i * 60 * 1000);
-    let hr = 80 + Math.random() * 40;
-    if (i > 10 && i < 25) hr += Math.random() * 20;
-    if (i > 40 && i < 55) hr -= Math.random() * 10;
-    hr = Math.max(50, Math.min(160, Math.round(hr)));
-
-    data.push({
-      time: currentTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', ''),
-      hr: hr,
-      fullTime: currentTime,
-    });
+// Check if there are actual activities (workouts) for the selected date
+const hasActivitiesForDate = (selectedDate) => {
+  // Format the selected date to match the JSON keys (YYYY-MM-DD)
+  const dateStr = selectedDate.toLocaleDateString('en-CA'); // This gives YYYY-MM-DD format
+  const dayData = whoopData[dateStr];
+  
+  if (!dayData || !dayData.workouts || dayData.workouts.length === 0) {
+    return false;
   }
+  
+  // Check if there are actual workouts with meaningful activity
+  const realWorkouts = dayData.workouts.filter(workout => 
+    workout["Activity name"] && 
+    workout["Activity name"].toLowerCase() !== "idle" &&
+    workout["Duration (min)"] && 
+    workout["Duration (min)"] > 0
+  );
+  
+  return realWorkouts.length > 0;
+};
+
+// Get activity data for the selected date
+const getActivitiesForDate = (selectedDate) => {
+  // Format the selected date to match the JSON keys (YYYY-MM-DD)
+  const dateStr = selectedDate.toLocaleDateString('en-CA'); // This gives YYYY-MM-DD format
+  const dayData = whoopData[dateStr];
+  
+  if (!dayData || !dayData.workouts) {
+    return [];
+  }
+  
+  return dayData.workouts.filter(workout => 
+    workout["Activity name"] && 
+    workout["Activity name"].toLowerCase() !== "idle" &&
+    workout["Duration (min)"] && 
+    workout["Duration (min)"] > 0
+  );
+};
+
+// Enhanced HR data generation - only for workout periods with per-minute data
+const generateHrDataForDate = (selectedDate) => {
+  // Format the selected date to match the JSON keys (YYYY-MM-DD)
+  const dateStr = selectedDate.toLocaleDateString('en-CA'); // This gives YYYY-MM-DD format
+  const dayData = whoopData[dateStr];
+  
+  if (!hasActivitiesForDate(selectedDate)) {
+    return [];
+  }
+  
+  const data = [];
+  const activities = getActivitiesForDate(selectedDate);
+  
+  // Generate HR data for each workout period
+  activities.forEach((workout, workoutIndex) => {
+    // Parse the workout start time correctly
+    const startTime = new Date(workout["Workout start time"]);
+    const endTime = new Date(workout["Workout end time"]);
+    const duration = workout["Duration (min)"] || 60;
+    const maxHr = workout["Max HR (bpm)"] || 150;
+    const avgHr = workout["Average HR (bpm)"] || 120;
+    
+    // Verify that the workout times are on the correct date
+    const workoutDate = startTime.toLocaleDateString('en-CA');
+    if (workoutDate !== dateStr) {
+      console.warn(`Workout date mismatch: Expected ${dateStr}, got ${workoutDate}`);
+    }
+    
+    // Generate data points every minute during workout for more angular curves
+    for (let i = 0; i <= duration; i += 1) {
+      const currentTime = new Date(startTime.getTime() + i * 60 * 1000);
+      
+      if (currentTime > endTime) break;
+      
+      // Create more angular HR patterns during workout
+      let hr;
+      const progressRatio = i / duration;
+      
+      if (progressRatio < 0.1) {
+        // Warm-up phase - gradual increase
+        hr = avgHr * 0.7 + (progressRatio * 10) * 15 + Math.random() * 8;
+      } else if (progressRatio < 0.8) {
+        // Main workout phase - more angular variations
+        const intensity = Math.sin(progressRatio * Math.PI * 4) * 25;
+        const spikes = Math.random() > 0.7 ? Math.random() * 20 : 0; // Random spikes
+        hr = avgHr + intensity + spikes;
+      } else {
+        // Cool-down phase - sharp decline
+        const cooldownProgress = (progressRatio - 0.8) / 0.2;
+        hr = avgHr * (1 - cooldownProgress * 0.3) + Math.random() * 5;
+      }
+      
+      // Ensure HR stays within realistic bounds
+      hr = Math.max(80, Math.min(maxHr, Math.round(hr)));
+      
+      const getHrZone = (heartRate) => {
+        if (heartRate < 100) return { zone: 'Rest', color: '#22C55E' };
+        if (heartRate < 120) return { zone: 'Fat Burn', color: '#FBBF24' };
+        if (heartRate < 140) return { zone: 'Cardio', color: '#F97316' };
+        if (heartRate < 160) return { zone: 'Peak', color: '#EF4444' };
+        return { zone: 'Max', color: '#DC2626' };
+      };
+
+      const hrZone = getHrZone(hr);
+
+      data.push({
+        time: currentTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(' ', ''),
+        hr: hr,
+        fullTime: currentTime,
+        zone: hrZone.zone,
+        zoneColor: hrZone.color,
+        percentMax: Math.round((hr / 185) * 100),
+        activity: workout["Activity name"],
+        workoutIndex: workoutIndex
+      });
+    }
+  });
+  
+  return data.sort((a, b) => a.fullTime - b.fullTime);
+};
+
+// Enhanced strain data generation with real data integration
+const generateStrainDataForPeriod = (selectedDate, duration) => {
+  const endDate = new Date(selectedDate);
+  let startDate;
+
+  switch (duration) {
+    case '1w':
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 6);
+      break;
+    case '2w':
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 13);
+      break;
+    case '1m':
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 29);
+      break;
+    case '3m':
+      startDate = new Date(endDate);
+      startDate.setMonth(endDate.getMonth() - 3);
+      break;
+    case '6m':
+      startDate = new Date(endDate);
+      startDate.setMonth(endDate.getMonth() - 6);
+      break;
+    default:
+      return [];
+  }
+
+  const data = [];
+  const currentDate = new Date(startDate);
+  let sundayCount = 0; // Counter for Sundays encountered
+
+  while (currentDate <= endDate) {
+    // Use the same date formatting method for consistency
+    const dateStr = currentDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+    const dayData = whoopData[dateStr];
+    
+    let strain = 0;
+    let recovery = 75;
+    
+    if (dayData) {
+      strain = dayData.physiological_summary?.["Day Strain"] || 0;
+      recovery = dayData.physiological_summary?.["Recovery score %"] || Math.random() * 40 + 60;
+    } else {
+      // Generate realistic data if no real data available
+      strain = Math.random() * 15;
+      recovery = Math.random() * 40 + 60;
+    }
+
+    const formatDate = (date, formatStr) => {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      if (formatStr === '2w-format' || formatStr === '1w-format') {
+        return `${days[date.getDay()]}\n${months[date.getMonth()]} ${date.getDate()}`;
+      } else if (formatStr === '1m-format') {
+        return `${days[date.getDay()]}\n${months[date.getMonth()]} ${date.getDate()}`;
+      } else if (formatStr === '3m-format' || formatStr === '6m-format') {
+        return `${days[date.getDay()]}\n${months[date.getMonth()]} ${date.getDate()}`;
+      }
+      return date.toLocaleDateString();
+    };
+
+    // Track Sunday count for 6m view
+    const dataPoint = {
+      name: formatDate(currentDate, `${duration}-format`),
+      strain: parseFloat(strain.toFixed(1)),
+      recovery: Math.round(recovery),
+      fullDate: new Date(currentDate),
+      strainLevel: strain > 15 ? 'High' : strain > 8 ? 'Moderate' : strain > 0 ? 'Low' : 'Rest'
+    };
+
+    // Add Sunday index for 6m view
+    if (duration === '6m' && currentDate.getDay() === 0) {
+      dataPoint.sundayIndex = sundayCount;
+      sundayCount++;
+    }
+
+    data.push(dataPoint);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
   return data;
 };
 
-const DEMO_STRAIN_END_DATE = new Date(2025, 4, 5); // May 5, 2025 (month is 0-indexed)
-
-// Helper functions for date manipulation
-const subDays = (date, days) => {
-  const result = new Date(date);
-  result.setDate(result.getDate() - days);
-  return result;
-};
-
-const subMonths = (date, months) => {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() - months);
-  return result;
-};
-
-const eachDayOfInterval = ({ start, end }) => {
-  const days = [];
-  const current = new Date(start);
-  while (current <= end) {
-    days.push(new Date(current));
-    current.setDate(current.getDate() + 1);
-  }
-  return days;
-};
-
-const format = (date, formatStr) => {
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
-  if (formatStr === 'EEE MMM d') {
-    return `${days[date.getDay()]} ${months[date.getMonth()]} ${date.getDate()}`;
-  } else if (formatStr === 'EEE\nMMM d' || formatStr === '1m-format') {
-    return `${days[date.getDay()]}\n${months[date.getMonth()]} ${date.getDate()}`;
-  } else if (formatStr === '2w-format') {
-    const dayName = days[date.getDay()];
-    const monthName = months[date.getMonth()];
-    const dayNumber = date.getDate();
-    return `${dayName}\n${monthName} ${dayNumber}`;
-  } else if (formatStr === '3m-format' || formatStr === '6m-format') {
-    // Updated format for 3M and 6M: Day name on top, Month + Day on bottom
-    const dayName = days[date.getDay()];
-    const monthName = months[date.getMonth()];
-    const dayNumber = date.getDate();
-    // Only showing Sundays, so we'll format specifically for Sunday
-    return `${dayName}\n${monthName} ${dayNumber}`;
-  }
-  return date.toLocaleDateString();
-};
-
-const parse = (dateStr, formatStr, baseDate) => {
-  return new Date(dateStr);
-};
-
-// Sample data generation for Day Strain
-const generateStrainData = (duration) => {
-  let startDate;
-  const endDate = DEMO_STRAIN_END_DATE;
-
-  // Set the start date based on duration
-  switch (duration) {
-    case '1w':
-      startDate = subDays(endDate, 6);
-      break;
-    case '2w':
-      startDate = subDays(endDate, 13);
-      break;
-    case '1m':
-      startDate = subDays(endDate, 29); // Approx 1 month
-      break;
-    case '3m':
-      startDate = subMonths(endDate, 3);
-      break;
-    case '6m':
-      startDate = subMonths(endDate, 6);
-      break;
-    default:
-      return []; // Return empty for unsupported durations
-  }
-
-  const daysArray = eachDayOfInterval({ start: startDate, end: endDate });
-  
-  // Mimic image data for '1w' if possible, otherwise random
-  if (duration === '1w') {
-    const specificStrainData = [
-      { date: '2025-04-29', strain: 0.0 }, // Tue Apr 29
-      { date: '2025-04-30', strain: 10.8 }, // Wed Apr 30
-      { date: '2025-05-01', strain: 7.5 },  // Thu May 1
-      { date: '2025-05-02', strain: 7.5 },  // Fri May 2
-      { date: '2025-05-03', strain: 2.1 },  // Sat May 3
-      { date: '2025-05-04', strain: 7.0 },  // Sun May 4
-      { date: '2025-05-05', strain: 11.6 }, // Mon May 5
-    ];
-    return specificStrainData.map(item => ({
-      name: format(parse(item.date, 'yyyy-MM-dd', new Date()), '2w-format'), // Use the same format as 2w
-      strain: item.strain,
-      fullDate: parse(item.date, 'yyyy-MM-dd', new Date()),
-    }));
-  }
-
-  // For 3m and 6m, filter to show only Sundays
-  if (duration === '3m' || duration === '6m') {
-    // First, get all days in the interval
-    let sundayCounter = 0; // To track which Sunday this is
-    
-    const allDays = daysArray.map(day => {
-      // Generate random strain data
-      const dayOfMonth = day.getDate();
-      const weekOfMonth = Math.floor(dayOfMonth / 7);
-      const isSunday = day.getDay() === 0;
-      
-      // Increment Sunday counter if this is a Sunday
-      if (isSunday) {
-        sundayCounter++;
-      }
-      
-      const isBreakWeek = (weekOfMonth % 4 === 3) || 
-                        (duration === '6m' && day < subMonths(endDate, 5) && day > subMonths(endDate, 5.5));
-      
-      let strain = 0;
-      if (!isBreakWeek) {
-        const baseStrain = Math.random() * 9 + 3;
-        const isSpike = Math.random() > 0.9; 
-        strain = isSpike ? Math.min(14, baseStrain * 1.3) : baseStrain;
-        
-        if (Math.random() > 0.92) {
-          strain = 0;
-        }
-      }
-      
-      return {
-        name: format(day, `${duration}-format`),
-        strain: parseFloat(strain.toFixed(1)),
-        fullDate: day,
-        isSunday: isSunday,
-        // Add Sunday index (0-based) to help with filtering for 6M
-        sundayIndex: isSunday ? sundayCounter - 1 : undefined
-      };
-    });
-    
-    // Return all days for data rendering, but we'll handle display in CustomXAxisTick
-    return allDays;
-  }
-
-  // For other durations (2w, 1m)
-  return daysArray.map((day, index) => ({
-    name: format(day, 
-      duration === '2w' ? '2w-format' : 
-      (duration === '1m' ? '1m-format' : 'EEE MMM d')
-    ),
-    strain: parseFloat((Math.random() * 10 + 2).toFixed(1)),
-    fullDate: day,
-    index: index
-  }));
-};
-
-// Custom Tooltip Component for HR
+// Enhanced HR Tooltip
 const CustomHrTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-blue-600 text-white p-3 rounded-md shadow-lg">
-        <p className="text-lg font-semibold">{`${data.hr} bpm`}</p>
-        <p className="text-sm">{`${data.time}`}</p>
+      <div className="bg-[var(--card-bg)] border border-white/10 text-white p-4 rounded-lg shadow-xl">
+        <div className="flex items-center gap-2 mb-2">
+          <Heart size={16} className="text-red-400" />
+          <span className="font-semibold text-lg">{data.hr} BPM</span>
+        </div>
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Time:</span>
+            <span>{data.time}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">Activity:</span>
+            <span className="text-[var(--strain-blue)]">{data.activity}</span>
+          </div>
+          
+          <div className="flex justify-between">
+            <span className="text-gray-400">% Max:</span>
+            <span>{data.percentMax}%</span>
+          </div>
+        </div>
       </div>
     );
   }
   return null;
 };
 
-// Custom Legend for Strain Chart
-const CustomStrainLegend = () => {
-  return (
-    <div className="flex justify-center items-center space-x-4 mt-3 mb-1">
-      <div className="flex items-center space-x-1">
-        <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm"></div>
-        <span className="text-xs text-gray-500">Activities</span>
-      </div>
-      <div className="flex items-center space-x-1">
-        <div className="w-2.5 h-2.5 bg-red-500 rounded-sm"></div>
-        <span className="text-xs text-gray-500">Selection</span>
-      </div>
-      <div className="flex items-center space-x-1">
-        <div className="w-2.5 h-2.5 bg-gray-400 rounded-sm"></div>
-        <span className="text-xs text-gray-500">Day Strain</span>
-      </div>
-    </div>
-  );
-};
-
+// Enhanced Strain Tooltip
 const CustomStrainTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    const data = payload[0].payload;
     return (
-      <div className="bg-gray-700 text-white p-2 rounded-md shadow-lg">
-        <p className="text-xs font-semibold">{label}</p>
-        <p className="text-base">{`Strain: ${payload[0].value.toFixed(1)}`}</p>
+      <div className="bg-[var(--card-bg)] border border-white/10 text-white p-4 rounded-lg shadow-xl">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp size={16} className="text-[#0093E7]" />
+          <span className="font-semibold">{label}</span>
+        </div>
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-400">Strain:</span>
+            <span className="font-medium" style={{ color: '#0093E7' }}>{payload[0].value.toFixed(1)}</span>
+          </div>
+          {data.recovery && (
+            <div className="flex justify-between">
+              <span className="text-gray-400">Recovery:</span>
+              <span className="font-medium">{data.recovery}%</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span className="text-gray-400">Level:</span>
+            <span className="font-medium">{data.strainLevel}</span>
+          </div>
+        </div>
       </div>
     );
   }
   return null;
 };
 
-// Custom multi-line tick component for 2W period
+// Enhanced X-Axis Tick
 const CustomXAxisTick = ({ x, y, payload, activeDuration }) => {
-  // For 3m and 6m, only show Sunday labels
   if (['3m', '6m'].includes(activeDuration)) {
-    // Only show if it's a Sunday
     if (!payload.value || !payload.value.includes('Sun')) {
       return null;
     }
     
-    // For 6m, show alternating Sundays
     if (activeDuration === '6m') {
-      const isSunday = payload.payload && 
-                      payload.payload.fullDate && 
-                      payload.payload.fullDate.getDay() === 0;
-      
-      if (isSunday && payload.payload.sundayIndex !== undefined) {
-        if (payload.payload.sundayIndex % 2 !== 0) {
+      // For 6-month view, show every other Sunday using the sundayIndex
+      const dataPoint = payload.payload;
+      if (dataPoint && dataPoint.sundayIndex !== undefined) {
+        // Show only even-indexed Sundays (0, 2, 4, 6, etc.)
+        if (dataPoint.sundayIndex % 2 !== 0) {
           return null;
         }
       }
@@ -272,21 +313,19 @@ const CustomXAxisTick = ({ x, y, payload, activeDuration }) => {
     
     return (
       <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={12} textAnchor="middle" fill="white" fontSize="10" fontWeight="500">
+        <text x={0} y={0} dy={12} textAnchor="middle" fill="var(--text-primary)" fontSize="10" fontWeight="500">
           {daySun}
         </text>
-        <text x={0} y={0} dy={26} textAnchor="middle" fill="white" fontSize="10" fontWeight="500">
+        <text x={0} y={0} dy={26} textAnchor="middle" fill="var(--text-secondary)" fontSize="9">
           {monthDay}
         </text>
       </g>
     );
   }
   
-  // For 1m, 2w, 1w with \n format
   if ((activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') && 
       payload.value && payload.value.includes('\n')) {
     
-    // For 1M, only show labels for alternate days
     if (activeDuration === '1m') {
       const dataIndex = payload.index;
       if (dataIndex !== undefined && dataIndex % 2 !== 0) {
@@ -297,125 +336,135 @@ const CustomXAxisTick = ({ x, y, payload, activeDuration }) => {
     const [dayName, monthDate] = payload.value.split('\n');
     return (
       <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={12} textAnchor="middle" fill="white" fontSize="10" fontWeight="500">
+        <text x={0} y={0} dy={12} textAnchor="middle" fill="var(--text-primary)" fontSize="10" fontWeight="500">
           {dayName}
         </text>
-        <text x={0} y={0} dy={26} textAnchor="middle" fill="white" fontSize="10" fontWeight="500">
+        <text x={0} y={0} dy={26} textAnchor="middle" fill="var(--text-secondary)" fontSize="9">
           {monthDate}
         </text>
       </g>
     );
   }
   
-  // Default single line for other durations
   return (
     <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={16} textAnchor="middle" fill="white" fontSize="12" fontWeight="500">
+      <text x={0} y={0} dy={16} textAnchor="middle" fill="var(--text-primary)" fontSize="11" fontWeight="500">
         {payload.value}
       </text>
     </g>
   );
 };
 
-const DetailedHeartRateChart = () => {
+const DetailedHeartRateChart = ({ selectedDate }) => {
+  // State management - Remove internal selectedDate state
   const [activeView, setActiveView] = useState('heartRate');
   
   // HR Chart States
-  const [hrData, setHrData] = useState(generateHrData());
-  const [timeToggle, setTimeToggle] = useState(true);
-  const [rawHrToggle, setRawHrToggle] = useState(true);
-  const [durationToggle, setDurationToggle] = useState(false);
-  const [percentMaxToggle, setPercentMaxToggle] = useState(false);
-
+  const [hrData, setHrData] = useState([]);
+  const [hasActivities, setHasActivities] = useState(false);
+  const [activities, setActivities] = useState([]);
+  
   // Strain Chart States
   const [strainData, setStrainData] = useState([]);
   
   // Shared State
-  const [activeDuration, setActiveDuration] = useState('1d'); // Default for HR
+  const [activeDuration, setActiveDuration] = useState('1d');
   
-  const durationOptions = ['1d', '1w', '2w', '1m', '3m', '6m']; // Reordered to match TimePeriodSelector
-  const strainYTicks = [0, 8, 12, 14, 16, 18, 20, 21];
-  const hrYTicks = [0, 25, 50, 75, 100, 125, 150, 175];
+  const durationOptions = ['1d', '1w', '2w', '1m', '3m', '6m'];
+  const strainYTicks = [0, 4, 8, 12, 16, 20];
+  const hrYTicks = [60, 80, 100, 120, 140, 160, 180];
 
-  // Handle period change from TimePeriodSelector
   const handlePeriodChange = (period) => {
     setActiveDuration(period);
   };
 
+  // Update data when selectedDate prop or duration changes
   useEffect(() => {
-    // Set view based on duration
     if (activeDuration === '1d') {
       setActiveView('heartRate');
+      const hasWorkouts = hasActivitiesForDate(selectedDate);
+      setHasActivities(hasWorkouts);
+      
+      if (hasWorkouts) {
+        setHrData(generateHrDataForDate(selectedDate));
+        setActivities(getActivitiesForDate(selectedDate));
+      } else {
+        setHrData([]);
+        setActivities([]);
+      }
     } else if (['1w', '2w', '1m', '3m', '6m'].includes(activeDuration)) {
       setActiveView('dayStrain');
-      setStrainData(generateStrainData(activeDuration));
+      setStrainData(generateStrainDataForPeriod(selectedDate, activeDuration));
     }
-  }, [activeDuration]);
+  }, [selectedDate, activeDuration]);
 
-  // Format X-axis ticks for HR chart
-  const formatXAxisHr = (tickItem) => {
-    const minute = parseInt(tickItem.split(':')[1].substring(0,2), 10);
-    if (minute % 15 === 0) {
+  const formatXAxisHr = (tickItem, index) => {
+    // ✅ UPDATED: Show only every 5th time label (skip 4 in between)
+    if (index % 5 === 0) {
       return tickItem;
     }
-    return '';
+    return ''; // Hide this label
   };
 
-  // Determine which days should show labels for 2W
-  const shouldShowDayLabel = (index, total) => {
-    if (activeDuration === '2w') {
-      // Show all days for 2W
-      return true;
-    }
-    return true; // Show all for other periods too
-  };
-  // Format X-axis ticks for longer duration charts (3m, 6m) for Strain
   const formatXAxisStrain = (value, index) => {
-    const tickItem = String(value); // Ensure tickItem is a string
+    const tickItem = String(value);
 
     if (activeView === 'dayStrain') {
-      // For 2w, 1w, and 1m, don't show default labels
       if (['2w', '1w', '1m'].includes(activeDuration)) {
         return '';
       }
       
-      // For 3m and 6m, we'll handle display in CustomXAxisTick
       if (['3m', '6m'].includes(activeDuration)) {
-        return tickItem; // Pass the value to CustomXAxisTick which will filter
+        return tickItem;
       }
     }
     
-    // Default behavior
     return tickItem;
   };
 
   const getStrainChartTitle = () => {
     switch (activeDuration) {
-      case '1w': return "1 Week Day Strain";
-      case '2w': return "2 Week Day Strain";
-      case '1m': return "1 Month Day Strain";
-      case '3m': return "3 Months Day Strain";
-      case '6m': return "6 Months Day Strain";
-      default: return "Day Strain"; // Should not happen if UI restricts options
+      case '1w': return "Weekly Strain Overview";
+      case '2w': return "2-Week Strain Analysis";
+      case '1m': return "Monthly Strain Trends";
+      case '3m': return "3-Month Strain Progress";
+      case '6m': return "6-Month Strain History";
+      default: return "Strain Analysis";
     }
   };
 
-  // Determine chart type based on duration
+  // Format date for no activities message
+  const formatDateForMessage = (date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long',
+      month: 'long', 
+      day: 'numeric'
+    });
+  };
+
   const renderStrainChart = () => {
+    const chartMargin = { 
+      top: 10,        // ✅ Reduced from 20
+      right: 20,      // ✅ Reduced from 30
+      left: 40,       // ✅ Increased for better Y-axis spacing
+      bottom: (activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 60 : 45 // ✅ Optimized
+    };
+
     if (['3m', '6m'].includes(activeDuration)) {
-      // For longer durations, use AreaChart
       return (
-        <AreaChart 
-          data={strainData} 
-          margin={{ top: 20, right: 30, left: 10, bottom: 70 }}
-        >
+        <AreaChart data={strainData} margin={chartMargin}>
           <defs>
-            <linearGradient id="colorUvStrain" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#93C5FD" stopOpacity={0.6}/>
-              <stop offset="95%" stopColor="#93C5FD" stopOpacity={0}/>
+            <linearGradient id="strainGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#0093E7" stopOpacity={0.6}/>
+              <stop offset="95%" stopColor="#0093E7" stopOpacity={0.1}/>
             </linearGradient>
           </defs>
-          <CartesianGrid horizontal={true} vertical={false} stroke="#E5E7EB" strokeDasharray="3 3"/>
+          <CartesianGrid 
+            horizontal={true} 
+            vertical={false} 
+            stroke="rgba(255, 255, 255, 0.1)" 
+            strokeDasharray="3 3"
+          />
           <XAxis 
             dataKey="name" 
             axisLine={false} 
@@ -426,40 +475,49 @@ const DetailedHeartRateChart = () => {
             interval={0}
           />
           <YAxis 
-            domain={[0, 21]} 
+            domain={[0, 20]} 
             ticks={strainYTicks} 
             axisLine={false} 
             tickLine={false} 
-            tickFormatter={(value) => value.toFixed(1)}
-            tick={{ fontSize: 12, fill: '#0093E7', fontWeight: 500 }}
-            width={50}
+            tickFormatter={(value) => value.toFixed(0)}
+            tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
+            width={35} // ✅ Reduced from 50
           />
-          <RechartsTooltip content={<CustomStrainTooltip />} cursor={{ stroke: '#CBD5E1', strokeWidth: 1.5 }} />
+          <RechartsTooltip 
+            content={<CustomStrainTooltip />} 
+            cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1.5 }} 
+          />
           <Area 
             type="monotone" 
             dataKey="strain" 
-            stroke="#3B82F6"
-            strokeWidth={2}
+            stroke="#0093E7"
+            strokeWidth={3}
             fillOpacity={1}
-            fill="url(#colorUvStrain)"
-            activeDot={{ r: 6, fill: '#3B82F6', stroke: 'white', strokeWidth: 2 }}
+            fill="url(#strainGradient)"
+            activeDot={{ r: 6, fill: '#0093E7', stroke: 'white', strokeWidth: 2 }}
           />
         </AreaChart>
       );
     } else {
-      // For shorter durations, use BarChart
       return (
         <BarChart 
           data={strainData} 
-          margin={{ 
-            top: 20, 
-            right: 30, 
-            left: 10, 
-            bottom: (activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 80 : 50
-          }}
-          barCategoryGap="20%"
+          margin={chartMargin} 
+          barCategoryGap="10%" // ✅ Reduced for better space utilization
+          maxBarSize={60}      // ✅ Added to prevent bars from getting too wide
         >
-          <CartesianGrid horizontal={true} vertical={false} stroke="#E5E7EB" strokeDasharray="3 3"/>
+          <defs>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0093E7" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#006BB3" stopOpacity={1}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid 
+            horizontal={true} 
+            vertical={false} 
+            stroke="rgba(255, 255, 255, 0.1)" 
+            strokeDasharray="3 3"
+          />
           <XAxis 
             dataKey="name" 
             axisLine={false} 
@@ -470,106 +528,192 @@ const DetailedHeartRateChart = () => {
             interval={activeDuration === '1m' ? 1 : 0}
           />
           <YAxis 
-            domain={[0, 21]} 
+            domain={[0, 20]} 
             ticks={strainYTicks} 
             axisLine={false} 
             tickLine={false} 
-            tickFormatter={(value) => value.toFixed(1)}
-            tick={{ fontSize: 12, fill: '#0093E7', fontWeight: 500 }}
-            width={50}
+            tickFormatter={(value) => value.toFixed(0)}
+            tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
+            width={35} // ✅ Reduced from 50
           />
-          <RechartsTooltip content={<CustomStrainTooltip />} cursor={{ fill: 'rgba(209, 213, 219, 0.3)' }} />
-          <Legend content={<CustomStrainLegend />} verticalAlign="bottom" />
-          <Bar dataKey="strain" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+          <RechartsTooltip 
+            content={<CustomStrainTooltip />} 
+            cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }} 
+          />
+          <Bar 
+            dataKey="strain" 
+            fill="url(#barGradient)" 
+            radius={[6, 6, 0, 0]}
+            stroke="#006BB3"
+            strokeWidth={1}
+          />
         </BarChart>
       );
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto"> {/* Removed whoops-card class */}
-      {/* Use TimePeriodSelector instead of custom duration buttons */}
-      <div className="flex justify-end mb-6">
-        <TimePeriodSelector 
-          selectedPeriod={activeDuration} 
-          onPeriodChange={handlePeriodChange} 
-        />
-      </div>
-
-      {/* Content based on active duration */}
-      {activeView === 'heartRate' ? (
-        <div>
-          {/* HR Specific Controls */}
-          <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 mb-6">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-[var(--text-secondary)]">Duration</span>
-              <Switch id="duration-toggle" checked={durationToggle} onCheckedChange={setDurationToggle} />
-              <span className="text-sm font-medium text-[var(--text-secondary)]">Time</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch id="time-toggle" checked={timeToggle} onCheckedChange={setTimeToggle} />
-              <span className="text-sm font-medium text-[var(--text-secondary)]">Raw HR</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch id="rawhr-toggle" checked={rawHrToggle} onCheckedChange={setRawHrToggle} />
-              <span className="text-sm font-medium text-[var(--text-secondary)]">% of Max</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch id="percentmax-toggle" checked={percentMaxToggle} onCheckedChange={setPercentMaxToggle} />
-            </div>
+    <div className="space-y-4">
+      {/* Chart Card */}
+      <div className="whoops-card min-h-[500px]" style={{ // ✅ Added min-height
+        background: 'var(--card-bg)',
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
+        border: '1px solid rgba(255, 255, 255, 0.05)'
+      }}>
+        {/* Enhanced Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <p className="text-[var(--text-muted)] text-sm mt-1">
+              {activeView === 'heartRate' 
+                ? (hasActivities 
+                    ? `Heart rate monitoring for ${formatDateForMessage(selectedDate)}` 
+                    : `Activity tracking for ${formatDateForMessage(selectedDate)}`
+                  )
+                : "Track your daily strain and recovery patterns"
+              }
+            </p>
           </div>
-          {/* HR Chart Section */}
-          <div style={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer>
-              <LineChart
-                data={hrData}
-                margin={{ top: 20, right: 30, left: 10, bottom: 50 }}
-              >
-                <defs>
-                  <linearGradient id="colorUvHr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#BFDBFE" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#BFDBFE" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid horizontal={true} vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="time"
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={formatXAxisHr}
-                  interval={0}
-                  tick={{ fontSize: 12, fill: 'white', fontWeight: 500 }}
-                  padding={{ left: 10, right: 10 }}
-                />
-                <YAxis
-                  domain={[0, 175]}
-                  ticks={hrYTicks}
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#0093E7', fontWeight: 500 }}
-                  width={50}
-                />
-                <RechartsTooltip content={<CustomHrTooltip />} cursor={{ stroke: '#CBD5E1', strokeWidth: 1.5 }} />
-                <Area type="monotone" dataKey="hr" strokeWidth={0} fillOpacity={1} fill="url(#colorUvHr)" />
-                <Line type="monotone" dataKey="hr" stroke="#3B82F6" strokeWidth={2.5} dot={false} activeDot={{ r: 6, fill: '#3B82F6', stroke: 'white', strokeWidth: 2 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          
+          <div className="flex items-center gap-3">
+            <TimePeriodSelector 
+              selectedPeriod={activeDuration} 
+              onPeriodChange={handlePeriodChange} 
+            />
           </div>
         </div>
-      ) : (
-        <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 text-center">{getStrainChartTitle()}</h3>
-          {strainData.length > 0 ? (
-            <div style={{ width: '100%', height: 400 }}>
-              <ResponsiveContainer>
-                {renderStrainChart()}
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
-              Loading strain data...
-            </div>
-          )}
+
+        {activeView === 'heartRate' ? (
+          <div className="flex-1 min-h-0 pt-4"> {/* ✅ Added flex container with padding */}
+            {hasActivities ? (
+              // ✅ IMPROVED: Better container with proper height management
+              <div className="w-full" style={{ height: '420px' }}> {/* Fixed height instead of 450 */}
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={hrData}
+                    margin={{ 
+                      top: 10,     // ✅ Reduced from default
+                      right: 20,   // ✅ Reduced from 30
+                      left: 40,    // ✅ Increased for better spacing
+                      bottom: 45   // ✅ Reduced from 50
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="hrAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                      horizontal={true} 
+                      vertical={false} 
+                      stroke="rgba(255, 255, 255, 0.08)" 
+                      strokeDasharray="2 4"
+                    />
+                    <XAxis
+                      dataKey="time"
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={formatXAxisHr}
+                      interval={0} // ✅ CHANGED: Show all ticks instead of "preserveStartEnd"
+                      tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }} // ✅ Increased font size back
+                      padding={{ left: 10, right: 10 }}
+                      height={40} // ✅ Reduced height since no angled text
+                    />
+                    <YAxis
+                      domain={[60, 180]}
+                      ticks={hrYTicks}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
+                      width={35} // ✅ Reduced from default
+                    />
+                    <RechartsTooltip 
+                      content={<CustomHrTooltip />} 
+                      cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1.5 }} 
+                    />
+                    <Area 
+                      type="linear"
+                      dataKey="hr" 
+                      strokeWidth={0} 
+                      fillOpacity={1} 
+                      fill="url(#hrAreaGradient)" 
+                    />
+                    <Line 
+                      type="linear"
+                      dataKey="hr" 
+                      stroke="#3B82F6" 
+                      strokeWidth={2.5} 
+                      dot={false} 
+                      activeDot={{ r: 6, fill: '#3B82F6', stroke: 'white', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
+                <div className="text-center">
+                  <Calendar size={64} className="mx-auto mb-6 opacity-40" />
+                  <div className="text-xl font-medium text-[var(--text-primary)] mb-2">
+                    No activities on {formatDateForMessage(selectedDate).split(',')[1].trim()}
+                  </div>
+                  <div className="text-sm mb-4 max-w-md mx-auto">
+                    Heart rate data is only shown for days with recorded workouts or activities.
+                  </div>
+                  <div className="text-xs text-[var(--text-muted)]">
+                    Try selecting a different date or record a new activity
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 pt-4"> {/* ✅ Added flex container with padding */}
+            {strainData.length > 0 ? (
+              // ✅ IMPROVED: Better container with proper height management
+              <div className="w-full" style={{ height: '420px' }}> {/* Fixed height instead of 450 */}
+                <ResponsiveContainer width="100%" height="100%">
+                  {renderStrainChart()}
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
+                <div className="text-center">
+                  <Activity size={48} className="mx-auto mb-4 opacity-50" />
+                  <div>Loading strain data...</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Activities Summary - Below the chart card */}
+      {activeView === 'heartRate' && hasActivities && activities.length > 0 && (
+        <div className="whoops-card">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity size={16} className="text-[var(--strain-blue)]" />
+            <span className="text-sm font-medium text-[var(--text-primary)]">
+              {activities.length} Activity{activities.length > 1 ? 'ies' : ''} on {formatDateForMessage(selectedDate).split(',')[1].trim()}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {activities.map((activity, index) => (
+              <div 
+                key={index} 
+                className="flex items-center gap-1 text-xs px-3 py-2 rounded-md"
+                style={{ 
+                  backgroundColor: 'var(--bg-subcard)',
+                  color: 'var(--strain-blue)' 
+                }}
+              >
+                <span className="font-medium">{activity["Activity name"]}</span>
+                <span className="text-[var(--text-muted)]">•</span>
+                <span>{activity["Duration (min)"]}min</span>
+                <span className="text-[var(--text-muted)]">•</span>
+                <span className="text-red-400">{activity["Max HR (bpm)"]} BPM max</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

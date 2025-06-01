@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import SleepStagesChart from './charts/SleepStagesChart';
+import SleepChart from './charts/SleepChart';
 import SleepStageSummary from './components/SleepStageSummary';
 import whoopData from '../../data/day_wise_whoop_data.json';
 import SleepStatistics from './components/SleepStatistics';
@@ -26,6 +26,11 @@ const Sleep = ({ selectedDate = new Date() }) => {
   // Add this function to track time period changes from the chart
   const handleTimePeriodChange = (newPeriod) => {
     setTimePeriod(newPeriod);
+  };
+
+  // Handle stage changes from either chart
+  const handleStageChange = (stage) => {
+    setActiveStage(stage);
   };
 
   return (
@@ -55,7 +60,7 @@ const Sleep = ({ selectedDate = new Date() }) => {
       <div className="flex flex-col lg:flex-row gap-6 mb-6">
         {/* Left: Large Sleep Chart */}
         <div className="w-full lg:w-3/4">
-          <SleepStagesChart 
+          <SleepChart 
             selectedDate={selectedDate}
             activeStageFromParent={activeStage}
             onStageChange={setActiveStage}
@@ -83,6 +88,7 @@ const Sleep = ({ selectedDate = new Date() }) => {
           timePeriod={timePeriod}
         />
       </div>
+      
     </div>
   );
 };

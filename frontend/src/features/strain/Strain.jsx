@@ -1,14 +1,10 @@
 // src/components/dashboard/strain/Strain.jsx
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
-import { ChevronRight, Info } from 'lucide-react';
-import StrainTrendChart from './charts/StrainTrendChart';
-import CaloriesChart from './charts/CaloriesChart';
-import AverageHrChart from './charts/AverageHrChart';
 import DetailedHeartRateChart from './charts/DetailedHeartRateChart';
-import StrainRing from './components/StrainRing';
 import AiInsightCard from '../../components/cards/AiInsightCard';
 import StrainStatistics from './components/StrainStatistics';
+import whoopData from '../../data/day_wise_whoop_data.json';
 
 const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
   const getTrendIcon = () => {
@@ -48,56 +44,34 @@ const MetricCard = ({ icon, title, value, baseline, trend, color }) => {
   );
 };
 
-// Component for activity stats like in the first image
-const ActivityStatCard = () => {
-  return (
-    <div className="whoops-card p-6 mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-[var(--text-primary)]">Weightlifting Statistics</h2>
-        <div className="text-[var(--text-secondary)]">
-          <span className="text-[var(--strain-blue)]">Thu, Apr 17th</span> vs 1 Week Past
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Strain = ({ selectedDate = new Date() }) => {
-  // Example strain data - In a real application, this would come from your API or state
   const [activeWorkout, setActiveWorkout] = useState(null);
   const [hoveredTime, setHoveredTime] = useState(null);
-  // Set 'detailed' as the default and only chart type
-  const [chartType] = useState('detailed'); // Remove the setter as we no longer need to change this
-  const [timePeriod, setTimePeriod] = useState('1w'); // Add this for consistency
+  const [chartType] = useState('detailed');
+  const [timePeriod, setTimePeriod] = useState('1d'); // Changed to '1d' to show workout metrics
 
-  // Sample strain data for the chart
-  const sampleStrainData = [
-    { time: '7:00 PM', strain: 110, activity: 'rest' },
-    { time: '7:01 PM', strain: 150, activity: 'rest' },
-    { time: '7:02 PM', strain: 155, activity: 'workout', isWorkout: true },
-    { time: '7:03 PM', strain: 145, activity: 'workout', isWorkout: true },
-    { time: '7:04 PM', strain: 138, activity: 'workout', isWorkout: true },
-    { time: '7:05 PM', strain: 150, activity: 'workout', isWorkout: true },
-    { time: '7:06 PM', strain: 160, activity: 'workout', isWorkout: true },
-    { time: '7:07 PM', strain: 120, activity: 'rest' },
-    { time: '7:08 PM', strain: 115, activity: 'rest' },
-    { time: '7:09 PM', strain: 150, activity: 'workout', isWorkout: true },
-    { time: '7:10 PM', strain: 140, activity: 'workout', isWorkout: true },
-    { time: '7:11 PM', strain: 125, activity: 'rest' },
-    { time: '7:12 PM', strain: 120, activity: 'rest' },
-  ];
+  // Get real data from whoopData
+  const dateStr = useMemo(() => {
+    return selectedDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+  }, [selectedDate]);
 
-  // Example data for statistics
-  const today = new Date();
-  const dayData = {
-    maxHr: 165,
-    avgHr: 79,
-    calories: 2114,
-    activities: 1,
-  };
+  const dayData = useMemo(() => {
+    return whoopData[dateStr] || null;
+  }, [dateStr]);
 
-  // Format dateStr consistently with Recovery.jsx
-  const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
+  // Check if there are activities for the selected date
+  const hasActivities = useMemo(() => {
+    if (!dayData || !dayData.workouts) return false;
+    
+    const realWorkouts = dayData.workouts.filter(workout => 
+      workout["Activity name"] && 
+      workout["Activity name"].toLowerCase() !== "idle" &&
+      workout["Duration (min)"] && 
+      workout["Duration (min)"] > 0
+    );
+    
+    return realWorkouts.length > 0;
+  }, [dayData]);
 
   return (
     <div className="p-4 max-w-screen-xl mx-auto">
@@ -108,7 +82,7 @@ const Strain = ({ selectedDate = new Date() }) => {
         </div>
       </div>
 
-      {/* Header with date display - similar to Recovery.jsx */}
+      {/* Header with date display */}
       <div className="mb-4">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Strain</h1>
@@ -121,31 +95,39 @@ const Strain = ({ selectedDate = new Date() }) => {
         </div>
       </div>
 
-      {/* Split layout with sidebar and chart - similar to Recovery.jsx */}
+      {/* Split layout with sidebar and chart */}
       <div className="flex flex-col md:flex-row gap-5 mb-6">
         {/* Sidebar with strain statistics - 20% width */}
         <div className="md:w-[25%] lg:w-[20%]">
-          <StrainStatistics
-            selectedDate={today}
-            dayData={dayData}
-            dateStr={dateStr}
-            timePeriod={timePeriod}
-            compactLayout={true}
-          />
+          {/* Only show StrainStatistics if there are activities */}
+          {hasActivities && (
+            <StrainStatistics
+              selectedDate={selectedDate}
+              dayData={dayData}
+              dateStr={dateStr}
+              timePeriod={timePeriod}
+              compactLayout={true}
+            />
+          )}
+          
+          {/* Show a message when no activities */}
+          {!hasActivities && (
+            <div className="bg-[var(--card-bg)] rounded-xl p-4 text-center">
+              <div className="text-[var(--text-secondary)] text-sm mb-2">
+                No workout data available
+              </div>
+              <div className="text-[var(--text-muted)] text-xs">
+                Metrics will appear when activities are recorded
+              </div>
+            </div>
+          )}
         </div>
          
         {/* Chart area - 80% width */}
-        <div className="md:w-[75%] lg:w-[80%] bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
-              Heart Rate Analysis
-            </h2>
-            <DetailedHeartRateChart />
-          </div>
+        <div className="md:w-[75%] lg:w-[80%]">
+          <DetailedHeartRateChart selectedDate={selectedDate} />
         </div>
       </div>
-      
-      {/* You can add additional sections below if needed */}
     </div>
   );
 };

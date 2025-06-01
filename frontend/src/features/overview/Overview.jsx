@@ -1,9 +1,8 @@
 // src/components/dashboard/overview/Overview.jsx
 import React from 'react';
-import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info, Activity, Heart } from 'lucide-react';
-import StrainRecoveryChart from './charts/StrainRecoveryChart';
-import StressMonitorChart from './charts/StressMonitorChart';
+import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info, Activity, Heart, Sun } from 'lucide-react';
 import IndexChart from './charts/Index'; // Import the Index chart component
+import WhoopLogo from '../../assets/WHOOP Circle White.svg';
 
 const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
   return (
@@ -35,50 +34,41 @@ const Overview = () => {
       <div className="p-6 max-w-screen-xl mx-auto">
         <div className="flex flex-col gap-8">
 
-          {/* Daily Outlook Card - Enhanced */}
-          <div 
-            className="whoops-card relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, var(--strain-blue) 0%, var(--ai-coach-purple) 100%)',
-              boxShadow: '0 8px 32px rgba(93, 141, 238, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)'
-            }}
-          >
-            <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div 
-                  className="h-12 w-12 rounded-full flex items-center justify-center shadow-lg"
-                  style={{ background: 'rgba(255, 255, 255, 0.15)' }}
-                >
-                  <Activity className="text-white" size={20} />
-                </div>
-                <div>
-                  <span className="text-white font-bold text-xl tracking-wide">Daily Outlook</span>
-                  <div className="text-white/80 text-sm mt-1">Your health at a glance</div>
+          {/* Daily Outlook Card - New Design */}
+          <div className="whoops-card flex items-center justify-between rounded-3xl py-2">
+            {/* Left section with W logo */}
+            <div className="flex items-center space-x-4">
+              {/* W Logo with gradient border */}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 p-0.5">
+                  <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: 'var(--card-bg)' }}>
+                    <img src={WhoopLogo} alt="WHOOP" width="24" height="24" />
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="text-white/80 hover:text-white transition-colors" size={24} />
+
+              {/* Weather icon and text */}
+              <div className="flex items-center space-x-4">
+                {/* Sun icon */}
+                <div className="text-gray-300">
+                  <Sun size={20} />
+                </div>
+
+                {/* Text */}
+                <h2 className="text-white text-xl font-medium">Your Daily Outlook</h2>
+              </div>
             </div>
-            
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-4 right-4 w-32 h-32 border border-white/20 rounded-full"></div>
-              <div className="absolute bottom-4 right-8 w-20 h-20 border border-white/10 rounded-full"></div>
+
+            {/* Right arrow */}
+            <div className="text-gray-400 hover:text-white transition-colors cursor-pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           </div>
 
-          {/* Heart Rate Analysis Section - Seamless Integration */}
-          <div className="space-y-6">
-            {/* Section divider with subtle styling */}
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--text-muted)]/20 to-transparent"></div>
-              <div className="flex items-center space-x-2 px-4 py-2 rounded-full" style={{ background: 'var(--bg-subcard)' }}>
-                <Heart size={16} className="text-[var(--strain-blue)]" />
-                <span className="text-[var(--text-muted)] text-sm font-medium">Health Analytics</span>
-              </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--text-muted)]/20 to-transparent"></div>
-            </div>
-            
-            {/* Index Chart Component - Direct integration without extra wrapper */}
+          {/* Heart Rate Analysis Section - Only IndexChart with built-in LineChart logic */}
+          <div className="space-y-6">     
             <IndexChart />
           </div>
         </div>

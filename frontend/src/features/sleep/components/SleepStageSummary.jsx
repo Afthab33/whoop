@@ -116,7 +116,7 @@ const SleepStageSummary = ({ selectedDate, setActiveStage, activeStage }) => {
               r={radius} 
               fill="transparent" 
               stroke="#2A3339" 
-              strokeWidth="9" // Increased from 8
+              strokeWidth="9"
             />
             
             {/* Donut chart segments with enhanced effects */}
