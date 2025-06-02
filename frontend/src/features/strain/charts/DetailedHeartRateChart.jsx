@@ -444,10 +444,10 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
 
   const renderStrainChart = () => {
     const chartMargin = { 
-      top: 10,        // ✅ Reduced from 20
-      right: 20,      // ✅ Reduced from 30
-      left: 40,       // ✅ Increased for better Y-axis spacing
-      bottom: (activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 60 : 45 // ✅ Optimized
+      top: 5,        // REDUCED: Match Recovery chart margins
+      right: 15,     // REDUCED: Match Recovery chart margins
+      left: 25,      // REDUCED: Match Recovery chart margins
+      bottom: (activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 45 : 35 // REDUCED: Match Recovery
     };
 
     if (['3m', '6m'].includes(activeDuration)) {
@@ -471,8 +471,9 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             tickLine={false} 
             tick={(props) => <CustomXAxisTick {...props} activeDuration={activeDuration} />}
             tickFormatter={formatXAxisStrain}
-            height={70}
+            height={45} // REDUCED: Match Recovery chart
             interval={0}
+            padding={{ left: 5, right: 5 }} // REDUCED: Match Recovery chart
           />
           <YAxis 
             domain={[0, 20]} 
@@ -481,7 +482,7 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             tickLine={false} 
             tickFormatter={(value) => value.toFixed(0)}
             tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
-            width={35} // ✅ Reduced from 50
+            width={25} // REDUCED: Match Recovery chart
           />
           <RechartsTooltip 
             content={<CustomStrainTooltip />} 
@@ -491,10 +492,10 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             type="monotone" 
             dataKey="strain" 
             stroke="#0093E7"
-            strokeWidth={3}
+            strokeWidth={2.5} // REDUCED: Match Recovery chart
             fillOpacity={1}
             fill="url(#strainGradient)"
-            activeDot={{ r: 6, fill: '#0093E7', stroke: 'white', strokeWidth: 2 }}
+            activeDot={{ r: 4, fill: '#0093E7', stroke: 'white', strokeWidth: 2 }} // REDUCED: Match Recovery chart
           />
         </AreaChart>
       );
@@ -503,8 +504,8 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
         <BarChart 
           data={strainData} 
           margin={chartMargin} 
-          barCategoryGap="10%" // ✅ Reduced for better space utilization
-          maxBarSize={60}      // ✅ Added to prevent bars from getting too wide
+          barCategoryGap="8%" // REDUCED: Match Recovery chart
+          maxBarSize={50}      // REDUCED: Match Recovery chart
         >
           <defs>
             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -524,8 +525,9 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             tickLine={false} 
             tick={(props) => <CustomXAxisTick {...props} activeDuration={activeDuration} />}
             tickFormatter={formatXAxisStrain}
-            height={(activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 70 : 40}
+            height={(activeDuration === '2w' || activeDuration === '1w' || activeDuration === '1m') ? 45 : 35} // REDUCED: Match Recovery
             interval={activeDuration === '1m' ? 1 : 0}
+            padding={{ left: 5, right: 5 }} // REDUCED: Match Recovery chart
           />
           <YAxis 
             domain={[0, 20]} 
@@ -534,7 +536,7 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             tickLine={false} 
             tickFormatter={(value) => value.toFixed(0)}
             tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
-            width={35} // ✅ Reduced from 50
+            width={25} // REDUCED: Match Recovery chart
           />
           <RechartsTooltip 
             content={<CustomStrainTooltip />} 
@@ -543,7 +545,7 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
           <Bar 
             dataKey="strain" 
             fill="url(#barGradient)" 
-            radius={[6, 6, 0, 0]}
+            radius={[4, 4, 0, 0]} // REDUCED: Match Recovery chart
             stroke="#006BB3"
             strokeWidth={1}
           />
@@ -553,28 +555,65 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Chart Card */}
-      <div className="whoops-card min-h-[500px]" style={{ // ✅ Added min-height
+    <div className="space-y-2"> {/* REDUCED: Match Recovery chart spacing */}
+      {/* Chart Card - SLIGHTLY INCREASED SIZE */}
+      <div className="whoops-card min-h-[380px]" style={{ // INCREASED: min-h-[320px] → min-h-[380px] for slightly bigger view
         background: 'var(--card-bg)',
         boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
         border: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
-        {/* Enhanced Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <p className="text-[var(--text-muted)] text-sm mt-1">
-              {activeView === 'heartRate' 
-                ? (hasActivities 
-                    ? `Heart rate monitoring for ${formatDateForMessage(selectedDate)}` 
-                    : `Activity tracking for ${formatDateForMessage(selectedDate)}`
-                  )
-                : "Track your daily strain and recovery patterns"
-              }
-            </p>
+        {/* Enhanced Header with Inline Activities - ULTRA COMPACT TO MATCH RECOVERY */}
+        <div className="flex justify-between items-start mb-2"> {/* REDUCED: mb-4 → mb-2 to match Recovery */}
+          <div className="flex-1">
+            {/* Main description with inline activities */}
+            <div className="flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)] mt-1">
+              <span>
+                {activeView === 'heartRate' 
+                  ? (hasActivities 
+                      ? `Heart rate monitoring for ${formatDateForMessage(selectedDate).split(',')[1].trim()}` 
+                      : `Activity tracking for ${formatDateForMessage(selectedDate).split(',')[1].trim()}`
+                    )
+                  : "Track your daily strain and recovery patterns"
+                }
+              </span>
+              
+              {/* Inline Activities - Only show when activeView is heartRate and there are activities */}
+              {activeView === 'heartRate' && hasActivities && activities.length > 0 && (
+                <>
+                  <span className="text-[var(--text-muted)]">•</span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {activities.map((activity, index) => {
+                      return (
+                        <div key={index} className="flex items-center gap-0.5">
+                          <span 
+                            className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-md font-medium"
+                            style={{ 
+                              backgroundColor: 'var(--strain-blue)', 
+                              color: 'white' 
+                            }}
+                          >
+                            <Activity size={8} />
+                            {activity["Activity name"] || activity.activity_name || activity.name || "Unknown Activity"}
+                          </span>
+                          <span className="text-[10px] text-[var(--text-muted)] ml-0.5">
+                            {activity["Duration (min)"] || activity.duration || "0"}min
+                          </span>
+                          <span className="text-[10px] text-red-400 ml-0.5">
+                            {activity["Max HR (bpm)"] || activity.max_hr || "0"} BPM
+                          </span>
+                          {index < activities.length - 1 && (
+                            <span className="text-[var(--text-muted)] mx-1">•</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 ml-2"> {/* REDUCED: gap-2 → gap-1 to match Recovery */}
             <TimePeriodSelector 
               selectedPeriod={activeDuration} 
               onPeriodChange={handlePeriodChange} 
@@ -583,18 +622,17 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
         </div>
 
         {activeView === 'heartRate' ? (
-          <div className="flex-1 min-h-0 pt-4"> {/* ✅ Added flex container with padding */}
+          <div className="flex-1 min-h-0 pt-1"> {/* REDUCED: pt-2 → pt-1 to match Recovery */}
             {hasActivities ? (
-              // ✅ IMPROVED: Better container with proper height management
-              <div className="w-full" style={{ height: '420px' }}> {/* Fixed height instead of 450 */}
+              <div className="w-full" style={{ height: '340px' }}> {/* INCREASED: 280px → 340px for slightly bigger view */}
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={hrData}
                     margin={{ 
-                      top: 10,     // ✅ Reduced from default
-                      right: 20,   // ✅ Reduced from 30
-                      left: 40,    // ✅ Increased for better spacing
-                      bottom: 45   // ✅ Reduced from 50
+                      top: 5,      // REDUCED: Match Recovery chart margins
+                      right: 15,   // REDUCED: Match Recovery chart margins
+                      left: 25,    // REDUCED: Match Recovery chart margins
+                      bottom: 35   // REDUCED: Match Recovery chart margins
                     }}
                   >
                     <defs>
@@ -614,18 +652,18 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={formatXAxisHr}
-                      interval={0} // ✅ CHANGED: Show all ticks instead of "preserveStartEnd"
-                      tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }} // ✅ Increased font size back
-                      padding={{ left: 10, right: 10 }}
-                      height={40} // ✅ Reduced height since no angled text
+                      interval={0}
+                      tick={{ fontSize: 10, fill: 'var(--text-secondary)', fontWeight: 500 }}
+                      padding={{ left: 5, right: 5 }} // REDUCED: Match Recovery chart
+                      height={25} // REDUCED: Match Recovery chart
                     />
                     <YAxis
                       domain={[60, 180]}
                       ticks={hrYTicks}
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 11, fill: 'var(--text-secondary)', fontWeight: 500 }}
-                      width={35} // ✅ Reduced from default
+                      tick={{ fontSize: 10, fill: 'var(--text-secondary)', fontWeight: 500 }}
+                      width={25} // REDUCED: Match Recovery chart
                     />
                     <RechartsTooltip 
                       content={<CustomHrTooltip />} 
@@ -644,22 +682,22 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
                       stroke="#3B82F6" 
                       strokeWidth={2.5} 
                       dot={false} 
-                      activeDot={{ r: 6, fill: '#3B82F6', stroke: 'white', strokeWidth: 2 }}
+                      activeDot={{ r: 4, fill: '#3B82F6', stroke: 'white', strokeWidth: 2 }} // REDUCED: Match Recovery chart
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
+              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]"> {/* INCREASED: h-60 → h-72 for slightly bigger view */}
                 <div className="text-center">
-                  <Calendar size={64} className="mx-auto mb-6 opacity-40" />
-                  <div className="text-xl font-medium text-[var(--text-primary)] mb-2">
+                  <Calendar size={32} className="mx-auto mb-2 opacity-40" /> {/* REDUCED: Match Recovery chart */}
+                  <div className="text-base font-medium text-[var(--text-primary)] mb-2"> {/* REDUCED: text-lg → text-base to match Recovery */}
                     No activities on {formatDateForMessage(selectedDate).split(',')[1].trim()}
                   </div>
-                  <div className="text-sm mb-4 max-w-md mx-auto">
+                  <div className="text-xs mb-2 max-w-md mx-auto"> {/* REDUCED: text-sm mb-3 → text-xs mb-2 to match Recovery */}
                     Heart rate data is only shown for days with recorded workouts or activities.
                   </div>
-                  <div className="text-xs text-[var(--text-muted)]">
+                  <div className="text-[10px] text-[var(--text-muted)]"> {/* REDUCED: text-xs → text-[10px] to match Recovery */}
                     Try selecting a different date or record a new activity
                   </div>
                 </div>
@@ -667,55 +705,24 @@ const DetailedHeartRateChart = ({ selectedDate }) => {
             )}
           </div>
         ) : (
-          <div className="flex-1 min-h-0 pt-4"> {/* ✅ Added flex container with padding */}
+          <div className="flex-1 min-h-0 pt-1"> {/* REDUCED: pt-2 → pt-1 to match Recovery */}
             {strainData.length > 0 ? (
-              // ✅ IMPROVED: Better container with proper height management
-              <div className="w-full" style={{ height: '420px' }}> {/* Fixed height instead of 450 */}
+              <div className="w-full" style={{ height: '340px' }}> {/* INCREASED: 280px → 340px for slightly bigger view */}
                 <ResponsiveContainer width="100%" height="100%">
                   {renderStrainChart()}
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
+              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]"> {/* INCREASED: h-60 → h-72 for slightly bigger view */}
                 <div className="text-center">
-                  <Activity size={48} className="mx-auto mb-4 opacity-50" />
-                  <div>Loading strain data...</div>
+                  <Activity size={32} className="mx-auto mb-2 opacity-50" /> {/* REDUCED: size={40} mb-3 → size={32} mb-2 to match Recovery */}
+                  <div className="text-sm">Loading strain data...</div> {/* REDUCED: Match Recovery chart */}
                 </div>
               </div>
             )}
           </div>
         )}
       </div>
-
-      {/* Activities Summary - Below the chart card */}
-      {activeView === 'heartRate' && hasActivities && activities.length > 0 && (
-        <div className="whoops-card">
-          <div className="flex items-center gap-2 mb-3">
-            <Activity size={16} className="text-[var(--strain-blue)]" />
-            <span className="text-sm font-medium text-[var(--text-primary)]">
-              {activities.length} Activity{activities.length > 1 ? 'ies' : ''} on {formatDateForMessage(selectedDate).split(',')[1].trim()}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {activities.map((activity, index) => (
-              <div 
-                key={index} 
-                className="flex items-center gap-1 text-xs px-3 py-2 rounded-md"
-                style={{ 
-                  backgroundColor: 'var(--bg-subcard)',
-                  color: 'var(--strain-blue)' 
-                }}
-              >
-                <span className="font-medium">{activity["Activity name"]}</span>
-                <span className="text-[var(--text-muted)]">•</span>
-                <span>{activity["Duration (min)"]}min</span>
-                <span className="text-[var(--text-muted)]">•</span>
-                <span className="text-red-400">{activity["Max HR (bpm)"]} BPM max</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

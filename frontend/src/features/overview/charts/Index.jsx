@@ -535,14 +535,19 @@ setSleepData(sleepPeriods);
 
     const rect = rangeRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const oneDaySize = 1 / 7;
+    const weekDays = Object.values(weeklyData);
+    const oneDaySize = weekDays.length > 0 ? 1 / weekDays.length : 1/7;
 
     if (dragType === 'range' || dragType === 'start' || dragType === 'end') {
-      const newStart = Math.max(0, Math.min(1 - oneDaySize, x - (oneDaySize / 2)));
+      // Snap to day boundaries for better UX
+      const dayIndex = Math.round(x * weekDays.length);
+      const snappedX = dayIndex / weekDays.length;
+      
+      const newStart = Math.max(0, Math.min(1 - oneDaySize, snappedX));
       setRangeStart(newStart);
       setRangeEnd(newStart + oneDaySize);
     }
-  }, [isDragging, dragType]);
+  }, [isDragging, dragType, weeklyData]);
 
   const handleRangeMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -573,6 +578,29 @@ setSleepData(sleepPeriods);
       }
     }
   }, [rangeStart, rangeEnd, weeklyData]);
+
+  // ADD NEW useEffect: Update range position when selectedDate changes
+  useEffect(() => {
+    const weekDays = Object.values(weeklyData);
+    if (weekDays.length > 0) {
+      const selectedDateStr = formatDate(selectedDate, 'yyyy-MM-dd');
+      const selectedIndex = weekDays.findIndex(day => 
+        formatDate(day.date, 'yyyy-MM-dd') === selectedDateStr
+      );
+      
+      if (selectedIndex !== -1) {
+        const oneDaySize = 1 / weekDays.length;
+        const newRangeStart = (selectedIndex / weekDays.length);
+        const newRangeEnd = newRangeStart + oneDaySize;
+        
+        // Only update if the range has actually changed to avoid infinite loops
+        if (Math.abs(rangeStart - newRangeStart) > 0.001) {
+          setRangeStart(newRangeStart);
+          setRangeEnd(newRangeStart + oneDaySize);
+        }
+      }
+    }
+  }, [selectedDate, weeklyData]); // Remove rangeStart from dependencies to avoid infinite loop
 
   // Enhanced createWeeklyBmpPath function with workout indicators
   const createWeeklyBmpPath = (weekBmpData, weekData) => {
@@ -745,7 +773,7 @@ setSleepData(sleepPeriods);
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2"> {/* MATCH: Same space-y-2 as Recovery components */}
       {/* Header Section - Moved TimePeriodSelector to right */}
       <div className="flex justify-between items-start">
         <div className="flex items-center space-x-4">
@@ -761,477 +789,484 @@ setSleepData(sleepPeriods);
 
       {/* Conditional Display - Only show LineChart for weekly/monthly periods */}
       {showLineChart ? (
-        <div className="space-y-6">
+        <div className="space-y-2"> {/* MATCH: Same space-y-2 as Recovery */}
           <LineChart selectedPeriod={selectedPeriod} />
         </div>
       ) : (
         <>
-          {/* Main Chart Card with Workout Integration - Only show for daily period */}
-          <div className="whoops-card" style={{
+          {/* Main Chart Card - MATCH Recovery card dimensions exactly */}
+          <div className="whoops-card min-h-[380px]" style={{ // MATCH: Same min-height as RecoveryComparisonChart
             background: 'var(--card-bg)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
             border: '1px solid rgba(255, 255, 255, 0.05)'
           }}>
             {isLoading ? (
-              <div className="flex items-center justify-center h-80 text-[var(--text-muted)]">
+              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]"> {/* MATCH: Same placeholder height as Recovery */}
                 <div className="text-center space-y-4">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--strain-blue)] mx-auto"></div>
                   <div className="space-y-2">
-                    <div className="body-text text-[var(--text-primary)]">Loading heart rate data...</div>
-                    <div className="baseline-value">Processing daily patterns and workouts</div>
+                    <div className="text-base font-medium text-[var(--text-primary)] mb-2">Loading heart rate data...</div> {/* MATCH: Same text styling as Recovery */}
+                    <div className="text-xs mb-2 max-w-md mx-auto">Processing daily patterns and workouts</div> {/* MATCH: Same text styling as Recovery */}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="relative">
-                {/* Chart Title with Workout Summary */}
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className="metric-title text-[var(--text-primary)] mb-1">Daily Heart Rate</h3>
-                    <p className="baseline-value">
-                      24-hour analysis for {formatDate(selectedDate, 'EEE MMM d')}
-                      {workoutData.length > 0 && (
-                        <span className="ml-2 text-[#0093E7]">
-                          • {workoutData.length} workout{workoutData.length > 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </p>
+                {/* Chart Title with Workout Summary - MATCH Recovery header structure */}
+                <div className="flex justify-between items-start mb-2"> {/* MATCH: Same mb-2 as Recovery */}
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)] mt-1"> {/* MATCH: Same structure as Recovery */}
+                      <span>
+                        24-hour analysis for {formatDate(selectedDate, 'EEE MMM d')}
+                        {workoutData.length > 0 && (
+                          <span className="ml-2 text-[#0093E7]">
+                            • {workoutData.length} workout{workoutData.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  
+                  <div className="flex items-center gap-1 ml-2"> {/* MATCH: Same gap and margin as Recovery */}
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-0.5 bg-[var(--strain-blue)]"></div>
-                      <span className="baseline-value">Heart Rate (BPM)</span>
+                      <span className="text-xs text-[var(--text-muted)]">Heart Rate (BPM)</span> {/* REDUCED: text size to match Recovery */}
                     </div>
                     {workoutData.length > 0 && (
                       <div className="flex items-center space-x-2">
                         <Dumbbell size={12} className="text-[#0093E7]" />
-                        <span className="baseline-value">Workouts</span>
+                        <span className="text-xs text-[var(--text-muted)]">Workouts</span> {/* REDUCED: text size to match Recovery */}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <svg width="100%" height="350" viewBox="0 0 1320 350" className="overflow-visible">
-                  <defs>
-                    <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--strain-blue)" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="var(--strain-blue)" stopOpacity="0.05" />
-                    </linearGradient>
-                    
-                    <filter id="hrGlow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-
-                    {/* Workout gradient definitions */}
-                    {workoutData.map((workout, index) => (
-                      <linearGradient key={`workout-gradient-${index}`} id={`workoutGradient${index}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={workout.color} stopOpacity="0.3" />
-                        <stop offset="100%" stopColor={workout.color} stopOpacity="0.1" />
-                      </linearGradient>
-                    ))}
-
-                    {/* Sleep gradient definitions */}
-                    <linearGradient id="sleepGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#7BA1BB" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="#7BA1BB" stopOpacity="0.08" />
-                    </linearGradient>
-                  </defs>
-                  
-                  <rect width="100%" height="300" fill="transparent" />
-
-                  {/* Grid lines - horizontal */}
-                  {[0, 50, 100, 150, 200].map((value) => {
-                    const y = 300 - (value / 200) * 240;
-                    return (
-                      <line
-                        key={`h-${value}`}
-                        x1={60}
-                        y1={y}
-                        x2={1260}
-                        y2={y}
-                        stroke="rgba(255, 255, 255, 0.08)"
-                        strokeWidth="1"
-                      />
-                    );
-                  })}
-
-                  {/* Grid lines - vertical (time markers) */}
-                  {[0, 4, 8, 12, 16, 20, 24].map((hour) => {
-                    const x = 60 + (hour / 24) * 1200;
-                    const label = hour === 0 ? '12AM' : 
-                                 hour === 12 ? '12PM' : 
-                                 hour < 12 ? `${hour}AM` : `${hour - 12}PM`;
-                    return (
-                      <g key={`v-${hour}`}>
-                        <line 
-                          x1={x} 
-                          y1={60} 
-                          x2={x} 
-                          y2={300} 
-                          stroke="rgba(255, 255, 255, 0.08)" 
-                          strokeWidth="1"
-                        />
-                        <text 
-                          x={x} 
-                          y={325} 
-                          className="metric-label"
-                          fontSize="11" 
-                          fill="var(--text-muted)" 
-                          textAnchor="middle"
-                        >
-                          {label}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {/* Y-axis labels */}
-                  {[0, 50, 100, 150, 200].map((value) => {
-                    const y = 300 - (value / 200) * 240;
-                    return (
-                      <text 
-                        key={`y-${value}`} 
-                        x={45} 
-                        y={y + 4} 
-                        className="metric-label"
-                        fontSize="11" 
-                        fill="var(--text-muted)" 
-                        textAnchor="end"
-                      >
-                        {value}
-                      </text>
-                    );
-                  })}
-
-                  {/* Sleep background zones */}
-                  {sleepData.map((sleep, index) => (
-                    <g key={`sleep-zone-${index}`}>
-                      <rect
-                        x={sleep.startX}
-                        y={60}
-                        width={sleep.endX - sleep.startX}
-                        height={240}
-                        fill="url(#sleepGradient)"
-                        opacity="0.6"
-                      />
-                      <rect
-                        x={sleep.startX}
-                        y={300}
-                        width={sleep.endX - sleep.startX}
-                        height={4}
-                        fill={sleep.color}
-                        opacity="0.8"
-                      />
-                    </g>
-                  ))}
-
-                  {/* Workout background zones */}
-                  {workoutData.map((workout, index) => (
-                    <g key={`workout-zone-${index}`}>
-                      <rect
-                        x={workout.startX}
-                        y={60}
-                        width={workout.endX - workout.startX}
-                        height={240}
-                        fill={`url(#workoutGradient${index})`}
-                        opacity="0.4"
-                      />
-                      <rect
-                        x={workout.startX}
-                        y={60}
-                        width={workout.endX - workout.startX}
-                        height={4}
-                        fill={workout.color}
-                        opacity="0.8"
-                      />
-                    </g>
-                  ))}
-
-                  {/* Area under Heart Rate line */}
-                  <path
-                    d={createAreaPath(fullData, 'hr', 200)}
-                    fill="url(#hrGradient)"
-                  />
-
-                  {/* Heart rate line */}
-                  <path
-                    d={createSmoothPath(fullData, 'hr', 200)}
-                    fill="none"
-                    stroke="var(--strain-blue)"
-                    strokeWidth="3"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                    filter="url(#hrGlow)"
-                  />
-
-                  {/* Workout labels and markers */}
-                  {workoutData.map((workout, index) => {
-                    const centerX = (workout.startX + workout.endX) / 2;
-                    const topY = 30;
-                    
-                    return (
-                      <g key={`workout-label-${index}`}>
-                        {/* Enhanced workout marker with better styling */}
-                        <circle
-                          cx={centerX}
-                          cy={topY}
-                          r="12"
-                          fill={workout.color}
-                          stroke="white"
-                          strokeWidth="3"
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredWorkout(index)}
-                          onMouseLeave={() => setHoveredWorkout(null)}
-                          style={{
-                            filter: hoveredWorkout === index 
-                              ? 'drop-shadow(0 0 12px rgba(255,255,255,0.8))' 
-                              : 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'
-                          }}
-                        />
+                {/* Chart content area - MATCH Recovery chart area */}
+                <div className="flex-1 min-h-0 pt-1"> {/* MATCH: Same pt-1 as Recovery */}
+                  <div className="w-full" style={{ height: '340px' }}> {/* MATCH: Same height as Recovery chart */}
+                    <svg width="100%" height="100%" viewBox="0 0 1320 350" className="overflow-visible">
+                      <defs>
+                        <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--strain-blue)" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="var(--strain-blue)" stopOpacity="0.05" />
+                        </linearGradient>
                         
-                        {/* Enhanced workout icon with better background */}
-                        <g 
-                          transform={`translate(${centerX}, ${topY})`}
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredWorkout(index)}
-                          onMouseLeave={() => setHoveredWorkout(null)}
-                        >
-                          {/* Icon background circle for better contrast */}
-                          <circle
-                            cx="0"
-                            cy="0"
-                            r="10"
-                            fill="rgba(0,0,0,0.2)"
-                            stroke="none"
-                          />
-                          <foreignObject x="-8" y="-8" width="16" height="16">
-                            <div className="flex items-center justify-center w-full h-full">
-                              <div style={{ 
-                                color: 'white', 
-                                fontSize: '14px',
-                                fontWeight: 'bold',
-                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
-                              }}>
-                                {React.cloneElement(workout.icon, { 
-                                  size: 14, 
-                                  strokeWidth: 2.5,
-                                  color: 'white'
-                                })}
-                              </div>
-                            </div>
-                          </foreignObject>
-                        </g>
-                        
-                        {/* Enhanced workout label with better styling */}
-                        <g 
-                          transform={`translate(${centerX}, ${topY - 35})`}
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredWorkout(index)}
-                          onMouseLeave={() => setHoveredWorkout(null)}
-                        >
-                          <rect
-                            x="-35"
-                            y="-10"
-                            width="70"
-                            height="18"
-                            rx="9"
-                            fill={workout.color}
-                            opacity={hoveredWorkout === index ? "1" : "0.9"}
-                            style={{
-                              transition: 'all 0.2s ease',
-                              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-                            }}
-                          />
-                          <text
-                            x="0"
-                            y="2"
-                            textAnchor="middle"
-                            fontSize="9"
-                            fontWeight="700"
-                            fill="white"
-                            className="select-none"
-                            style={{
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                            }}
-                          >
-                            {workout["Activity name"]}
-                          </text>
-                        </g>
+                        <filter id="hrGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                          <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
 
-                        {/* Enhanced vertical connector line */}
-                        <line
-                          x1={centerX}
-                          y1={topY + 12}
-                          x2={centerX}
-                          y2={60}
-                          stroke={workout.color}
-                          strokeWidth="3"
-                          strokeDasharray="4,4"
-                          opacity="0.7"
-                          style={{
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
-                          }}
-                        />
+                        {/* Workout gradient definitions */}
+                        {workoutData.map((workout, index) => (
+                          <linearGradient key={`workout-gradient-${index}`} id={`workoutGradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={workout.color} stopOpacity="0.3" />
+                            <stop offset="100%" stopColor={workout.color} stopOpacity="0.1" />
+                          </linearGradient>
+                        ))}
 
-                        {/* Enhanced workout details tooltip */}
-                        {hoveredWorkout === index && (
-                          <g transform={`translate(${centerX}, ${topY - 90})`}>
-                            <rect
-                              x="-65"
-                              y="-35"
-                              width="130"
-                              height="60"
-                              rx="12"
-                              fill="rgba(20, 20, 20, 0.95)"
-                              stroke={workout.color}
-                              strokeWidth="2"
-                              style={{
-                                filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))'
-                              }}
+                        {/* Sleep gradient definitions */}
+                        <linearGradient id="sleepGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#7BA1BB" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#7BA1BB" stopOpacity="0.08" />
+                        </linearGradient>
+                      </defs>
+                      
+                      <rect width="100%" height="300" fill="transparent" />
+
+                      {/* Grid lines - horizontal */}
+                      {[0, 50, 100, 150, 200].map((value) => {
+                        const y = 300 - (value / 200) * 240;
+                        return (
+                          <line
+                            key={`h-${value}`}
+                            x1={60}
+                            y1={y}
+                            x2={1260}
+                            y2={y}
+                            stroke="rgba(255, 255, 255, 0.08)"
+                            strokeWidth="1"
+                          />
+                        );
+                      })}
+
+                      {/* Grid lines - vertical (time markers) */}
+                      {[0, 4, 8, 12, 16, 20, 24].map((hour) => {
+                        const x = 60 + (hour / 24) * 1200;
+                        const label = hour === 0 ? '12AM' : 
+                                     hour === 12 ? '12PM' : 
+                                     hour < 12 ? `${hour}AM` : `${hour - 12}PM`;
+                        return (
+                          <g key={`v-${hour}`}>
+                            <line 
+                              x1={x} 
+                              y1={60} 
+                              x2={x} 
+                              y2={300} 
+                              stroke="rgba(255, 255, 255, 0.08)" 
+                              strokeWidth="1"
                             />
-                            <text x="0" y="-22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">
-                              {workout["Activity name"]}
-                            </text>
-                            <text x="0" y="-10" textAnchor="middle" fontSize="9" fill="#E0E0E0">
-                              {workout["Duration (min)"]}min • Strain {workout["Activity Strain"]}
-                            </text>
-                            <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#E0E0E0">
-                              Avg HR: {workout["Average HR (bpm)"]} • Max: {workout["Max HR (bpm)"]}
-                            </text>
-                            <text x="0" y="14" textAnchor="middle" fontSize="8" fill="#B0B0B0">
-                              {workout["Energy burned (cal)"]} cal burned
+                            <text 
+                              x={x} 
+                              y={325} 
+                              className="metric-label"
+                              fontSize="11" 
+                              fill="var(--text-muted)" 
+                              textAnchor="middle"
+                            >
+                              {label}
                             </text>
                           </g>
-                        )}
-                      </g>
-                    );
-                  })}
+                        );
+                      })}
 
-                  {/* Sleep labels and markers - Enhanced styling */}
-                  {sleepData.map((sleep, index) => {
-                    const centerX = (sleep.startX + sleep.endX) / 2;
-                    const topY = 30; // Consistent positioning
-                    
-                    return (
-                      <g key={`sleep-label-${index}`}>
-                        {/* Enhanced sleep marker */}
-                        <circle
-                          cx={centerX}
-                          cy={topY}
-                          r="11"
-                          fill={sleep.color}
-                          stroke="white"
-                          strokeWidth="3"
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredSleep(index)}
-                          onMouseLeave={() => setHoveredSleep(null)}
-                          style={{
-                            filter: hoveredSleep === index 
-                              ? 'drop-shadow(0 0 12px rgba(123, 161, 187, 0.8))' 
-                              : 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'
-                          }}
-                        />
-                        
-                        {/* Enhanced sleep icon */}
-                        <g 
-                          transform={`translate(${centerX}, ${topY})`}
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredSleep(index)}
-                          onMouseLeave={() => setHoveredSleep(null)}
-                        >
-                          {/* Icon background for better contrast */}
-                          <circle
-                            cx="0"
-                            cy="0"
-                            r="9"
-                            fill="rgba(0,0,0,0.2)"
-                            stroke="none"
+                      {/* Y-axis labels */}
+                      {[0, 50, 100, 150, 200].map((value) => {
+                        const y = 300 - (value / 200) * 240;
+                        return (
+                          <text 
+                            key={`y-${value}`} 
+                            x={45} 
+                            y={y + 4} 
+                            className="metric-label"
+                            fontSize="11" 
+                            fill="var(--text-muted)" 
+                            textAnchor="end"
+                          >
+                            {value}
+                          </text>
+                        );
+                      })}
+
+                      {/* Sleep background zones */}
+                      {sleepData.map((sleep, index) => (
+                        <g key={`sleep-zone-${index}`}>
+                          <rect
+                            x={sleep.startX}
+                            y={60}
+                            width={sleep.endX - sleep.startX}
+                            height={240}
+                            fill="url(#sleepGradient)"
+                            opacity="0.6"
                           />
-                          <foreignObject x="-7" y="-7" width="14" height="14">
-                            <div className="flex items-center justify-center w-full h-full">
-                              <Moon 
-                                size={14} 
-                                color="white" 
-                                strokeWidth={2.5}
+                          <rect
+                            x={sleep.startX}
+                            y={300}
+                            width={sleep.endX - sleep.startX}
+                            height={4}
+                            fill={sleep.color}
+                            opacity="0.8"
+                          />
+                        </g>
+                      ))}
+
+                      {/* Workout background zones */}
+                      {workoutData.map((workout, index) => (
+                        <g key={`workout-zone-${index}`}>
+                          <rect
+                            x={workout.startX}
+                            y={60}
+                            width={workout.endX - workout.startX}
+                            height={240}
+                            fill={`url(#workoutGradient${index})`}
+                            opacity="0.4"
+                          />
+                          <rect
+                            x={workout.startX}
+                            y={60}
+                            width={workout.endX - workout.startX}
+                            height={4}
+                            fill={workout.color}
+                            opacity="0.8"
+                          />
+                        </g>
+                      ))}
+
+                      {/* Area under Heart Rate line */}
+                      <path
+                        d={createAreaPath(fullData, 'hr', 200)}
+                        fill="url(#hrGradient)"
+                      />
+
+                      {/* Heart rate line */}
+                      <path
+                        d={createSmoothPath(fullData, 'hr', 200)}
+                        fill="none"
+                        stroke="var(--strain-blue)"
+                        strokeWidth="3"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        filter="url(#hrGlow)"
+                      />
+
+                      {/* Workout labels and markers */}
+                      {workoutData.map((workout, index) => {
+                        const centerX = (workout.startX + workout.endX) / 2;
+                        const topY = 30;
+                        
+                        return (
+                          <g key={`workout-label-${index}`}>
+                            {/* Enhanced workout marker with better styling */}
+                            <circle
+                              cx={centerX}
+                              cy={topY}
+                              r="12"
+                              fill={workout.color}
+                              stroke="white"
+                              strokeWidth="3"
+                              className="cursor-pointer"
+                              onMouseEnter={() => setHoveredWorkout(index)}
+                              onMouseLeave={() => setHoveredWorkout(null)}
+                              style={{
+                                filter: hoveredWorkout === index 
+                                  ? 'drop-shadow(0 0 12px rgba(255,255,255,0.8))' 
+                                  : 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'
+                              }}
+                            />
+                            
+                            {/* Enhanced workout icon with better background */}
+                            <g 
+                              transform={`translate(${centerX}, ${topY})`}
+                              className="cursor-pointer"
+                              onMouseEnter={() => setHoveredWorkout(index)}
+                              onMouseLeave={() => setHoveredWorkout(null)}
+                            >
+                              {/* Icon background circle for better contrast */}
+                              <circle
+                                cx="0"
+                                cy="0"
+                                r="10"
+                                fill="rgba(0,0,0,0.2)"
+                                stroke="none"
+                              />
+                              <foreignObject x="-8" y="-8" width="16" height="16">
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <div style={{ 
+                                    color: 'white', 
+                                    fontSize: '14px',
+                                    fontWeight: 'bold',
+                                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                                  }}>
+                                    {React.cloneElement(workout.icon, { 
+                                      size: 14, 
+                                      strokeWidth: 2.5,
+                                      color: 'white'
+                                    })}
+                                  </div>
+                                </div>
+                              </foreignObject>
+                            </g>
+                            
+                            {/* Enhanced workout label with better styling */}
+                            <g 
+                              transform={`translate(${centerX}, ${topY - 35})`}
+                              className="cursor-pointer"
+                              onMouseEnter={() => setHoveredWorkout(index)}
+                              onMouseLeave={() => setHoveredWorkout(null)}
+                            >
+                              <rect
+                                x="-35"
+                                y="-10"
+                                width="70"
+                                height="18"
+                                rx="9"
+                                fill={workout.color}
+                                opacity={hoveredWorkout === index ? "1" : "0.9"}
                                 style={{
-                                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                                  transition: 'all 0.2s ease',
+                                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
                                 }}
                               />
-                            </div>
-                          </foreignObject>
-                        </g>
+                              <text
+                                x="0"
+                                y="2"
+                                textAnchor="middle"
+                                fontSize="9"
+                                fontWeight="700"
+                                fill="white"
+                                className="select-none"
+                                style={{
+                                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                }}
+                              >
+                                {workout["Activity name"]}
+                              </text>
+                            </g>
 
-                        {/* Enhanced vertical connector line */}
-                        <line
-                          x1={centerX}
-                          y1={topY + 11}
-                          x2={centerX}
-                          y2={60}
-                          stroke={sleep.color}
-                          strokeWidth="3"
-                          strokeDasharray="4,4"
-                          opacity="0.6"
-                          style={{
-                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
-                          }}
-                        />
-
-                        {/* Enhanced sleep tooltip */}
-                        {hoveredSleep === index && (
-                          <g transform={`translate(${centerX}, ${topY - 80})`}>
-                            <rect
-                              x="-55"
-                              y="-35"
-                              width="110"
-                              height="60"
-                              rx="10"
-                              fill="rgba(20, 20, 20, 0.95)"
-                              stroke={sleep.color}
-                              strokeWidth="2"
+                            {/* Enhanced vertical connector line */}
+                            <line
+                              x1={centerX}
+                              y1={topY + 12}
+                              x2={centerX}
+                              y2={60}
+                              stroke={workout.color}
+                              strokeWidth="3"
+                              strokeDasharray="4,4"
+                              opacity="0.7"
                               style={{
-                                filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))'
+                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
                               }}
                             />
-                            <text x="0" y="-22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">
-                              {sleep.type}
-                            </text>
-                            {sleep.performance && (
-                              <text x="0" y="-10" textAnchor="middle" fontSize="9" fill="#E0E0E0">
-                                Performance: {sleep.performance}%
-                              </text>
-                            )}
-                            {sleep.duration && (
-                              <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#E0E0E0">
-                                Duration: {Math.round(sleep.duration / 60)}h {sleep.duration % 60}m
-                              </text>
-                            )}
-                            {sleep.efficiency && (
-                              <text x="0" y="14" textAnchor="middle" fontSize="8" fill="#B0B0B0">
-                                Efficiency: {sleep.efficiency}%
-                              </text>
+
+                            {/* Enhanced workout details tooltip */}
+                            {hoveredWorkout === index && (
+                              <g transform={`translate(${centerX}, ${topY - 90})`}>
+                                <rect
+                                  x="-65"
+                                  y="-35"
+                                  width="130"
+                                  height="60"
+                                  rx="12"
+                                  fill="rgba(20, 20, 20, 0.95)"
+                                  stroke={workout.color}
+                                  strokeWidth="2"
+                                  style={{
+                                    filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))'
+                                  }}
+                                />
+                                <text x="0" y="-22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">
+                                  {workout["Activity name"]}
+                                </text>
+                                <text x="0" y="-10" textAnchor="middle" fontSize="9" fill="#E0E0E0">
+                                  {workout["Duration (min)"]}min • Strain {workout["Activity Strain"]}
+                                </text>
+                                <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#E0E0E0">
+                                  Avg HR: {workout["Average HR (bpm)"]} • Max: {workout["Max HR (bpm)"]}
+                                </text>
+                                <text x="0" y="14" textAnchor="middle" fontSize="8" fill="#B0B0B0">
+                                  {workout["Energy burned (cal)"]} cal burned
+                                </text>
+                              </g>
                             )}
                           </g>
-                        )}
-                      </g>
-                    );
-                  })}
-                </svg>
+                        );
+                      })}
+
+                      {/* Sleep labels and markers - Enhanced styling */}
+                      {sleepData.map((sleep, index) => {
+                        const centerX = (sleep.startX + sleep.endX) / 2;
+                        const topY = 30; // Consistent positioning
+                        
+                        return (
+                          <g key={`sleep-label-${index}`}>
+                            {/* Enhanced sleep marker */}
+                            <circle
+                              cx={centerX}
+                              cy={topY}
+                              r="11"
+                              fill={sleep.color}
+                              stroke="white"
+                              strokeWidth="3"
+                              className="cursor-pointer"
+                              onMouseEnter={() => setHoveredSleep(index)}
+                              onMouseLeave={() => setHoveredSleep(null)}
+                              style={{
+                                filter: hoveredSleep === index 
+                                  ? 'drop-shadow(0 0 12px rgba(123, 161, 187, 0.8))' 
+                                  : 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'
+                              }}
+                            />
+                            
+                            {/* Enhanced sleep icon */}
+                            <g 
+                              transform={`translate(${centerX}, ${topY})`}
+                              className="cursor-pointer"
+                              onMouseEnter={() => setHoveredSleep(index)}
+                              onMouseLeave={() => setHoveredSleep(null)}
+                            >
+                              {/* Icon background for better contrast */}
+                              <circle
+                                cx="0"
+                                cy="0"
+                                r="9"
+                                fill="rgba(0,0,0,0.2)"
+                                stroke="none"
+                              />
+                              <foreignObject x="-7" y="-7" width="14" height="14">
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <Moon 
+                                    size={14} 
+                                    color="white" 
+                                    strokeWidth={2.5}
+                                    style={{
+                                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))'
+                                    }}
+                                  />
+                                </div>
+                              </foreignObject>
+                            </g>
+
+                            {/* Enhanced vertical connector line */}
+                            <line
+                              x1={centerX}
+                              y1={topY + 11}
+                              x2={centerX}
+                              y2={60}
+                              stroke={sleep.color}
+                              strokeWidth="3"
+                              strokeDasharray="4,4"
+                              opacity="0.6"
+                              style={{
+                                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
+                              }}
+                            />
+
+                            {/* Enhanced sleep tooltip */}
+                            {hoveredSleep === index && (
+                              <g transform={`translate(${centerX}, ${topY - 80})`}>
+                                <rect
+                                  x="-55"
+                                  y="-35"
+                                  width="110"
+                                  height="60"
+                                  rx="10"
+                                  fill="rgba(20, 20, 20, 0.95)"
+                                  stroke={sleep.color}
+                                  strokeWidth="2"
+                                  style={{
+                                    filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.4))'
+                                  }}
+                                />
+                                <text x="0" y="-22" textAnchor="middle" fontSize="11" fontWeight="bold" fill="white">
+                                  {sleep.type}
+                                </text>
+                                {sleep.performance && (
+                                  <text x="0" y="-10" textAnchor="middle" fontSize="9" fill="#E0E0E0">
+                                    Performance: {sleep.performance}%
+                                  </text>
+                                )}
+                                {sleep.duration && (
+                                  <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#E0E0E0">
+                                    Duration: {Math.round(sleep.duration / 60)}h {sleep.duration % 60}m
+                                  </text>
+                                )}
+                                {sleep.efficiency && (
+                                  <text x="0" y="14" textAnchor="middle" fontSize="8" fill="#B0B0B0">
+                                    Efficiency: {sleep.efficiency}%
+                                  </text>
+                                )}
+                              </g>
+                            )}
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Timeline Selector Card - Only show for daily view */}
-          <div className="whoops-card" style={{
+          {/* Timeline Selector Card - MATCH Recovery spacing */}
+          <div className="whoops-card" style={{ // MATCH: Same card styling as Recovery
             background: 'var(--card-bg)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
             border: '1px solid rgba(255, 255, 255, 0.05)'
           }}>
-            {/* Compact Header with Date Info */}
-            <div className="flex justify-between items-center mb-4">
+            {/* Compact Header with Date Info - MATCH Recovery header structure */}
+            <div className="flex justify-between items-center mb-2"> {/* REDUCED: mb-4 → mb-2 to match Recovery */}
               <button 
                 className="flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 hover:scale-105"
                 style={{
@@ -1244,12 +1279,12 @@ setSleepData(sleepPeriods);
                 <ChevronLeft size={16} />
               </button>
               
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4"> {/* REDUCED: space-x-6 → space-x-4 */}
                 
-                {/* Selected Date and Activities - Moved to Header */}
-                <div className="flex items-center space-x-4">
+                {/* Selected Date and Activities - Compact layout */}
+                <div className="flex items-center space-x-3"> {/* REDUCED: space-x-4 → space-x-3 */}
                   <div className="text-center">
-                    <div className="text-lg font-bold text-[var(--text-primary)]">
+                    <div className="text-base font-bold text-[var(--text-primary)]"> {/* REDUCED: text-lg → text-base */}
                       {formatDate(selectedDate, 'EEE MMM d')}
                     </div>
                     {dateRangeOffset > 0 && (
@@ -1259,14 +1294,14 @@ setSleepData(sleepPeriods);
                     )}
                   </div>
                   
-                  {/* Activity Summary */}
-                  <div className="flex items-center gap-3">
+                  {/* Activity Summary - Compact */}
+                  <div className="flex items-center gap-2"> {/* REDUCED: gap-3 → gap-2 */}
                     {workoutData.length > 0 && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full" style={{ // REDUCED: gap-1.5 → gap-1, px-2 → px-1.5, py-1 → py-0.5
                         background: 'rgba(0, 147, 231, 0.1)',
                         border: '1px solid rgba(0, 147, 231, 0.2)'
                       }}>
-                        <Dumbbell size={12} className="text-[#0093E7]" />
+                        <Dumbbell size={10} className="text-[#0093E7]" /> {/* REDUCED: size={12} → size={10} */}
                         <span className="text-[#0093E7] font-medium text-xs">
                           {workoutData.length}
                         </span>
@@ -1274,11 +1309,11 @@ setSleepData(sleepPeriods);
                     )}
                     
                     {sleepData.length > 0 && sleepData[0].performance && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full" style={{ // REDUCED: gap-1.5 → gap-1, px-2 → px-1.5, py-1 → py-0.5
                         background: 'rgba(123, 161, 187, 0.1)',
                         border: '1px solid rgba(123, 161, 187, 0.2)'
                       }}>
-                        <Moon size={12} className="text-[#7BA1BB]" />
+                        <Moon size={10} className="text-[#7BA1BB]" /> {/* REDUCED: size={12} → size={10} */}
                         <span className="text-[#7BA1BB] font-medium text-xs">
                           {sleepData[0].performance}%
                         </span>
@@ -1301,19 +1336,19 @@ setSleepData(sleepPeriods);
               </button>
             </div>
             
-            {/* Ultra Compact Chart Container */}
+            {/* Ultra Compact Chart Container - MATCH Recovery timeline height */}
             <div className="relative">
-              <div className="h-12 rounded-lg border relative overflow-hidden mb-3" style={{
+              <div className="h-10 rounded-lg border relative overflow-hidden mb-2" style={{ // REDUCED: h-12 → h-10, mb-3 → mb-2
                 background: 'var(--card-bg)',
                 borderColor: 'rgba(255, 255, 255, 0.08)',
                 boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
               }}>
                 
-                {/* Minimal Chart SVG */}
+                {/* Minimal Chart SVG - ADJUSTED viewBox for new height */}
                 <svg 
                   width="100%" 
                   height="100%" 
-                  viewBox="0 0 100 40" 
+                  viewBox="0 0 100 32" // REDUCED: 40 → 32
                   preserveAspectRatio="none"
                   className="absolute inset-0"
                 >
@@ -1324,8 +1359,8 @@ setSleepData(sleepPeriods);
                     </linearGradient>
                     
                     <linearGradient id="compactSelectedGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#FF6A2C" stopOpacity="0.6" />
-                      <stop offset="100%" stopColor="#FF6A2C" stopOpacity="0.15" />
+                      <stop offset="0%" stopColor="white" stopOpacity="0.6" />
+                      <stop offset="100%" stopColor="white" stopOpacity="0.15" />
                     </linearGradient>
                     
                     <clipPath id="compactSelectedClip">
@@ -1333,14 +1368,14 @@ setSleepData(sleepPeriods);
                         x={rangeStart * 100}
                         y="0"
                         width={(rangeEnd - rangeStart) * 100}
-                        height="40"
+                        height="32" // REDUCED: 40 → 32
                       />
                     </clipPath>
                   </defs>
 
                   {/* Background Area */}
                   <path
-                    d={`${createWeeklyBmpPath(weeklyBmpData, weeklyData)} L 100 40 L 0 40 Z`}
+                    d={`${createWeeklyBmpPath(weeklyBmpData, weeklyData)} L 100 32 L 0 32 Z`} // UPDATED: 40 → 32
                     fill="url(#compactChartGradient)"
                     opacity="0.3"
                   />
@@ -1359,7 +1394,7 @@ setSleepData(sleepPeriods);
 
                   {/* Selected Range Area */}
                   <path
-                    d={`${createWeeklyBmpPath(weeklyBmpData, weeklyData)} L ${rangeEnd * 100} 40 L ${rangeStart * 100} 40 Z`}
+                    d={`${createWeeklyBmpPath(weeklyBmpData, weeklyData)} L ${rangeEnd * 100} 32 L ${rangeStart * 100} 32 Z`} // UPDATED: 40 → 32
                     fill="url(#compactSelectedGradient)"
                     clipPath="url(#compactSelectedClip)"
                   />
@@ -1368,7 +1403,7 @@ setSleepData(sleepPeriods);
                   <path
                     d={createWeeklyBmpPath(weeklyBmpData, weeklyData)}
                     fill="none"
-                    stroke="#FF6A2C"
+                    stroke="white"
                     strokeWidth="2"
                     strokeLinejoin="round"
                     strokeLinecap="round"
@@ -1377,52 +1412,60 @@ setSleepData(sleepPeriods);
                   />
                 </svg>
 
-                {/* Ultra Minimal Range Selector */}
+                {/* Ultra Minimal Range Selector - ADJUSTED for new height */}
                 <div
                   ref={rangeRef}
-                  className="absolute inset-0 z-20 px-8"
+                  className="absolute inset-0 z-20 px-6" // REDUCED: px-8 → px-6
                 >
                   <div
                     className="absolute top-0.5 bottom-0.5 cursor-grab active:cursor-grabbing rounded transition-all duration-200 group"
                     style={{ 
                       left: `${rangeStart * 100}%`, 
                       width: `${(rangeEnd - rangeStart) * 100}%`,
-                      backgroundColor: 'rgba(255, 106, 44, 0.15)',
-                      border: '1.5px solid #FF6A2C',
-                      boxShadow: '0 2px 8px rgba(255, 106, 44, 0.3)'
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      border: '1.5px solid white',
+                      boxShadow: '0 2px 8px rgba(255, 255, 255, 0.3)'
                     }}
                     onMouseDown={(e) => handleRangeMouseDown(e, 'range')}
                   >
-                    {/* Enhanced center handle indicator */}
+                    {/* Enhanced center handle indicator - SMALLER */}
                     <div 
-                      className="absolute top-1/2 left-1/2 w-6 h-12 rounded-lg transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shadow-xl transition-all duration-200 group-hover:scale-110"
+                      className="absolute top-1/2 left-1/2 w-5 h-8 rounded-md transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-110" // REDUCED: w-6 h-12 → w-5 h-8, rounded-lg → rounded-md, shadow-xl → shadow-lg
                       style={{ 
-                        background: 'linear-gradient(135deg, #FF6A2C 0%, #FF8C4C 100%)',
-                        boxShadow: '0 4px 12px rgba(255, 106, 44, 0.5), inset 0 2px 8px rgba(255, 255, 255, 0.2)'
+                        background: 'linear-gradient(135deg, white 0%, #f0f0f0 100%)',
+                        boxShadow: '0 3px 8px rgba(255, 255, 255, 0.4), inset 0 1px 4px rgba(0, 0, 0, 0.1)' // REDUCED shadows
                       }}
                     >
                       <div className="flex space-x-0.5">
-                        <div className="w-0.5 h-6 bg-white rounded opacity-90"></div>
-                        <div className="w-0.5 h-6 bg-white rounded opacity-70"></div>
-                        <div className="w-0.5 h-6 bg-white rounded opacity-90"></div>
+                        <div className="w-0.5 h-4 bg-gray-600 rounded opacity-90"></div> {/* REDUCED: h-6 → h-4 */}
+                        <div className="w-0.5 h-4 bg-gray-600 rounded opacity-70"></div> {/* REDUCED: h-6 → h-4 */}
+                        <div className="w-0.5 h-4 bg-gray-600 rounded opacity-90"></div> {/* REDUCED: h-6 → h-4 */}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Click Areas */}
-                <div className="absolute inset-0 flex z-10 px-8">
+                {/* Click Areas - ADJUSTED for new padding and improved click handling */}
+                <div className="absolute inset-0 flex z-10 px-6"> {/* REDUCED: px-8 → px-6 */}
                   {Object.values(weeklyData).map((day, index) => (
                     <div 
                       key={index}
                       className="flex-1 cursor-pointer hover:bg-white/5 transition-all duration-200"
-                      onClick={() => setSelectedDate(day.date)}
+                      onClick={() => {
+                        setSelectedDate(day.date);
+                        // Immediately update range position for visual feedback
+                        const weekDays = Object.values(weeklyData);
+                        const oneDaySize = 1 / weekDays.length;
+                        const newRangeStart = index / weekDays.length;
+                        setRangeStart(newRangeStart);
+                        setRangeEnd(newRangeStart + oneDaySize);
+                      }}
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Compact Date Grid - Removed bottom margin */}
+              {/* Compact Date Grid - REDUCED padding and improved click handling */}
               <div className="grid grid-cols-7 gap-1">
                 {Object.values(weeklyData).map((day, index) => {
                   const isSelected = formatDate(selectedDate, 'yyyy-MM-dd') === formatDate(day.date, 'yyyy-MM-dd');
@@ -1432,37 +1475,45 @@ setSleepData(sleepPeriods);
                   return (
                     <div 
                       key={index}
-                      className={`text-center p-2 rounded cursor-pointer transition-all duration-200 ${
+                      className={`text-center p-1.5 rounded cursor-pointer transition-all duration-200 ${  // REDUCED: p-2 → p-1.5
                         isSelected 
-                          ? 'bg-[#FF6A2C]/20 border border-[#FF6A2C]/40' 
+                          ? 'bg-white/20 border border-white/40' 
                           : 'hover:bg-white/5 border border-transparent'
                       }`}
-                      onClick={() => setSelectedDate(day.date)}
+                      onClick={() => {
+                        setSelectedDate(day.date);
+                        // Immediately update range position for visual feedback
+                        const weekDays = Object.values(weeklyData);
+                        const oneDaySize = 1 / weekDays.length;
+                        const newRangeStart = index / weekDays.length;
+                        setRangeStart(newRangeStart);
+                        setRangeEnd(newRangeStart + oneDaySize);
+                      }}
                       style={{
-                        background: isSelected ? 'rgba(255, 106, 44, 0.1)' : 'transparent',
-                        borderColor: isSelected ? 'rgba(255, 106, 44, 0.3)' : 'transparent'
+                        background: isSelected ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                        borderColor: isSelected ? 'rgba(255, 255, 255, 0.3)' : 'transparent'
                       }}
                     >
                       <div className={`text-xs font-medium ${
-                        isSelected ? 'text-[#FF6A2C]' : 'text-[var(--text-secondary)]'
+                        isSelected ? 'text-white' : 'text-[var(--text-secondary)]'
                       }`}>
                         {day.dayName}
                       </div>
-                      <div className={`text-base font-bold mt-0.5 ${
-                        isSelected ? 'text-[#FF6A2C]' : 'text-[var(--text-primary)]'
+                      <div className={`text-sm font-bold mt-0.5 ${ // REDUCED: text-base → text-sm
+                        isSelected ? 'text-white' : 'text-[var(--text-primary)]'
                       }`}>
                         {day.dayNum}
                       </div>
                       
-                      {/* Mini Activity Indicators */}
-                      <div className="flex justify-center items-center gap-1 mt-1">
+                      {/* Mini Activity Indicators - SMALLER */}
+                      <div className="flex justify-center items-center gap-1 mt-0.5"> {/* REDUCED: mt-1 → mt-0.5 */}
                         {hasWorkouts && (
-                          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                          <div className={`w-1 h-1 rounded-full transition-all duration-200 ${ // REDUCED: w-1.5 h-1.5 → w-1 h-1
                             isSelected ? 'bg-[#0093E7] scale-110' : 'bg-[#0093E7]/60'
                           }`} />
                         )}
                         {hasSleep && (
-                          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                          <div className={`w-1 h-1 rounded-full transition-all duration-200 ${ // REDUCED: w-1.5 h-1.5 → w-1 h-1
                             isSelected ? 'bg-[#7BA1BB] scale-110' : 'bg-[#7BA1BB]/60'
                           }`} />
                         )}

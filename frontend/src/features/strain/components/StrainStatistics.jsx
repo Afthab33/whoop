@@ -13,50 +13,50 @@ import {
 import { format, subDays } from 'date-fns';
 import whoopData from '../../../data/day_wise_whoop_data.json';
 
-// Strain Metrics Grid Card Component - Reduced box sizes
+// Strain Metrics Grid Card Component - ULTRA NARROW
 const StrainMetricsGrid = ({ metrics, compactLayout = false }) => {
   return (
-    <div className="bg-[var(--card-bg)] rounded-xl p-3 shadow-[var(--shadow-whoop-card)]">
-      {/* Single column vertical layout with smaller boxes */}
-      <div className="grid grid-cols-1 gap-2">
+    <div className="bg-[var(--card-bg)] rounded-xl p-1.5 shadow-[var(--shadow-whoop-card)]"> {/* REDUCED: p-2 → p-1.5 */}
+      {/* Single column vertical layout with ultra small boxes */}
+      <div className="grid grid-cols-1 gap-1"> {/* REDUCED: gap-1.5 → gap-1 */}
         {metrics.map((metric, index) => (
           <div 
             key={index} 
-            className="flex flex-col items-center p-2 bg-[var(--bg-subcard)] rounded-lg transition-all duration-200 hover:bg-[#2A3339] border border-transparent hover:border-[#0093E7]/20"
+            className="flex flex-col items-center p-1 bg-[var(--bg-subcard)] rounded-lg transition-all duration-200 hover:bg-[#2A3339] border border-transparent hover:border-[#0093E7]/20" // REDUCED: p-1.5 → p-1
           >
-            <div className="text-[#0093E7] mb-1 p-1 rounded-md bg-[#0093E7]/10">
-              {React.cloneElement(metric.icon, { size: 16 })}
+            <div className="text-[#0093E7] mb-0.5 p-0.5 rounded-md bg-[#0093E7]/10"> {/* REDUCED margins */}
+              {React.cloneElement(metric.icon, { size: 12 })} {/* REDUCED: size: 14 → 12 */}
             </div>
             <div className="text-center w-full">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span className="text-lg font-semibold text-white">
+              <div className="flex items-center justify-center gap-0.5 mb-0"> {/* REDUCED gap and margin */}
+                <span className="text-sm font-semibold text-white"> {/* REDUCED: text-base → text-sm */}
                   {metric.value}
                 </span>
-                <div className="ml-1">
+                <div className="ml-0">
                   {metric.trend === 'up' && 
                     <ArrowUp 
-                      size={12} 
+                      size={8} // REDUCED: size={10} → size={8}
                       className="text-[#0093E7]" 
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'down' && 
                     <ArrowDown 
-                      size={12} 
+                      size={8} // REDUCED: size={10} → size={8}
                       className="text-white" 
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'neutral' && 
-                    <div className="w-1.5 h-1.5 bg-white rounded-full opacity-60"></div>
+                    <div className="w-0.5 h-0.5 bg-white rounded-full opacity-60"></div> // REDUCED size
                   }
                 </div>
               </div>
-              <div className="text-white/60 text-xs font-medium mb-1">
+              <div className="text-white/60 text-[9px] font-medium mb-0"> {/* REDUCED: text-[10px] → text-[9px] */}
                 vs <span className="text-white/80">{metric.comparison}</span>
               </div>
             </div>
-            <div className="text-xs text-white/70 font-bold uppercase tracking-wide text-center">
+            <div className="text-[9px] text-white/70 font-bold uppercase tracking-wide text-center"> {/* REDUCED: text-[10px] → text-[9px] */}
               {metric.title}
             </div>
           </div>
@@ -249,7 +249,7 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
     
     return [
       {
-        icon: <Heart size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Heart size={12} className="stroke-current" strokeWidth={1.5} />, // REDUCED: size={16} → size={12}
         title: "Max HR",
         value: `${current.maxHR}`,
         comparison: `${previous.maxHR}`,
@@ -257,7 +257,7 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
               current.maxHR < previous.maxHR ? "down" : "neutral"
       },
       {
-        icon: <TrendingUp size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <TrendingUp size={12} className="stroke-current" strokeWidth={1.5} />, // REDUCED: size={16} → size={12}
         title: "Avg HR",
         value: `${current.avgHR}`,
         comparison: `${previous.avgHR}`,
@@ -265,7 +265,7 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
               current.avgHR < previous.avgHR ? "down" : "neutral"
       },
       {
-        icon: <Flame size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Flame size={12} className="stroke-current" strokeWidth={1.5} />, // REDUCED: size={16} → size={12}
         title: "Calories",
         value: `${Math.round(current.calories)}`,
         comparison: `${Math.round(previous.calories)}`,
@@ -273,7 +273,7 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
               current.calories < previous.calories ? "down" : "neutral"
       },
       {
-        icon: <Clock size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Clock size={12} className="stroke-current" strokeWidth={1.5} />, // REDUCED: size={16} → size={12}
         title: "Duration",
         value: `${current.duration}m`,
         comparison: `${previous.duration}m`,
@@ -289,13 +289,13 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center mb-1">
-        <h2 className="text-sm font-bold text-white">WORKOUT METRICS</h2>
+    <div className="space-y-1.5 h-full"> {/* ADDED: h-full to match chart height */}
+      <div className="flex justify-between items-center mb-1"> {/* INCREASED: mb-0.5 → mb-1 */}
+        <h2 className="text-xs font-bold text-white">WORKOUT METRICS</h2> {/* INCREASED: text-[10px] → text-xs */}
         
-        <div className="flex items-center space-x-1">
-          <Info size={12} className="text-white/60" />
-          <span className="text-white/60 text-xs">
+        <div className="flex items-center space-x-0.5"> {/* INCREASED: space-x-0 → space-x-0.5 */}
+          <Info size={10} className="text-white/60" /> {/* INCREASED: size={8} → size={10} */}
+          <span className="text-white/60 text-[9px]"> {/* INCREASED: text-[8px] → text-[9px] */}
             {timePeriod === '1d' 
               ? (formattedDates.current && formattedDates.previous 
                 ? `${formattedDates.current} vs ${formattedDates.previous}`
@@ -306,8 +306,10 @@ const StrainStatistics = ({ selectedDate, dayData, dateStr, compactLayout = fals
         </div>
       </div>
 
-      {/* Workout Metrics Grid */}
-      <StrainMetricsGrid metrics={workoutMetrics} compactLayout={compactLayout} />
+      {/* Workout Metrics Grid - FULL HEIGHT */}
+      <div className="flex-1"> {/* ADDED: flex-1 to take remaining space */}
+        <StrainMetricsGrid metrics={workoutMetrics} compactLayout={compactLayout} />
+      </div>
     </div>
   );
 };

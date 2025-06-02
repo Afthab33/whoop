@@ -25,50 +25,57 @@ const getRecoveryColor = (recoveryPercent) => {
   return RECOVERY_COLORS.low;
 };
 
-// Recovery Metrics Grid Card Component - Matching StrainStatistics style
+// Recovery Metrics Grid Card Component - EXACTLY MATCH STRAIN LAYOUT
 const RecoveryMetricsGrid = ({ metrics, compactLayout = false }) => {
   return (
-    <div className="bg-[var(--card-bg)] rounded-xl p-3 shadow-[var(--shadow-whoop-card)]">
-      {/* Single column vertical layout with smaller boxes */}
-      <div className="grid grid-cols-1 gap-2">
+    <div className="bg-[var(--card-bg)] rounded-xl p-1.5 shadow-[var(--shadow-whoop-card)] h-full flex flex-col"> {/* ADDED: h-full flex flex-col to match StrainStatistics */}
+      {/* Single column vertical layout with equal spacing */}
+      <div className="grid grid-cols-1 gap-1 flex-1"> {/* ADDED: flex-1 to distribute space equally like StrainStatistics */}
         {metrics.map((metric, index) => (
           <div 
             key={index} 
-            className="flex flex-col items-center p-2 bg-[var(--bg-subcard)] rounded-lg transition-all duration-200 hover:bg-[#2A3339] border border-transparent hover:border-[#4D94BB]/20"
+            className="flex flex-col items-center justify-center p-1 bg-[var(--bg-subcard)] rounded-lg transition-all duration-200 hover:bg-[#2A3339] border border-transparent hover:border-[#4D94BB]/20 flex-1" // ADDED: justify-center and flex-1 like StrainStatistics
           >
-            <div className="text-[#4D94BB] mb-1 p-1 rounded-md bg-[#4D94BB]/10">
-              {React.cloneElement(metric.icon, { size: 16 })}
+            {/* Icon - EXACTLY LIKE STRAIN */}
+            <div className="text-[#4D94BB] mb-0.5 p-0.5 rounded-md bg-[#4D94BB]/10"> {/* EXACT MATCH */}
+              {React.cloneElement(metric.icon, { size: 12 })} {/* EXACT MATCH */}
             </div>
+            
+            {/* Value and trend - EXACTLY LIKE STRAIN */}
             <div className="text-center w-full">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span className="text-lg font-semibold text-white">
+              <div className="flex items-center justify-center gap-0.5 mb-0"> {/* EXACT MATCH */}
+                <span className="text-sm font-semibold text-white"> {/* EXACT MATCH */}
                   {metric.value}
                 </span>
-                <div className="ml-1">
+                <div className="ml-0">
                   {metric.trend === 'up' && 
                     <ArrowUp 
-                      size={12} 
+                      size={8} // EXACT MATCH
                       className="text-[#16EC06]" 
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'down' && 
                     <ArrowDown 
-                      size={12} 
+                      size={8} // EXACT MATCH
                       className="text-[#FF0026]" 
                       strokeWidth={2.5}
                     />
                   }
                   {metric.trend === 'neutral' && 
-                    <div className="w-1.5 h-1.5 bg-white rounded-full opacity-60"></div>
+                    <div className="w-0.5 h-0.5 bg-white rounded-full opacity-60"></div> // EXACT MATCH
                   }
                 </div>
               </div>
-              <div className="text-white/60 text-xs font-medium mb-1">
+              
+              {/* Comparison text - EXACTLY LIKE STRAIN */}
+              <div className="text-white/60 text-[9px] font-medium mb-0"> {/* EXACT MATCH */}
                 vs <span className="text-white/80">{metric.comparison}</span>
               </div>
             </div>
-            <div className="text-xs text-white/70 font-bold uppercase tracking-wide text-center">
+            
+            {/* Title - EXACTLY LIKE STRAIN */}
+            <div className="text-[9px] text-white/70 font-bold uppercase tracking-wide text-center"> {/* EXACT MATCH */}
               {metric.title}
             </div>
           </div>
@@ -205,7 +212,7 @@ const RecoveryStatistics = ({
     
     return [
       {
-        icon: <TrendingUp size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <TrendingUp size={12} className="stroke-current" strokeWidth={1.5} />, // MATCH STRAIN: size 12
         title: "Recovery",
         value: `${Math.round(current.recovery)}%`,
         comparison: `${Math.round(previous.recovery)}%`,
@@ -214,7 +221,7 @@ const RecoveryStatistics = ({
         recoveryLevel: getRecoveryColor(current.recovery)
       },
       {
-        icon: <Heart size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Heart size={12} className="stroke-current" strokeWidth={1.5} />, // MATCH STRAIN: size 12
         title: "HRV",
         value: `${Math.round(current.hrv)}`,
         comparison: `${Math.round(previous.hrv)}`,
@@ -222,15 +229,15 @@ const RecoveryStatistics = ({
               current.hrv < previous.hrv ? "down" : "neutral"
       },
       {
-        icon: <Activity size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Activity size={12} className="stroke-current" strokeWidth={1.5} />, // MATCH STRAIN: size 12
         title: "Resting HR",
         value: `${Math.round(current.restingHr)}`,
         comparison: `${Math.round(previous.restingHr)}`,
         trend: current.restingHr < previous.restingHr ? "up" : 
-              current.restingHr > previous.restingHr ? "down" : "neutral" // Lower resting HR is better
+              current.restingHr > previous.restingHr ? "down" : "neutral"
       },
       {
-        icon: <Moon size={16} className="stroke-current" strokeWidth={1.5} />,
+        icon: <Moon size={12} className="stroke-current" strokeWidth={1.5} />, // MATCH STRAIN: size 12
         title: "Sleep",
         value: `${Math.round(current.sleepPerformance)}%`,
         comparison: `${Math.round(previous.sleepPerformance)}%`,
@@ -241,13 +248,14 @@ const RecoveryStatistics = ({
   }, [currentRecoveryMetrics, previousRecoveryMetrics]);
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center mb-1">
-        <h2 className="text-sm font-bold text-white">RECOVERY METRICS</h2>
+    <div className="space-y-1.5 h-full"> {/* UPDATED: space-y-1 → space-y-1.5 and ADDED: h-full to match StrainStatistics */}
+      {/* Header - EXACTLY LIKE STRAIN */}
+      <div className="flex justify-between items-center mb-1"> {/* UPDATED: mb-0.5 → mb-1 to match StrainStatistics */}
+        <h2 className="text-xs font-bold text-white">RECOVERY METRICS</h2> {/* UPDATED: text-[10px] → text-xs to match StrainStatistics */}
         
-        <div className="flex items-center space-x-1">
-          <Info size={12} className="text-white/60" />
-          <span className="text-white/60 text-xs">
+        <div className="flex items-center space-x-0.5"> {/* UPDATED: space-x-0 → space-x-0.5 to match StrainStatistics */}
+          <Info size={10} className="text-white/60" /> {/* UPDATED: size={8} → size={10} to match StrainStatistics */}
+          <span className="text-white/60 text-[9px]"> {/* UPDATED: text-[8px] → text-[9px] to match StrainStatistics */}
             {timePeriod === '1d' 
               ? (formattedDates.current && formattedDates.previous 
                 ? `${formattedDates.current} vs ${formattedDates.previous}`
@@ -258,8 +266,10 @@ const RecoveryStatistics = ({
         </div>
       </div>
 
-      {/* Recovery Metrics Grid */}
-      <RecoveryMetricsGrid metrics={recoveryMetrics} compactLayout={compactLayout} />
+      {/* Recovery Metrics Grid - FULL HEIGHT */}
+      <div className="flex-1"> {/* ADDED: flex-1 to take remaining space like StrainStatistics */}
+        <RecoveryMetricsGrid metrics={recoveryMetrics} compactLayout={compactLayout} />
+      </div>
     </div>
   );
 };

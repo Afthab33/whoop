@@ -8,7 +8,7 @@ import whoopData from '../../data/day_wise_whoop_data.json';
 
 const Recovery = ({ selectedDate = new Date() }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
-  const [timePeriod, setTimePeriod] = useState('1d'); // Changed back to 1d to show comparison chart by default
+  const [timePeriod, setTimePeriod] = useState('1d');
   
   // Get the selected day's data
   const dayData = useMemo(() => {
@@ -21,21 +21,8 @@ const Recovery = ({ selectedDate = new Date() }) => {
     setTimePeriod(newPeriod);
   };
 
-  // FIXED: Determine which chart to show based on timePeriod
+  // Determine which chart to show based on timePeriod
   const renderRecoveryChart = () => {
-    // Show comparison chart for single day view (1d)
-    if (timePeriod === '1d') {
-      return (
-        <RecoveryComparisonChart
-          selectedDate={selectedDate}
-          timePeriod={timePeriod}
-          onTimePeriodChange={handleTimePeriodChange}
-        />
-      );
-    }
-    
-    // Show the enhanced RecoveryComparisonChart for all multi-period views
-    // This will automatically switch to trend view based on timePeriod
     return (
       <RecoveryComparisonChart
         selectedDate={selectedDate}
@@ -46,31 +33,35 @@ const Recovery = ({ selectedDate = new Date() }) => {
   };
 
   return (
-    <div className="p-4 max-w-screen-xl mx-auto">
-      {/* AI Insight Card */}
-      <div className="flex justify-center mb-6">
-        <div className="w-full max-w-6xl">
+    <div className="p-1 max-w-5xl mx-auto"> {/* REDUCED: max-w-screen-xl → max-w-5xl */}
+      {/* AI Insight Card - ULTRA REDUCED MARGIN */}
+      <div className="flex justify-center mb-2">
+        <div className="w-full max-w-4xl"> {/* REDUCED: max-w-6xl → max-w-4xl */}
           <AiInsightCard type="recovery" />
         </div>
       </div>
       
-      {/* Header with date display */}
-      <div className="mb-4">
+      {/* Header with date display - ULTRA REDUCED MARGIN */}
+      <div className="mb-1">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Recovery</h1>
+          <h1 className="text-lg font-bold text-[var(--text-primary)]">
+            Recovery
+          </h1>
           <div className="flex items-center">
-            <p className="text-[var(--text-secondary)] mr-2">Insights for</p>
-            <span className="bg-[var(--card-bg)] text-white px-3 py-1 rounded-full text-sm font-medium">
+            <p className="text-[var(--text-secondary)] mr-1.5 text-xs">
+              Insights for
+            </p>
+            <span className="bg-[var(--card-bg)] text-white px-2 py-0.5 rounded-full text-xs font-medium">
               {format(selectedDate, 'EEEE, MMMM d')}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Split layout with sidebar and chart */}
-      <div className="flex flex-col md:flex-row gap-5 mb-6">
-        {/* Sidebar with recovery metrics - 20% width */}
-        <div className="md:w-[25%] lg:w-[20%]">
+      {/* Split layout with sidebar and chart - REDUCED SIDEBAR WIDTH */}
+      <div className="flex flex-col md:flex-row gap-2 mb-2">
+        {/* Sidebar with recovery metrics - REDUCED WIDTH: 25%/20% → 18%/15% */}
+        <div className="md:w-[18%] lg:w-[15%]"> {/* REDUCED: md:w-[25%] lg:w-[20%] → md:w-[18%] lg:w-[15%] */}
           <RecoveryStatistics
             selectedDate={selectedDate} 
             dayData={dayData}
@@ -80,20 +71,11 @@ const Recovery = ({ selectedDate = new Date() }) => {
           />
         </div>
          
-        {/* Chart area - 80% width */}
-        <div className="md:w-[75%] lg:w-[80%]">
+        {/* Chart area - INCREASED WIDTH: 75%/80% → 82%/85% */}
+        <div className="md:w-[82%] lg:w-[85%]"> {/* INCREASED: md:w-[75%] lg:w-[80%] → md:w-[82%] lg:w-[85%] */}
           {renderRecoveryChart()}
         </div>
       </div>
-      
-      {/* Optional: Legacy charts for reference (commented out)
-      <div className="mb-6">
-        <div className="bg-[var(--card-bg)] rounded-xl shadow-lg border border-gray-800/30 h-[400px]">
-          <RecoveryChart selectedDate={selectedDate} />
-        </div>
-      </div> */}
-      
-      {/* Rest of recovery components... */}
     </div>
   );
 };

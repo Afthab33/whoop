@@ -31,44 +31,44 @@ const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
 const Overview = () => {
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
-      <div className="p-6 max-w-screen-xl mx-auto">
-        <div className="flex flex-col gap-8">
+      <div className="p-1 max-w-5xl mx-auto"> {/* MATCH: Same as Recovery - p-1, max-w-5xl */}
+        <div className="flex flex-col gap-2"> {/* MATCH: Same gap-2 as Recovery */}
 
-          {/* Daily Outlook Card - New Design */}
-          <div className="whoops-card flex items-center justify-between rounded-3xl py-2">
-            {/* Left section with W logo */}
-            <div className="flex items-center space-x-4">
-              {/* W Logo with gradient border */}
+          {/* Daily Outlook Card - ULTRA COMPACT to match Recovery spacing */}
+          <div className="whoops-card flex items-center justify-between rounded-3xl py-1 px-3 mb-1"> {/* REDUCED: py-1.5 → py-1, px-4 → px-3 */}
+            {/* Left section with W logo - MORE COMPACT */}
+            <div className="flex items-center space-x-2"> {/* REDUCED: space-x-3 → space-x-2 */}
+              {/* Smaller W Logo with gradient border */}
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 p-0.5">
-                  <div className="w-full h-full rounded-2xl flex items-center justify-center" style={{ background: 'var(--card-bg)' }}>
-                    <img src={WhoopLogo} alt="WHOOP" width="24" height="24" />
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 p-0.5"> {/* REDUCED: w-12 h-12 → w-10 h-10, rounded-xl → rounded-lg */}
+                  <div className="w-full h-full rounded-lg flex items-center justify-center" style={{ background: 'var(--card-bg)' }}> {/* UPDATED: rounded-xl → rounded-lg */}
+                    <img src={WhoopLogo} alt="WHOOP" width="16" height="16" /> {/* REDUCED: 18x18 → 16x16 */}
                   </div>
                 </div>
               </div>
 
-              {/* Weather icon and text */}
-              <div className="flex items-center space-x-4">
-                {/* Sun icon */}
+              {/* Weather icon and text - MORE COMPACT */}
+              <div className="flex items-center space-x-2"> {/* REDUCED: space-x-3 → space-x-2 */}
+                {/* Smaller Sun icon */}
                 <div className="text-gray-300">
-                  <Sun size={20} />
+                  <Sun size={14} /> {/* REDUCED: size={16} → size={14} */}
                 </div>
 
-                {/* Text */}
-                <h2 className="text-white text-xl font-medium">Your Daily Outlook</h2>
+                {/* Smaller Text */}
+                <h2 className="text-white text-base font-medium">Your Daily Outlook</h2> {/* REDUCED: text-lg → text-base */}
               </div>
             </div>
 
-            {/* Right arrow */}
+            {/* Smaller Right arrow */}
             <div className="text-gray-400 hover:text-white transition-colors cursor-pointer">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> {/* REDUCED: 16x16 → 14x14 */}
                 <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           </div>
 
-          {/* Heart Rate Analysis Section - Only IndexChart with built-in LineChart logic */}
-          <div className="space-y-6">     
+          {/* Heart Rate Analysis Section - MATCH Recovery spacing */}
+          <div className="space-y-2"> {/* MATCH: Same space-y-2 as Recovery */}     
             <IndexChart />
           </div>
         </div>

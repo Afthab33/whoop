@@ -433,20 +433,19 @@ const RecoveryComparisonChart = ({
   // Y-axis tick values - percentage based
   const yAxisTicks = [0, 17, 33, 50, 67, 83, 100];
 
-  // Render trend chart for multi-period views
+  // Render trend chart for multi-period views - ULTRA COMPACT
   const renderTrendChart = () => {
     const chartMargin = { 
-      top: 10,        // ✅ Reduced from 20
-      right: 20,      // ✅ Reduced from 30
-      left: 40,       // ✅ Reduced from 70 for better space utilization
-      bottom: (timePeriod === '2w' || timePeriod === '1w' || timePeriod === '1m') ? 60 : 45 // ✅ Optimized
+      top: 5,        // Reduced from 10
+      right: 15,     // Reduced from 20
+      left: 25,      // Reduced from 40
+      bottom: (timePeriod === '2w' || timePeriod === '1w' || timePeriod === '1m') ? 45 : 35 // Reduced
     };
 
     if (['3m', '6m'].includes(timePeriod)) {
       return (
         <AreaChart data={chartData} margin={chartMargin}>
           <defs>
-            {/* Create gradients for each recovery level */}
             <linearGradient id="highRecoveryGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={RECOVERY_COLORS.high} stopOpacity={0.6}/>
               <stop offset="95%" stopColor={RECOVERY_COLORS.high} stopOpacity={0.1}/>
@@ -472,9 +471,9 @@ const RecoveryComparisonChart = ({
             axisLine={false} 
             tickLine={false} 
             tick={(props) => <CustomRecoveryXAxisTick {...props} timePeriod={timePeriod} />}
-            height={60} // ✅ Reduced from 70
+            height={45} // Reduced from 60
             interval={0}
-            padding={{ left: 10, right: 10 }} // ✅ Added padding
+            padding={{ left: 5, right: 5 }} // Reduced padding
           />
           <YAxis 
             domain={[0, 100]}
@@ -482,7 +481,7 @@ const RecoveryComparisonChart = ({
             axisLine={false} 
             tickLine={false} 
             tick={(props) => <CustomYAxisTick {...props} />}
-            width={35} // ✅ Reduced from 70
+            width={25} // Reduced from 35
           />
           <RechartsTooltip 
             content={<CustomRecoveryTooltip />} 
@@ -492,11 +491,11 @@ const RecoveryComparisonChart = ({
             type="monotone" 
             dataKey="recovery" 
             stroke={(entry) => entry?.recoveryColor || RECOVERY_COLORS.medium}
-            strokeWidth={3}
+            strokeWidth={2.5} // Reduced from 3
             fillOpacity={1}
             fill="url(#mediumRecoveryGradient)"
             activeDot={{ 
-              r: 6, 
+              r: 4, // Reduced from 6
               fill: (entry) => entry?.recoveryColor || RECOVERY_COLORS.medium, 
               stroke: 'white', 
               strokeWidth: 2 
@@ -509,8 +508,8 @@ const RecoveryComparisonChart = ({
         <BarChart 
           data={chartData} 
           margin={chartMargin} 
-          barCategoryGap="10%" // ✅ Reduced from 20% for better space utilization
-          maxBarSize={60}      // ✅ Added to prevent bars from getting too wide
+          barCategoryGap="8%" // Reduced from 10%
+          maxBarSize={50}      // Reduced from 60
         >
           <CartesianGrid 
             horizontal={true} 
@@ -523,9 +522,9 @@ const RecoveryComparisonChart = ({
             axisLine={false} 
             tickLine={false} 
             tick={(props) => <CustomRecoveryXAxisTick {...props} timePeriod={timePeriod} />}
-            height={60} // ✅ Reduced from 70
+            height={45} // Reduced from 60
             interval={0}
-            padding={{ left: 10, right: 10 }} // ✅ Added padding
+            padding={{ left: 5, right: 5 }} // Reduced padding
           />
           <YAxis 
             domain={[0, 100]}
@@ -533,7 +532,7 @@ const RecoveryComparisonChart = ({
             axisLine={false} 
             tickLine={false} 
             tick={(props) => <CustomYAxisTick {...props} />}
-            width={35} // ✅ Reduced from 70
+            width={25} // Reduced from 35
           />
           <RechartsTooltip 
             content={<CustomRecoveryTooltip />} 
@@ -541,7 +540,7 @@ const RecoveryComparisonChart = ({
           />
           <Bar 
             dataKey="recovery" 
-            radius={[6, 6, 0, 0]}
+            radius={[4, 4, 0, 0]} // Reduced from [6, 6, 0, 0]
             strokeWidth={1}
           >
             {chartData.map((entry, index) => (
@@ -568,26 +567,27 @@ const RecoveryComparisonChart = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Chart Card */}
-      <div className="whoops-card min-h-[500px]" style={{ // ✅ Added min-height
+    <div className="space-y-2"> {/* MATCH: Same spacing as DetailedHeartRateChart */}
+      {/* Chart Card - MATCH EXACT DIMENSIONS */}
+      <div className="whoops-card min-h-[380px]" style={{ // MATCH: Same min-height as DetailedHeartRateChart
         background: 'var(--card-bg)',
         boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
         border: '1px solid rgba(255, 255, 255, 0.05)'
       }}>
-        {/* Enhanced Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">{getChartTitle()}</h2>
-            <p className="text-[var(--text-muted)] text-sm mt-1">
-              {activeView === 'comparison' 
-                ? `Recovery metrics comparison for ${formatDateForMessage(selectedDate)}` 
-                : "Track your recovery trends and physiological markers"
-              }
-            </p>
+        {/* Enhanced Header - MATCH EXACT SPACING */}
+        <div className="flex justify-between items-start mb-2"> {/* MATCH: mb-2 like DetailedHeartRateChart */}
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)] mt-1"> {/* MATCH: Same structure as DetailedHeartRateChart */}
+              <span>
+                {activeView === 'comparison' 
+                  ? `Recovery metrics comparison for ${formatDateForMessage(selectedDate).split(',')[1].trim()}` 
+                  : "Track your recovery trends and physiological markers"
+                }
+              </span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 ml-2"> {/* MATCH: Same gap and margin as DetailedHeartRateChart */}
             <TimePeriodSelector 
               selectedPeriod={timePeriod} 
               onPeriodChange={onTimePeriodChange} 
@@ -597,66 +597,66 @@ const RecoveryComparisonChart = ({
 
         {/* Content based on active view */}
         {activeView === 'comparison' ? (
-          // Original single-day comparison view
-          <div className="flex flex-col h-full">
-            <div className="p-6 pb-0 flex-grow">
+          // Single-day comparison view - MATCH CHART HEIGHT
+          <div className="flex-1 min-h-0 pt-1"> {/* MATCH: pt-1 like DetailedHeartRateChart */}
+            <div className="w-full" style={{ height: '340px' }}> {/* MATCH: Same height as DetailedHeartRateChart charts */}
               {/* Date comparison info */}
-              <div className="mb-6">
-                <p className="text-[var(--text-secondary)] mt-1 flex items-center text-sm">
+              <div className="mb-3 px-2"> {/* Added padding to match chart content area */}
+                <p className="text-[var(--text-secondary)] mt-0.5 flex items-center text-xs">
                   <span style={{ color: chartColors.current, fontWeight: 500 }}>{formattedDates.current}</span>
-                  <span className="text-[var(--text-secondary)] mx-1.5"> vs </span>
+                  <span className="text-[var(--text-secondary)] mx-1"> vs </span>
                   <span style={{ color: chartColors.baseline, fontWeight: 500 }}>{formattedDates.comparison || 'baseline'}</span>
                 </p>
               </div>
               
-              {/* Optimized chart container */}
+              {/* Optimized chart container - MATCH HEIGHT */}
               <div 
-                className="relative h-[280px] px-2"
+                className="relative h-[280px] px-8" // ADJUSTED: Height to fit within 340px container
                 style={{
                   backgroundImage: `linear-gradient(0deg, ${chartColors.gridLines} 1px, transparent 1px)`,
                   backgroundSize: "100% 20%",
                   backgroundPosition: "bottom"
                 }}
               >
-                {/* Comparison bars */}
-                <div className="absolute inset-0 flex items-end justify-between px-12">
+                {/* Comparison bars - ADJUSTED FOR NEW HEIGHT */}
+                <div className="absolute inset-0 flex items-end justify-between px-8">
                   {/* HRV */}
                   <div 
                     className="flex flex-col items-center w-1/3"
                     onMouseEnter={() => setHoveredMetric('hrv')}
                     onMouseLeave={() => setHoveredMetric(null)}
                   >
-                    <div className="flex items-end h-[280px] gap-4 md:gap-6 mb-2 relative">
+                    <div className="flex items-end h-[280px] gap-2 mb-1.5 relative"> {/* ADJUSTED: Height to match container */}
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
+                          className="w-10 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
                           style={{ 
-                            height: `${(metrics.hrv.current / maxValue) * 280}px`,
+                            height: `${(metrics.hrv.current / maxValue) * 280}px`, // ADJUSTED: For new height
                             background: chartColors.currentGradient,
                             boxShadow: hoveredMetric === 'hrv' ? 
                               `0 0 15px rgba(92, 142, 169, 0.4), inset 0 0 0 1px rgba(255,255,255,0.2)` : 
                               `0 3px 8px rgba(92, 142, 169, 0.2), inset 0 0 0 1px rgba(255,255,255,0.1)`
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-primary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-primary)] text-sm">
                             {metrics.hrv.current}
                           </div>
                         </div>
                       </div>
                       
-                      <div className="h-full w-px bg-gray-600/30 mx-2"></div>
+                      <div className="h-full w-px bg-gray-600/30 mx-1"></div>
                       
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out"
+                          className="w-10 rounded-t transition-all duration-500 ease-out"
                           style={{ 
-                            height: `${(metrics.hrv.baseline / maxValue) * 280}px`,
+                            height: `${(metrics.hrv.baseline / maxValue) * 280}px`, // ADJUSTED: For new height
                             background: chartColors.baselineGradient,
                             opacity: hoveredMetric === 'hrv' ? 0.7 : 0.5,
                             boxShadow: hoveredMetric === 'hrv' ? 'inset 0 0 0 1px rgba(255,255,255,0.1)' : 'none'
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-secondary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-secondary)] text-sm">
                             {metrics.hrv.baseline}
                           </div>
                         </div>
@@ -664,7 +664,7 @@ const RecoveryComparisonChart = ({
                       
                       {hoveredMetric === 'hrv' && (
                         <div 
-                          className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-3 py-1.5 rounded-md shadow-lg flex items-center gap-2 border border-gray-700/30 z-10"
+                          className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 border border-gray-700/30 z-10 text-xs"
                           style={{ animation: 'fadeIn 0.2s ease-out' }}
                         >
                           <span className={metrics.hrv.current > metrics.hrv.baseline ? 'text-green-400' : 'text-red-400'}>
@@ -676,51 +676,52 @@ const RecoveryComparisonChart = ({
                     </div>
                   </div>
                   
-                  {/* Resting HR */}
+                  {/* Resting HR - SAME HEIGHT ADJUSTMENTS */}
                   <div 
                     className="flex flex-col items-center w-1/3"
                     onMouseEnter={() => setHoveredMetric('restingHr')}
                     onMouseLeave={() => setHoveredMetric(null)}
                   >
-                    <div className="flex items-end h-[280px] gap-4 md:gap-6 mb-2 relative">
+                    <div className="flex items-end h-[280px] gap-2 mb-1.5 relative"> {/* ADJUSTED: Height */}
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
+                          className="w-10 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
                           style={{ 
-                            height: `${(metrics.restingHr.current / maxValue) * 280}px`,
+                            height: `${(metrics.restingHr.current / maxValue) * 280}px`, // ADJUSTED: Height calculation
                             background: chartColors.currentGradient,
                             boxShadow: hoveredMetric === 'restingHr' ? 
                               `0 0 15px rgba(92, 142, 169, 0.4), inset 0 0 0 1px rgba(255,255,255,0.2)` : 
                               `0 3px 8px rgba(92, 142, 169, 0.2), inset 0 0 0 1px rgba(255,255,255,0.1)`
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-primary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-primary)] text-sm">
                             {metrics.restingHr.current}
                           </div>
                         </div>
                       </div>
                       
-                      <div className="h-full w-px bg-gray-600/30 mx-2"></div>
+                      <div className="h-full w-px bg-gray-600/30 mx-1"></div>
                       
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out"
+                          className="w-10 rounded-t transition-all duration-500 ease-out"
                           style={{ 
-                            height: `${(metrics.restingHr.baseline / maxValue) * 280}px`,
+                            height: `${(metrics.restingHr.baseline / maxValue) * 280}px`, // ADJUSTED: Height calculation
                             background: chartColors.baselineGradient,
                             opacity: hoveredMetric === 'restingHr' ? 0.7 : 0.5,
                             boxShadow: hoveredMetric === 'restingHr' ? 'inset 0 0 0 1px rgba(255,255,255,0.1)' : 'none'
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-secondary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-secondary)] text-sm">
                             {metrics.restingHr.baseline}
                           </div>
                         </div>
                       </div>
                       
+                      {/* Hover tooltip */}
                       {hoveredMetric === 'restingHr' && (
                         <div 
-                          className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-3 py-1.5 rounded-md shadow-lg flex items-center gap-2 border border-gray-700/30 z-10"
+                          className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 border border-gray-700/30 z-10 text-xs"
                           style={{ animation: 'fadeIn 0.2s ease-out' }}
                         >
                           <span className={metrics.restingHr.current < metrics.restingHr.baseline ? 'text-green-400' : 'text-red-400'}>
@@ -732,51 +733,52 @@ const RecoveryComparisonChart = ({
                     </div>
                   </div>
                   
-                  {/* Sleep Performance */}
+                  {/* Sleep Performance - SAME HEIGHT ADJUSTMENTS */}
                   <div 
                     className="flex flex-col items-center w-1/3"
                     onMouseEnter={() => setHoveredMetric('sleepPerformance')}
                     onMouseLeave={() => setHoveredMetric(null)}
                   >
-                    <div className="flex items-end h-[280px] gap-4 md:gap-6 mb-2 relative">
+                    <div className="flex items-end h-[280px] gap-2 mb-1.5 relative"> {/* ADJUSTED: Height */}
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
+                          className="w-10 rounded-t transition-all duration-500 ease-out transform hover:scale-105 hover:brightness-110"
                           style={{ 
-                            height: `${(metrics.sleepPerformance.current / maxValue) * 280}px`,
+                            height: `${(metrics.sleepPerformance.current / maxValue) * 280}px`, // ADJUSTED: Height calculation
                             background: chartColors.currentGradient,
                             boxShadow: hoveredMetric === 'sleepPerformance' ? 
                               `0 0 15px rgba(92, 142, 169, 0.4), inset 0 0 0 1px rgba(255,255,255,0.2)` : 
                               `0 3px 8px rgba(92, 142, 169, 0.2), inset 0 0 0 1px rgba(255,255,255,0.1)`
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-primary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-primary)] text-sm">
                             {metrics.sleepPerformance.current}%
                           </div>
                         </div>
                       </div>
                       
-                      <div className="h-full w-px bg-gray-600/30 mx-2"></div>
+                      <div className="h-full w-px bg-gray-600/30 mx-1"></div>
                       
                       <div className="flex flex-col items-center">
                         <div 
-                          className="w-12 md:w-16 rounded-t transition-all duration-500 ease-out"
+                          className="w-10 rounded-t transition-all duration-500 ease-out"
                           style={{ 
-                            height: `${(metrics.sleepPerformance.baseline / maxValue) * 280}px`,
+                            height: `${(metrics.sleepPerformance.baseline / maxValue) * 280}px`, // ADJUSTED: Height calculation
                             background: chartColors.baselineGradient,
                             opacity: hoveredMetric === 'sleepPerformance' ? 0.7 : 0.5,
                             boxShadow: hoveredMetric === 'sleepPerformance' ? 'inset 0 0 0 1px rgba(255,255,255,0.1)' : 'none'
                           }}
                         >
-                          <div className="text-center -mt-8 font-bold text-[var(--text-secondary)]">
+                          <div className="text-center -mt-6 font-bold text-[var(--text-secondary)] text-sm">
                             {metrics.sleepPerformance.baseline}%
                           </div>
                         </div>
                       </div>
                       
+                      {/* Hover tooltip */}
                       {hoveredMetric === 'sleepPerformance' && (
                         <div 
-                          className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-3 py-1.5 rounded-md shadow-lg flex items-center gap-2 border border-gray-700/30 z-10"
+                          className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[var(--card-bg)] px-2 py-1 rounded-md shadow-lg flex items-center gap-1.5 border border-gray-700/30 z-10 text-xs"
                           style={{ animation: 'fadeIn 0.2s ease-out' }}
                         >
                           <span className={metrics.sleepPerformance.current > metrics.sleepPerformance.baseline ? 'text-green-400' : 'text-red-400'}>
@@ -789,39 +791,46 @@ const RecoveryComparisonChart = ({
                   </div>
                 </div>  
               </div>
-            </div>
-            
-            {/* Labels section */}
-            <div className="grid grid-cols-3 gap-8 mt-2 px-12 py-4 border-t border-gray-800/10">
-              <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-2">
-                <Heart size={16} className="text-[#4D94BB]" />
-                Heart Rate Variability
-              </div>
-              <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-2">
-                <TrendingUp size={16} className="text-[#4D94BB]" />
-                Resting Heart Rate
-              </div>
-              <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-2">
-                <Moon size={16} className="text-[#4D94BB]" />
-                Sleep Performance
+              
+              {/* Labels section - COMPACT */}
+              <div className="grid grid-cols-3 gap-4 mt-1 px-8 py-2 border-t border-gray-800/10">
+                <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-1.5 text-xs">
+                  <Heart size={12} className="text-[#4D94BB]" />
+                  Heart Rate Variability
+                </div>
+                <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-1.5 text-xs">
+                  <TrendingUp size={12} className="text-[#4D94BB]" />
+                  Resting Heart Rate
+                </div>
+                <div className="text-center text-[var(--text-primary)] font-medium flex items-center justify-center gap-1.5 text-xs">
+                  <Moon size={12} className="text-[#4D94BB]" />
+                  Sleep Performance
+                </div>
               </div>
             </div>
           </div>
         ) : (
-          // Multi-period trend view
-          <div className="flex-1 min-h-0 pt-4"> {/* ✅ Added flex container with padding */}
+          // Multi-period trend view - MATCH EXACT DIMENSIONS
+          <div className="flex-1 min-h-0 pt-1"> {/* MATCH: pt-1 like DetailedHeartRateChart */}
             {chartData.length > 0 ? (
-              // ✅ IMPROVED: Better container with proper height management
-              <div className="w-full" style={{ height: '420px' }}> {/* Fixed height instead of 450 */}
+              <div className="w-full" style={{ height: '340px' }}> {/* MATCH: Same height as DetailedHeartRateChart */}
                 <ResponsiveContainer width="100%" height="100%">
                   {renderTrendChart()}
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-96 text-[var(--text-secondary)]">
+              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]"> {/* MATCH: Same height as DetailedHeartRateChart placeholder */}
                 <div className="text-center">
-                  <TrendingUp size={48} className="mx-auto mb-4 opacity-50" />
-                  <div>Loading recovery trend data...</div>
+                  <TrendingUp size={32} className="mx-auto mb-2 opacity-50" /> {/* MATCH: Same icon size as DetailedHeartRateChart */}
+                  <div className="text-base font-medium text-[var(--text-primary)] mb-2"> {/* MATCH: Same text styling as DetailedHeartRateChart */}
+                    No recovery data available
+                  </div>
+                  <div className="text-xs mb-2 max-w-md mx-auto"> {/* MATCH: Same text styling as DetailedHeartRateChart */}
+                    Recovery trends will appear when data is available for the selected period.
+                  </div>
+                  <div className="text-[10px] text-[var(--text-muted)]"> {/* MATCH: Same text styling as DetailedHeartRateChart */}
+                    Try selecting a different time period or date range
+                  </div>
                 </div>
               </div>
             )}
@@ -837,44 +846,44 @@ const RecoveryComparisonChart = ({
         `}</style>
       </div>
 
-      {/* Recovery Level Legend - Only show for multi-period views and make thinner */}
+      {/* Recovery Level Legend - COMPACT */}
       {timePeriod !== '1d' && (
-        <div className="flex items-center justify-center gap-6 p-3 bg-[var(--card-bg)]/30 border border-white/5 rounded-xl backdrop-blur-sm">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-4 p-2 bg-[var(--card-bg)]/30 border border-white/5 rounded-xl backdrop-blur-sm">
+          <div className="flex items-center gap-1.5">
             <div 
-              className="w-4 h-3 rounded shadow-sm border border-white/10"
+              className="w-3 h-2 rounded shadow-sm border border-white/10"
               style={{ 
                 backgroundColor: RECOVERY_COLORS.high,
                 boxShadow: `0 0 6px ${RECOVERY_COLORS.high}30`
               }}
             ></div>
-            <span className="text-xs font-medium" style={{ color: RECOVERY_COLORS.high }}>
+            <span className="text-[10px] font-medium" style={{ color: RECOVERY_COLORS.high }}>
               High (67-100%)
             </span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <div 
-              className="w-4 h-3 rounded shadow-sm border border-white/10"
+              className="w-3 h-2 rounded shadow-sm border border-white/10"
               style={{ 
                 backgroundColor: RECOVERY_COLORS.medium,
                 boxShadow: `0 0 6px ${RECOVERY_COLORS.medium}30`
               }}
             ></div>
-            <span className="text-xs font-medium" style={{ color: RECOVERY_COLORS.medium }}>
+            <span className="text-[10px] font-medium" style={{ color: RECOVERY_COLORS.medium }}>
               Medium (34-66%)
             </span>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <div 
-              className="w-4 h-3 rounded shadow-sm border border-white/10"
+              className="w-3 h-2 rounded shadow-sm border border-white/10"
               style={{ 
                 backgroundColor: RECOVERY_COLORS.low,
                 boxShadow: `0 0 6px ${RECOVERY_COLORS.low}30`
               }}
             ></div>
-            <span className="text-xs font-medium" style={{ color: RECOVERY_COLORS.low }}>
+            <span className="text-[10px] font-medium" style={{ color: RECOVERY_COLORS.low }}>
               Low (0-33%)
             </span>
           </div>

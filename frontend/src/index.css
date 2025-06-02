@@ -5,7 +5,7 @@
 
 :root {
   /* Background colors */
-  --bg-base: #283339;         /* Page background 242D34 */
+  --bg-base: #283339;         /* Page background 242D34 283339*/
   --bg-overlay: #1E242C;      /* Modal overlays */
   --card-bg: #373e44;         /* Card/widget background - verified */
   --bg-subcard: #252A30;      /* Sub-card/inner card background */

@@ -129,67 +129,67 @@ const Dashboard = () => {
       />
       
       {/* Calendar and Navigation Button Group */}
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-3"> {/* Reduced from mt-4 to mt-3 */}
         <div className="flex items-center relative">
-          {/* Overview button - Only visible when not on overview page */}
+          {/* Overview button - Only visible when not on overview page - SMALLER */}
           {activeTab !== 'overview' && (
             <button
               onClick={() => setActiveTab('overview')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full mr-3 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full mr-2 transition-colors" // Reduced gap, padding, and margin
               style={{
                 background: "var(--strain-blue)",
                 color: "white",
               }}
               title="Return to Overview"
             >
-              <LayoutDashboard size={16} />
-              <span className="font-medium">Overview</span>
+              <LayoutDashboard size={14} /> {/* Reduced from size={16} to size={14} */}
+              <span className="font-medium text-sm">Overview</span> {/* Added text-sm */}
             </button>
           )}
           
-          {/* Previous date button */}
+          {/* Previous date button - SMALLER */}
           <button
             onClick={() => navigateDate('prev')}
             disabled={!hasPrevDate}
-            className={`flex items-center justify-center w-10 h-10 rounded-full mr-2 transition-colors ${
+            className={`flex items-center justify-center w-8 h-8 rounded-full mr-1.5 transition-colors ${ // Reduced from w-10 h-10 and mr-2
               hasPrevDate ? 'hover:bg-gray-700 text-white' : 'text-gray-600 cursor-not-allowed'
             }`}
             style={{
               background: "var(--card-bg)",
             }}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={16} /> {/* Reduced from size={20} to size={16} */}
           </button>
           
-          {/* Calendar button */}
+          {/* Calendar button - SMALLER */}
           <button
             ref={calendarButtonRef}
             onClick={toggleCalendar}
-            className="flex items-center px-6 py-2 rounded-full transition-colors"
+            className="flex items-center px-4 py-1.5 rounded-full transition-colors" // Reduced from px-6 py-2 to px-4 py-1.5
             style={{
               background: "var(--card-bg)",
               color: "var(--text-primary)",
             }}
           >
-            <Calendar size={16} className="mr-2 text-[var(--strain-blue)]" />
-            <span className="font-medium">{formatDate(selectedDate)}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ml-2 text-[var(--text-muted)] transition-transform ${showCalendar ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <Calendar size={14} className="mr-1.5 text-[var(--strain-blue)]" /> {/* Reduced size and margin */}
+            <span className="font-medium text-sm">{formatDate(selectedDate)}</span> {/* Added text-sm */}
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ml-1.5 text-[var(--text-muted)] transition-transform ${showCalendar ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"> {/* Reduced from h-5 w-5 and ml-2 */}
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           
-          {/* Next date button */}
+          {/* Next date button - SMALLER */}
           <button
             onClick={() => navigateDate('next')}
             disabled={!hasNextDate}
-            className={`flex items-center justify-center w-10 h-10 rounded-full ml-2 transition-colors ${
+            className={`flex items-center justify-center w-8 h-8 rounded-full ml-1.5 transition-colors ${ // Reduced from w-10 h-10 and ml-2
               hasNextDate ? 'hover:bg-gray-700 text-white' : 'text-gray-600 cursor-not-allowed'
             }`}
             style={{
               background: "var(--card-bg)",
             }}
           >
-            <ChevronRight size={20} />
+            <ChevronRight size={16} /> {/* Reduced from size={20} to size={16} */}
           </button>
           
           {/* Calendar Dropdown */}
@@ -206,8 +206,8 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Main Content Area */}
-      <div className="p-4 mt-4">
+      {/* Main Content Area - REDUCED TOP MARGIN */}
+      <div className="p-4 mt-2"> {/* Reduced from mt-4 to mt-2 */}
         {renderContent()}
       </div>
     </div>
