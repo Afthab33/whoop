@@ -25,211 +25,341 @@ const pineconeIndex = pinecone.Index("whoop-ai-coach");
 
 const PORT = process.env.PORT || 8080;
 
-// Helper function for query analysis
-async function analyzeQueryIntent(message) {
-  const intentPrompt = `Analyze this WHOOP query and return JSON only:
+// Single GPT-4o call for intent + metadata identification
+async function analyzeUserQuery(message) {
+  const structuredPrompt = `Analyze this WHOOP user question and identify clearly:
+
+- Intent (e.g., analyze_recovery, analyze_sleep, improve_recovery, track_trends, analyze_strain, recovery_trends, sleep_trends, general_question)
+- Relevant date-range or timeframe needed (today, yesterday, last_week, last_month, recent, specific_date)
+- Metrics to focus on (recovery_score, sleep_performance, hrv, strain, workout_performance, overall)
+
+Question: "${message}"
+
+If the question mentions "trends", use "track_trends" or specific trend type like "recovery_trends".
+For trends, prefer longer timeframes like "last_month" or "recent".
+
+Respond in structured JSON exactly like this:
+
 {
-  "queryType": "trend|comparison|single_day|recommendation",
-  "needsMultipleDays": boolean,
-  "timeScope": "recent|week|month|specific",
-  "dataFocus": "sleep|recovery|strain|workout|overall",
-  "isDateSpecific": boolean
-}
-
-Query: "${message}"
-
-Examples:
-- "How's my recovery today?" → {"queryType": "single_day", "needsMultipleDays": false, "timeScope": "recent", "dataFocus": "recovery", "isDateSpecific": true}
-- "How was my sleep last night?" → {"queryType": "single_day", "needsMultipleDays": false, "timeScope": "specific", "dataFocus": "sleep", "isDateSpecific": true}
-- "How has my sleep been trending?" → {"queryType": "trend", "needsMultipleDays": true, "timeScope": "week", "dataFocus": "sleep", "isDateSpecific": false}`;
+  "intent": "recovery_trends",
+  "timeframe": "last_month", 
+  "metrics": ["recovery_score", "sleep_performance", "hrv"]
+}`;
 
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: intentPrompt }],
+      messages: [{ role: "user", content: structuredPrompt }],
       temperature: 0.1,
       max_tokens: 120,
     });
+    
     return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    // Enhanced fallback analysis
+    console.error('Query analysis error:', error);
+    // Enhanced fallback for trends
     const msg = message.toLowerCase();
     return {
-      queryType: msg.includes('trend') || msg.includes('pattern') ? 'trend' : 'single_day',
-      needsMultipleDays: msg.includes('week') || msg.includes('month') || msg.includes('trend') || msg.includes('pattern'),
-      timeScope: msg.includes('week') ? 'week' : msg.includes('month') ? 'month' : 'recent',
-      dataFocus: msg.includes('sleep') ? 'sleep' : msg.includes('recovery') ? 'recovery' : 'overall',
-      isDateSpecific: msg.includes('yesterday') || msg.includes('last night') || msg.includes('today')
+      intent: msg.includes('trends') || msg.includes('trend') ? 'track_trends' : 
+              msg.includes('sleep') ? 'analyze_sleep' : 
+              msg.includes('recovery') ? 'analyze_recovery' : 'general_question',
+      timeframe: msg.includes('trends') || msg.includes('trend') ? 'last_month' :
+                 msg.includes('yesterday') || msg.includes('last night') ? 'yesterday' : 
+                 msg.includes('today') ? 'today' : 
+                 msg.includes('week') ? 'last_week' : 'recent',
+      metrics: msg.includes('trends') ? ['recovery_score', 'sleep_performance', 'hrv'] : ['overall']
     };
   }
 }
 
-// Helper function for date calculations
-function calculateDateRange(intent, message) {
+// Convert timeframe to date filter
+function getDateFilter(timeframe) {
   const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
   const formatDate = (date) => date.toISOString().split('T')[0];
   
-  // Check for specific temporal references
-  const msg = message.toLowerCase();
-  
-  if (msg.includes('last night') || msg.includes('yesterday')) {
-    return {
-      start: formatDate(yesterday),
-      end: formatDate(yesterday),
-      type: 'specific_day'
-    };
-  }
-  
-  if (msg.includes('today')) {
-    return {
-      start: formatDate(today),
-      end: formatDate(today),
-      type: 'specific_day'
-    };
-  }
-  
-  if (msg.includes('this week') || intent.timeScope === 'week') {
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - 7);
-    return {
-      start: formatDate(weekStart),
-      end: formatDate(today),
-      type: 'week_range'
-    };
-  }
-  
-  if (msg.includes('this month') || intent.timeScope === 'month') {
-    const monthStart = new Date(today);
-    monthStart.setDate(today.getDate() - 30);
-    return {
-      start: formatDate(monthStart),
-      end: formatDate(today),
-      type: 'month_range'
-    };
-  }
-  
-  return null; // No specific date range
-}
-
-// Enhanced search strategy
-function getSearchStrategy(intent) {
-  const strategies = {
-    trend: { topK: 14, requiresSorting: true, needsTrendAnalysis: true },
-    comparison: { topK: 10, requiresSorting: true, needsTrendAnalysis: true },
-    single_day: { topK: 3, requiresSorting: false, needsTrendAnalysis: false },
-    recommendation: { topK: 7, requiresSorting: false, needsTrendAnalysis: false }
+  // Helper to generate date range array for string-based date filtering
+  const getDateRange = (startDate, days) => {
+    const dates = [];
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() - i);
+      dates.push(formatDate(date));
+    }
+    return dates;
   };
   
-  return strategies[intent.queryType] || strategies.single_day;
+  switch (timeframe) {
+    case 'today':
+      return { 
+        type: 'exact',
+        filter: { 
+          date: { "$eq": formatDate(today) },
+          type: { "$eq": "day" }
+        },
+        topK: 3
+      };
+      
+    case 'yesterday':
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return { 
+        type: 'exact',
+        filter: { 
+          date: { "$eq": formatDate(yesterday) },
+          type: { "$eq": "day" }
+        },
+        topK: 3
+      };
+      
+    case 'last_week':
+      return { 
+        type: 'range',
+        filter: { 
+          date: { "$in": getDateRange(today, 7) }, // Back to 7 days for week
+          type: { "$eq": "day" }
+        },
+        topK: 10
+      };
+      
+    case 'last_month':
+      return { 
+        type: 'range',
+        filter: { 
+          date: { "$in": getDateRange(today, 30) }, // Back to 30 days for month
+          type: { "$eq": "day" }
+        },
+        topK: 20
+      };
+      
+    case 'recent':
+      return { 
+        type: 'range',
+        filter: { 
+          date: { "$in": getDateRange(today, 14) }, // Back to 14 days for recent
+          type: { "$eq": "day" }
+        },
+        topK: 15
+      };
+      
+    default:
+      return { 
+        type: 'recent',
+        filter: null, // Remove type filter to get ANY available data
+        topK: 15 // Increased for better coverage
+      };
+  }
 }
 
-// Trend analysis function
-function calculateTrends(sortedDays) {
-  if (sortedDays.length < 3) return null;
+// Metadata-rich Pinecone query
+async function queryPineconeWithMetadata(userEmbedding, analysis) {
+  const dateFilter = getDateFilter(analysis.timeframe);
+  
+  // Optimize search query based on metrics
+  const searchParams = {
+    vector: userEmbedding,
+    topK: dateFilter.topK,
+    includeMetadata: true,
+  };
+  
+  // Apply date filter if available
+  if (dateFilter.filter) {
+    searchParams.filter = dateFilter.filter;
+  }
+  
+  try {
+    const searchResponse = await pineconeIndex.query(searchParams);
+    
+    let matches = searchResponse.matches.map(match => ({
+      score: parseFloat(match.score.toFixed(3)),
+      date: match.metadata.date,
+      summary: match.metadata.text_summary || match.metadata.summary, // Handle both field names
+    }));
+    
+    // Lower similarity threshold
+    matches = matches.filter(match => match.score > 0.4); // Lowered threshold
+    
+    // If no matches with date filter, try without filter but get RECENT data
+    if (matches.length === 0 && dateFilter.filter) {
+      console.log('No matches with date filter, trying to get most recent data...');
+      const fallbackResponse = await pineconeIndex.query({
+        vector: userEmbedding,
+        topK: 30, // Get more results
+        filter: { type: { "$eq": "day" } }, // Only daily data
+        includeMetadata: true,
+      });
+      
+      matches = fallbackResponse.matches
+        .map(match => ({
+          score: parseFloat(match.score.toFixed(3)),
+          date: match.metadata.date,
+          summary: match.metadata.text_summary || match.metadata.summary,
+        }))
+        .filter(match => match.score > 0.3) // Lower threshold
+        .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date DESC to get most recent
+        .slice(0, 15); // Take 15 most recent
+    }
+    
+    // Final fallback: get ANY data, sorted by recency
+    if (matches.length === 0) {
+      console.log('No semantic matches, getting most recent data available...');
+      const typeOnlyResponse = await pineconeIndex.query({
+        vector: userEmbedding,
+        topK: 50,
+        filter: { type: { "$eq": "day" } },
+        includeMetadata: true,
+      });
+      
+      matches = typeOnlyResponse.matches
+        .map(match => ({
+          score: parseFloat(match.score.toFixed(3)),
+          date: match.metadata.date,
+          summary: match.metadata.text_summary || match.metadata.summary,
+        }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date DESC
+        .slice(0, 20); // Take 20 most recent regardless of score
+    }
+    
+    return {
+      matches,
+      searchType: dateFilter.type,
+      hasDateFilter: !!dateFilter.filter
+    };
+    
+  } catch (error) {
+    console.error('Pinecone query error:', error);
+    throw error;
+  }
+}
 
-  // Extract metrics from summaries
+// Build precise context from metadata with aggregations
+function buildPreciseContext(matches, analysis) {
+  if (matches.length === 0) {
+    return "No WHOOP data available for the requested timeframe.";
+  }
+  
+  // Sort by date for chronological context
+  const sortedMatches = matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Extract and aggregate key metrics
   const recoveryScores = [];
   const sleepScores = [];
+  const strainScores = [];
+  const hrvValues = [];
+  const rhrValues = [];
   
-  sortedDays.forEach(day => {
-    const summary = day.summary.toLowerCase();
+  sortedMatches.forEach(match => {
+    // Parse the summary to extract numeric values
+    const summary = match.summary;
     
-    // Extract recovery scores (look for "recovery: 85%" or "recovery score: 85")
-    const recoveryMatch = summary.match(/recovery[:\s]*(\d+)%?/);
-    if (recoveryMatch) recoveryScores.push(parseInt(recoveryMatch[1]));
+    // Extract Recovery score
+    const recoveryMatch = summary.match(/Recovery (\d+(?:\.\d+)?)%/);
+    if (recoveryMatch) recoveryScores.push(parseFloat(recoveryMatch[1]));
     
-    // Extract sleep scores
-    const sleepMatch = summary.match(/sleep[:\s]*(\d+)%?/);
-    if (sleepMatch) sleepScores.push(parseInt(sleepMatch[1]));
+    // Extract Sleep score
+    const sleepMatch = summary.match(/Sleep (\d+(?:\.\d+)?)%/);
+    if (sleepMatch) sleepScores.push(parseFloat(sleepMatch[1]));
+    
+    // Extract Strain
+    const strainMatch = summary.match(/Strain (\d+(?:\.\d+)?)/);
+    if (strainMatch) strainScores.push(parseFloat(strainMatch[1]));
+    
+    // Extract HRV
+    const hrvMatch = summary.match(/HRV (\d+(?:\.\d+)?) ms/);
+    if (hrvMatch) hrvValues.push(parseFloat(hrvMatch[1]));
+    
+    // Extract RHR
+    const rhrMatch = summary.match(/RHR (\d+(?:\.\d+)?) bpm/);
+    if (rhrMatch) rhrValues.push(parseFloat(rhrMatch[1]));
   });
-
-  const analyzeTrend = (scores, metricName) => {
-    if (scores.length < 2) return null;
-    
-    const first = scores[0];
-    const last = scores[scores.length - 1];
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-    const change = last - first;
-    
-    let direction = 'stable';
-    if (change > 5) direction = 'improving';
-    else if (change < -5) direction = 'declining';
-    
-    return {
-      metric: metricName,
-      direction,
-      first,
-      last,
-      average: Math.round(avg),
-      change,
-      dataPoints: scores.length
-    };
-  };
-
-  return {
-    recovery: analyzeTrend(recoveryScores, 'Recovery'),
-    sleep: analyzeTrend(sleepScores, 'Sleep'),
-    dateRange: `${sortedDays[0].date} to ${sortedDays[sortedDays.length - 1].date}`,
-    totalDays: sortedDays.length
-  };
-}
-
-// Enhanced context builder
-function buildEnhancedContext(matches, intent, strategy, trends = null) {
-  let context = `WHOOP Data Analysis Context:\n`;
   
-  // Add trend analysis if available
-  if (trends) {
-    context += `\nTREND ANALYSIS (${trends.totalDays} days: ${trends.dateRange}):\n`;
-    
-    if (trends.recovery) {
-      context += `Recovery: ${trends.recovery.direction} (${trends.recovery.first}% → ${trends.recovery.last}%, avg: ${trends.recovery.average}%)\n`;
-    }
-    
-    if (trends.sleep) {
-      context += `Sleep: ${trends.sleep.direction} (${trends.sleep.first}% → ${trends.sleep.last}%, avg: ${trends.sleep.average}%)\n`;
-    }
-    context += '\n';
-  }
+  // Calculate averages
+  const avgRecovery = recoveryScores.length ? Math.round(recoveryScores.reduce((a, b) => a + b, 0) / recoveryScores.length) : null;
+  const avgSleep = sleepScores.length ? Math.round(sleepScores.reduce((a, b) => a + b, 0) / sleepScores.length) : null;
+  const avgStrain = strainScores.length ? Math.round(strainScores.reduce((a, b) => a + b, 0) / strainScores.length * 10) / 10 : null;
+  const avgHRV = hrvValues.length ? Math.round(hrvValues.reduce((a, b) => a + b, 0) / hrvValues.length) : null;
+  const avgRHR = rhrValues.length ? Math.round(rhrValues.reduce((a, b) => a + b, 0) / rhrValues.length) : null;
   
-  // Add daily data
-  context += `RELEVANT DAYS:\n`;
-  matches.slice(0, 8).forEach(day => {
-    context += `${day.date} (relevance: ${day.score}): ${day.summary.substring(0, 150)}...\n\n`;
+  // Get date range
+  const startDate = sortedMatches[0].date;
+  const endDate = sortedMatches[sortedMatches.length - 1].date;
+  
+  // Build aggregated context
+  let context = `WHOOP Data Analysis (${formatDateRange(startDate, endDate)}, ${matches.length} days):\n\n`;
+  
+  context += `**Aggregated Metrics:**\n`;
+  if (avgRecovery) context += `- Average Recovery: ${avgRecovery}%\n`;
+  if (avgSleep) context += `- Average Sleep Performance: ${avgSleep}%\n`;
+  if (avgStrain) context += `- Average Strain: ${avgStrain}\n`;
+  if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
+  if (avgRHR) context += `- Average RHR: ${avgRHR} bpm\n`;
+  
+  context += `\n**Daily Details:**\n`;
+  sortedMatches.forEach(match => {
+    context += `- ${match.summary}\n`;
   });
+  
+  // Add analysis focus
+  context += `\n**Analysis Focus:** ${analysis.metrics.join(', ')}\n`;
+  context += `**Intent:** ${analysis.intent}\n`;
+  context += `**Timeframe:** ${analysis.timeframe}\n`;
   
   return context;
 }
 
-// Dynamic system prompt
-function createSystemPrompt(intent, context) {
-  let basePrompt = `You are WHOOP AI Coach, an expert fitness and recovery advisor.`;
+// Helper function to format dates for display
+function formatDateRange(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
   
-  switch (intent.queryType) {
-    case 'trend':
-      basePrompt += ` Analyze patterns and trends in the data. Focus on what's changing over time and provide insights about the direction of key metrics.`;
-      break;
-    case 'comparison':
-      basePrompt += ` Compare different time periods or metrics. Highlight key differences and their significance.`;
-      break;
-    case 'recommendation':
-      basePrompt += ` Provide specific, actionable recommendations based on the user's data patterns and current state.`;
-      break;
-    default:
-      basePrompt += ` Provide personalized insights based on the user's recent data.`;
+  const formatOptions = { month: 'short', day: 'numeric' };
+  const startStr = start.toLocaleDateString('en-US', formatOptions);
+  const endStr = end.toLocaleDateString('en-US', formatOptions);
+  
+  // Add year if different from current year
+  const currentYear = new Date().getFullYear();
+  if (start.getFullYear() !== currentYear || end.getFullYear() !== currentYear) {
+    return `${startStr}, ${start.getFullYear()} - ${endStr}, ${end.getFullYear()}`;
   }
   
-  basePrompt += `\n\nBe concise (2-3 paragraphs), specific, and reference actual data points from the context. Avoid generic advice.\n\nContext:\n${context}`;
-  
+  return `${startStr} - ${endStr}`;
+}
+
+// Create optimized system prompt
+function createOptimizedSystemPrompt(analysis, context) {
+  const basePrompt = `You are WHOOP AI Coach. Answer concisely (150-200 words) matching this EXACT format. Use ONLY the provided context data.
+
+Context:
+${context}
+
+Format your response EXACTLY like this example:
+
+"Your recovery trends over the last [TIMEFRAME] ([START DATE] - [END DATE]) show:
+
+- **Average Recovery**: [X]% ([COLOR] zone). [Brief interpretation with specific insight].
+- **HRV**: Averaged [X] ms, [specific health note].
+- **RHR**: [X] bpm, [specific fitness indicator].
+- **[Other specific metric]**: [Value], [brief note].
+
+To improve recovery:
+- [Specific action with actual numbers from data].
+- [Another specific action referencing real metrics].
+- [Third recommendation tied to actual data points].
+
+Want to dive deeper into specific behaviors impacting your recovery?"
+
+RULES:
+- Include actual date ranges from context
+- Reference specific numbers from the data
+- Use color zones: Green (80-100%), Yellow (50-79%), Red (0-49%)
+- Make recommendations specific to the actual metrics shown
+- Keep positive tone but be specific about improvements needed`;
+
   return basePrompt;
 }
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('👋 Hello from WHOOP backend with Pinecone retrieval!');
+  res.send('🚀 Optimized WHOOP backend with single-call pipeline!');
 });
 
 app.get('/callback', (req, res) => {
@@ -239,197 +369,120 @@ app.get('/callback', (req, res) => {
 app.post('/api/ai-coach', async (req, res) => {
   try {
     const { message } = req.body;
+    const startTime = Date.now();
 
-    // 1️⃣ Analyze intent
-    const intent = await analyzeQueryIntent(message);
-    const strategy = getSearchStrategy(intent);
-    const dateRange = calculateDateRange(intent, message);
-
-    // 2️⃣ Optimize embedding for specific focus areas
-    let searchQuery = message;
-    if (intent.dataFocus !== 'overall') {
-      searchQuery = `${intent.dataFocus} ${message}`;
-    }
-
+    // Step 1: Single GPT-4o call for intent + metadata identification
+    const analysis = await analyzeUserQuery(message);
+    
+    // Step 2: Create embedding for semantic search
     const embedResponse = await openai.embeddings.create({
       model: "text-embedding-3-large",
-      input: searchQuery,
+      input: message, // Simplified - just use the original message
     });
     const userEmbedding = embedResponse.data[0].embedding;
 
-    // 3️⃣ IMPROVED: More flexible Pinecone query
-    const searchParams = {
-      topK: strategy.topK,
-      vector: userEmbedding,
-      includeMetadata: true,
-    };
+    // Step 3: Metadata-rich Pinecone query
+    const searchResult = await queryPineconeWithMetadata(userEmbedding, analysis);
+    const { matches, searchType, hasDateFilter } = searchResult;
 
-    // 🔧 IMPROVED: Don't use strict date filtering, get more results instead
-    if (dateRange) {
-      // Get more results and filter manually for better flexibility
-      searchParams.topK = dateRange.type === 'specific_day' ? 10 : 50;
-    } else if (intent.timeScope === 'recent') {
-      searchParams.topK = 30;
-    }
-
-    const searchResponse = await pineconeIndex.query(searchParams);
-
-    // 4️⃣ IMPROVED: More flexible date filtering
-    let matches = searchResponse.matches.map(match => ({
-      score: parseFloat(match.score.toFixed(3)),
-      date: match.metadata.date,
-      summary: match.metadata.text_summary,
-    }));
-
-    // Filter by date range if needed (more flexible)
-    if (dateRange) {
-      const startDate = new Date(dateRange.start);
-      const endDate = new Date(dateRange.end);
-      
-      matches = matches.filter(match => {
-        const matchDate = new Date(match.date);
-        return matchDate >= startDate && matchDate <= endDate;
-      });
-      
-      // 🆕 If no exact matches, expand the search backwards
-      if (matches.length === 0) {
-        console.log(`No data found for ${dateRange.start} to ${dateRange.end}, expanding search...`);
-        
-        // Look for data in the past 30 days instead
-        const expandedStart = new Date(startDate);
-        expandedStart.setDate(expandedStart.getDate() - 30);
-        
-        matches = searchResponse.matches
-          .map(match => ({
-            score: parseFloat(match.score.toFixed(3)),
-            date: match.metadata.date,
-            summary: match.metadata.text_summary,
-          }))
-          .filter(match => {
-            const matchDate = new Date(match.date);
-            return matchDate >= expandedStart && matchDate <= endDate;
-          });
-      }
-    }
-
-    // Filter by recent timeframe (more flexible)
-    if (!dateRange && intent.timeScope === 'recent') {
-      const recentDate = new Date();
-      recentDate.setDate(recentDate.getDate() - 30); // Extended to 30 days
-      
-      matches = matches.filter(match => {
-        const matchDate = new Date(match.date);
-        return matchDate >= recentDate;
-      });
-    }
-
-    // 5️⃣ IMPROVED: Better no-data handling
+    // Step 4: Handle no data scenarios
     if (matches.length === 0) {
-      // Try one more time with just semantic search (no date filtering)
-      console.log('No matches found, trying semantic search only...');
-      
-      const fallbackResponse = await pineconeIndex.query({
-        topK: 20,
-        vector: userEmbedding,
-        includeMetadata: true,
-      });
-      
-      const fallbackMatches = fallbackResponse.matches
-        .map(match => ({
-          score: parseFloat(match.score.toFixed(3)),
-          date: match.metadata.date,
-          summary: match.metadata.text_summary,
-        }))
-        .filter(match => match.score > 0.6) // Lower threshold
-        .slice(0, 10);
-      
-      if (fallbackMatches.length > 0) {
-        const timeframe = dateRange ? `for ${dateRange.start}${dateRange.type === 'week_range' ? ' to ' + dateRange.end : ''}` : 'for your query';
-        
-        return res.json({
-          response: `I don't have specific WHOOP data ${timeframe}, but I found some relevant information from your recent activity. Let me analyze what I have available.`,
-          analysis: { 
-            queryType: intent.queryType, 
-            daysAnalyzed: fallbackMatches.length,
-            fallbackUsed: true,
-            timeScope: intent.timeScope
-          },
-          fallbackData: fallbackMatches.slice(0, 3),
-          messageId: 'fallback-' + Date.now(),
-        });
-      }
-      
       return res.json({
-        response: `I don't have sufficient WHOOP data to answer your question about strain patterns. This could mean:\n\n• Your device wasn't worn during that period\n• Data hasn't synced yet\n• You might need to check your WHOOP app connectivity\n\nTry asking about a different time period or check if your device is syncing properly.`,
-        analysis: { queryType: intent.queryType, daysAnalyzed: 0, noDataFound: true },
+        response: `I don't have WHOOP data available for ${analysis.timeframe}. This could mean:\n\n• Your device wasn't worn during that period\n• Data hasn't synced yet\n• You might need to check your WHOOP app connectivity\n\nTry asking about a different time period or check if your device is syncing properly.`,
+        analysis: {
+          intent: analysis.intent,
+          timeframe: analysis.timeframe,
+          metrics: analysis.metrics,
+          daysAnalyzed: 0,
+          noDataFound: true
+        },
+        processingTime: Date.now() - startTime,
         messageId: 'no-data-' + Date.now(),
       });
     }
 
-    // 6️⃣ More lenient relevance filtering
-    matches = matches.filter(match => match.score > 0.6); // Lowered from 0.7
+    // Step 5: Build precise context
+    const context = buildPreciseContext(matches, analysis);
 
-    // 7️⃣ Sort only when needed
-    if (strategy.requiresSorting) {
-      matches.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
+    // Step 6: Create optimized system prompt
+    const systemPrompt = createOptimizedSystemPrompt(analysis, context);
 
-    // 8️⃣ Limit results based on strategy
-    matches = matches.slice(0, strategy.topK);
-
-    // 9️⃣ Skip trend analysis if insufficient data
-    let trends = null;
-    if (strategy.needsTrendAnalysis && matches.length >= 2) { // Lowered from 3
-      trends = calculateTrends(matches);
-    }
-
-    // 🔟 Build context
-    const context = buildEnhancedContext(matches.slice(0, 6), intent, strategy, trends);
-
-    // 1️⃣1️⃣ Create prompt with data availability info
-    let systemPrompt = createSystemPrompt(intent, context);
-    
-    if (dateRange) {
-      systemPrompt += `\n\nNote: User asked about ${dateRange.start}${dateRange.type === 'week_range' ? ' to ' + dateRange.end : ''}. `;
-      if (matches.length < 5) {
-        systemPrompt += `Limited data available for this period - work with what you have and mention data gaps if relevant.`;
-      }
-    }
-
-    // 1️⃣2️⃣ Get AI response
+    // Step 7: Final GPT-4o call for accurate response
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
-      temperature: 0.7,
-      max_tokens: 500,
+      temperature: 0.3,
+      max_tokens: 350,
     });
 
+    // Clean up the response by removing markdown formatting
+    let cleanResponse = completion.choices[0].message.content;
+    
+    // Remove markdown bold formatting
+    cleanResponse = cleanResponse.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Remove any remaining asterisks
+    cleanResponse = cleanResponse.replace(/\*/g, '');
+
+    // Step 8: Return structured response
     res.json({
-      response: completion.choices[0].message.content,
+      response: cleanResponse, // Use cleaned response
       analysis: {
-        queryType: intent.queryType,
+        intent: analysis.intent,
+        timeframe: analysis.timeframe,
+        metrics: analysis.metrics,
         daysAnalyzed: matches.length,
-        trendsCalculated: !!trends,
-        timeScope: intent.timeScope,
-        dateSearched: dateRange?.start || null,
-        dateRange: dateRange,
-        dataAvailability: matches.length < 3 ? 'limited' : 'good'
+        searchType: searchType,
+        usedDateFilter: hasDateFilter,
+        accuracy: 'high'
       },
       availableDates: matches.map(m => m.date).slice(0, 5),
+      processingTime: Date.now() - startTime,
       messageId: completion.id,
     });
+
   } catch (error) {
     console.error('AI Coach Error:', error);
     res.status(500).json({
       error: 'Failed to get response from AI coach',
       details: error.message,
+      processingTime: Date.now() - (req.startTime || Date.now()),
     });
   }
 });
 
+// Add this route for debugging
+app.get('/debug/data', async (req, res) => {
+  try {
+    const testQuery = await pineconeIndex.query({
+      vector: new Array(1536).fill(0.1), // Correct dimension for text-embedding-3-large
+      topK: 20,
+      filter: { type: { "$eq": "day" } },
+      includeMetadata: true,
+    });
+    
+    const sortedByDate = testQuery.matches
+      .map(m => ({
+        date: m.metadata.date,
+        type: m.metadata.type,
+        score: m.score.toFixed(3)
+      }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date)); // Most recent first
+    
+    res.json({
+      totalMatches: testQuery.matches.length,
+      mostRecentDate: sortedByDate[0]?.date,
+      oldestDate: sortedByDate[sortedByDate.length - 1]?.date,
+      sampleDates: sortedByDate.slice(0, 10) // Show 10 most recent
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ Server with Pinecone vector search running on port ${PORT}`);
+  console.log(`🚀 Optimized server with single-call pipeline running on port ${PORT}`);
 });
