@@ -5,7 +5,7 @@ import SleepStatistics from './components/SleepStatistics';
 import AiInsightCard from '../../components/cards/AiInsightCard';
 import { format } from 'date-fns';
 
-const Sleep = ({ selectedDate = new Date() }) => {
+const Sleep = ({ selectedDate = new Date(), setActiveTab }) => { // Add setActiveTab prop
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   const [activeStage, setActiveStage] = useState(null);
   const [timePeriod, setTimePeriod] = useState('1d');
@@ -36,7 +36,11 @@ const Sleep = ({ selectedDate = new Date() }) => {
       {/* AI Insight Card - MATCH RECOVERY ULTRA REDUCED MARGIN */}
       <div className="flex justify-center mb-2"> {/* MATCH RECOVERY: Changed from mb-8 → mb-2 */}
         <div className="w-full max-w-4xl"> {/* MATCH RECOVERY: Changed from max-w-6xl → max-w-4xl */}
-          <AiInsightCard type="sleep" />
+          <AiInsightCard 
+            type="sleep" 
+            setActiveTab={setActiveTab} // Pass setActiveTab
+            selectedDate={selectedDate} // Pass selectedDate
+          />
         </div>
       </div>
       

@@ -7,16 +7,21 @@
   /* Background colors */
   --bg-base: #283339;         /* Page background 242D34 283339*/
   --bg-overlay: #1E242C;      /* Modal overlays */
-  --card-bg: #373e44;         /* Card/widget background - verified */
-  --bg-subcard: #252A30;      /* Sub-card/inner card background */
-  --stats-card-bg: #232529;   /* Statistics card background - from analysis */
+  --card-bg: rgba(80, 90, 100, 0.18);         /* Card/widget background - Semi-transparent foggy look */
+  --bg-subcard: rgba(80, 90, 100, 0.15);      /* Sub-card/inner card background - Slightly more transparent */
+  --stats-card-bg: rgba(80, 90, 100, 0.18);   /* Statistics card background - Same as main cards */
   --ring-bg: #2B2F34;         /* Chart/ring track background */
 
+  /* Add background gradients */
+  --bg-gradient-main: linear-gradient(to bottom, #283339 0%, #101518 100%);
+  --bg-gradient-diagonal: linear-gradient(135deg, #283339 0%, #101518 100%);
+  --bg-gradient-subtle: linear-gradient(180deg, #283339 0%, #1f2a30 50%, #101518 100%);
+
   /* Brand/feature colors */
-  --recovery-green: #3FB65E;
-  --strain-blue: #5D8DEE;
-  --stress-yellow: #FFCD4C;
-  --alert-red: #FF4F4F;
+  --recovery-green: #16EC06;
+  --strain-blue: #0093E7;
+  --stress-yellow: #FFDE00;
+  --alert-red: #FF0026;
   --steps-orange: #FF6A2C;
   --positive-green: #4CD964;  /* Up arrow / positive trend */
   --ai-coach-purple: #8754e0;  /* AI Coach accent color */
@@ -98,46 +103,82 @@
 }
 
 body {
-  background: var(--bg-base);
+  background: var(--bg-gradient-main);
   color: var(--text-primary);
   font-family: var(--font-body);
+  min-height: 100vh;
 }
 
-/* Card components */
+/* Card components - Updated for foggy/matte look */
 .whoops-card {
-  background: var(--card-bg);
+  background: var(--card-bg); /* Now uses rgba(80, 90, 100, 0.18) */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
   box-shadow: var(--shadow-whoop-card);
+  backdrop-filter: blur(10px); /* Adds glassmorphism effect */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
 }
 
 .stats-card {
-  background: var(--stats-card-bg);
+  background: var(--stats-card-bg); /* Now uses rgba(80, 90, 100, 0.18) */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  backdrop-filter: blur(10px); /* Adds glassmorphism effect */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
 }
 
 .whoops-card-secondary {
-  background: var(--bg-subcard);
+  background: var(--bg-subcard); /* Now uses rgba(80, 90, 100, 0.15) */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
+  backdrop-filter: blur(8px); /* Slightly less blur for secondary cards */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Even more subtle border */
 }
 
 /* Typography components */
 .headline {
-  font-family: var(--font-headline);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-headlines);
+  font-family: var(--font-headline); /* This is already 'Proxima Nova' */
+  font-weight: var(--weight-bold); /* This is already 700 */
+  letter-spacing: var(--tracking-headlines); /* This is already 0.1em (10%) */
   text-transform: uppercase;
 }
 
-.body-text {
-  font-family: var(--font-body);
-  font-weight: var(--weight-semibold);
-  font-size: var(--font-body-size);
+/* Add specific heading classes for consistency */
+.whoop-heading {
+  font-family: 'Proxima Nova', system-ui, sans-serif;
+  font-weight: 700; /* Bold */
+  letter-spacing: 0.1em; /* 10% character spacing */
+  text-transform: uppercase;
+}
+
+.whoop-heading-large {
+  font-family: 'Proxima Nova', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--font-title); /* 1.5rem */
+}
+
+.whoop-heading-medium {
+  font-family: 'Proxima Nova', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: var(--font-section); /* 0.875rem */
+}
+
+/* Ring label styling */
+.ring-label {
+  font-family: 'Proxima Nova', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .number {
@@ -208,11 +249,13 @@ body {
 }
 
 .secondary-button {
-  background: var(--card-bg);
+  background: var(--card-bg); /* Now uses the foggy semi-transparent look */
   color: white;
   border: 1px solid var(--strain-blue);
   border-radius: var(--radius-button);
   padding: 0.5rem 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .pill-tag {

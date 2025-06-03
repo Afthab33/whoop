@@ -30,8 +30,8 @@ const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
 
 const Overview = () => {
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
-      <div className="p-1 max-w-5xl mx-auto"> {/* MATCH: Same as Recovery - p-1, max-w-5xl */}
+    <div className="min-h-screen" style={{ background: 'transparent' }}> {/* CHANGED: Remove gradient */}
+      <div className="p-1 max-w-5xl mx-auto">
         <div className="flex flex-col gap-2"> {/* MATCH: Same gap-2 as Recovery */}
 
           {/* Daily Outlook Card - ULTRA COMPACT to match Recovery spacing */}

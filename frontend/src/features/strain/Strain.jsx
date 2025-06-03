@@ -6,7 +6,7 @@ import AiInsightCard from '../../components/cards/AiInsightCard';
 import StrainStatistics from './components/StrainStatistics';
 import whoopData from '../../data/day_wise_whoop_data.json';
 
-const Strain = ({ selectedDate = new Date() }) => {
+const Strain = ({ selectedDate = new Date(), setActiveTab }) => { // ADDED: setActiveTab prop
   const [activeWorkout, setActiveWorkout] = useState(null);
   const [hoveredTime, setHoveredTime] = useState(null);
   const [chartType] = useState('detailed');
@@ -36,11 +36,15 @@ const Strain = ({ selectedDate = new Date() }) => {
   }, [dayData]);
 
   return (
-    <div className="p-1 max-w-5xl mx-auto"> {/* REDUCED: max-w-screen-xl → max-w-5xl */}
+    <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
       {/* AI Insight Card - ULTRA REDUCED MARGIN */}
       <div className="flex justify-center mb-2">
-        <div className="w-full max-w-4xl"> {/* REDUCED: max-w-6xl → max-w-4xl */}
-          <AiInsightCard type="strain" />
+        <div className="w-full max-w-4xl">
+          <AiInsightCard 
+            type="strain" 
+            setActiveTab={setActiveTab} // ADDED: Pass setActiveTab
+            selectedDate={selectedDate} // ADDED: Pass selectedDate
+          />
         </div>
       </div>
 
@@ -64,7 +68,7 @@ const Strain = ({ selectedDate = new Date() }) => {
       {/* Split layout with sidebar and chart - REDUCED SIDEBAR WIDTH */}
       <div className="flex flex-col md:flex-row gap-2 mb-2">
         {/* Sidebar with strain statistics - REDUCED WIDTH: 20% → 15% */}
-        <div className="md:w-[18%] lg:w-[15%]"> {/* REDUCED: md:w-[25%] lg:w-[20%] → md:w-[18%] lg:w-[15%] */}
+        <div className="md:w-[18%] lg:w-[15%]">
           {/* Only show StrainStatistics if there are activities */}
           {hasActivities && (
             <StrainStatistics
@@ -90,7 +94,7 @@ const Strain = ({ selectedDate = new Date() }) => {
         </div>
          
         {/* Chart area - INCREASED WIDTH: 80% → 85% */}
-        <div className="md:w-[82%] lg:w-[85%]"> {/* INCREASED: md:w-[75%] lg:w-[80%] → md:w-[82%] lg:w-[85%] */}
+        <div className="md:w-[82%] lg:w-[85%]">
           <DetailedHeartRateChart selectedDate={selectedDate} />
         </div>
       </div>

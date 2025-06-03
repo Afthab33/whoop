@@ -879,7 +879,7 @@ const SleepChart = ({ selectedDate, activeStageFromParent, onStageChange, onTime
     };
 
     return (
-      <div className="flex items-center justify-between gap-3 py-0.1 px-4 bg-black/20 border border-white/5 rounded-xl backdrop-blur-sm"> {/* REDUCED: py-1.5 → py-1 for less vertical padding */}
+      <div className="flex items-center justify-between gap-3 py-0.4 px-4 bg-black/20 border border-white/5 rounded-xl backdrop-blur-sm"> {/* REDUCED: py-1.5 → py-1 for less vertical padding */}
         
         {/* Left side: Interactive Buttons with clean, professional styling */}
         <div className="flex items-center justify-start gap-2 flex-1">

@@ -29,21 +29,23 @@ const PORT = process.env.PORT || 8080;
 async function analyzeUserQuery(message) {
   const structuredPrompt = `Analyze this WHOOP user question and identify clearly:
 
-- Intent (e.g., analyze_recovery, analyze_sleep, improve_recovery, track_trends, analyze_strain, recovery_trends, sleep_trends, general_question)
+- Intent (e.g., improve_sleep, analyze_sleep, improve_recovery, analyze_recovery, analyze_strain, track_trends, recovery_trends, sleep_trends, strain_trends, general_question)
 - Relevant date-range or timeframe needed (today, yesterday, last_week, last_month, recent, specific_date)
 - Metrics to focus on (recovery_score, sleep_performance, hrv, strain, workout_performance, overall)
 
 Question: "${message}"
 
+For "improve" questions, use intent like "improve_sleep" or "improve_recovery".
+For "analyze" questions, use intent like "analyze_sleep" or "analyze_recovery".
 If the question mentions "trends", use "track_trends" or specific trend type like "recovery_trends".
 For trends, prefer longer timeframes like "last_month" or "recent".
 
 Respond in structured JSON exactly like this:
 
 {
-  "intent": "recovery_trends",
-  "timeframe": "last_month", 
-  "metrics": ["recovery_score", "sleep_performance", "hrv"]
+  "intent": "improve_sleep",
+  "timeframe": "recent", 
+  "metrics": ["sleep_performance", "sleep_stages", "sleep_debt"]
 }`;
 
   try {
@@ -57,17 +59,22 @@ Respond in structured JSON exactly like this:
     return JSON.parse(response.choices[0].message.content);
   } catch (error) {
     console.error('Query analysis error:', error);
-    // Enhanced fallback for trends
+    // Enhanced fallback
     const msg = message.toLowerCase();
     return {
-      intent: msg.includes('trends') || msg.includes('trend') ? 'track_trends' : 
+      intent: msg.includes('improve') && msg.includes('sleep') ? 'improve_sleep' :
+              msg.includes('improve') && msg.includes('recovery') ? 'improve_recovery' :
+              msg.includes('trends') || msg.includes('trend') ? 'track_trends' : 
               msg.includes('sleep') ? 'analyze_sleep' : 
-              msg.includes('recovery') ? 'analyze_recovery' : 'general_question',
+              msg.includes('recovery') ? 'analyze_recovery' : 
+              msg.includes('strain') ? 'analyze_strain' : 'general_question',
       timeframe: msg.includes('trends') || msg.includes('trend') ? 'last_month' :
                  msg.includes('yesterday') || msg.includes('last night') ? 'yesterday' : 
                  msg.includes('today') ? 'today' : 
                  msg.includes('week') ? 'last_week' : 'recent',
-      metrics: msg.includes('trends') ? ['recovery_score', 'sleep_performance', 'hrv'] : ['overall']
+      metrics: msg.includes('sleep') ? ['sleep_performance', 'sleep_stages', 'sleep_debt'] :
+               msg.includes('recovery') ? ['recovery_score', 'hrv', 'rhr'] :
+               msg.includes('strain') ? ['strain', 'workout_performance'] : ['overall']
     };
   }
 }
@@ -115,7 +122,7 @@ function getDateFilter(timeframe) {
       return { 
         type: 'range',
         filter: { 
-          date: { "$in": getDateRange(today, 7) }, // Back to 7 days for week
+          date: { "$in": getDateRange(today, 7) },
           type: { "$eq": "day" }
         },
         topK: 10
@@ -125,7 +132,7 @@ function getDateFilter(timeframe) {
       return { 
         type: 'range',
         filter: { 
-          date: { "$in": getDateRange(today, 30) }, // Back to 30 days for month
+          date: { "$in": getDateRange(today, 30) },
           type: { "$eq": "day" }
         },
         topK: 20
@@ -135,7 +142,7 @@ function getDateFilter(timeframe) {
       return { 
         type: 'range',
         filter: { 
-          date: { "$in": getDateRange(today, 14) }, // Back to 14 days for recent
+          date: { "$in": getDateRange(today, 14) },
           type: { "$eq": "day" }
         },
         topK: 15
@@ -144,8 +151,8 @@ function getDateFilter(timeframe) {
     default:
       return { 
         type: 'recent',
-        filter: null, // Remove type filter to get ANY available data
-        topK: 15 // Increased for better coverage
+        filter: null,
+        topK: 15
       };
   }
 }
@@ -154,14 +161,12 @@ function getDateFilter(timeframe) {
 async function queryPineconeWithMetadata(userEmbedding, analysis) {
   const dateFilter = getDateFilter(analysis.timeframe);
   
-  // Optimize search query based on metrics
   const searchParams = {
     vector: userEmbedding,
     topK: dateFilter.topK,
     includeMetadata: true,
   };
   
-  // Apply date filter if available
   if (dateFilter.filter) {
     searchParams.filter = dateFilter.filter;
   }
@@ -172,19 +177,17 @@ async function queryPineconeWithMetadata(userEmbedding, analysis) {
     let matches = searchResponse.matches.map(match => ({
       score: parseFloat(match.score.toFixed(3)),
       date: match.metadata.date,
-      summary: match.metadata.text_summary || match.metadata.summary, // Handle both field names
+      summary: match.metadata.text_summary || match.metadata.summary,
     }));
     
-    // Lower similarity threshold
-    matches = matches.filter(match => match.score > 0.4); // Lowered threshold
+    matches = matches.filter(match => match.score > 0.4);
     
-    // If no matches with date filter, try without filter but get RECENT data
     if (matches.length === 0 && dateFilter.filter) {
       console.log('No matches with date filter, trying to get most recent data...');
       const fallbackResponse = await pineconeIndex.query({
         vector: userEmbedding,
-        topK: 30, // Get more results
-        filter: { type: { "$eq": "day" } }, // Only daily data
+        topK: 30,
+        filter: { type: { "$eq": "day" } },
         includeMetadata: true,
       });
       
@@ -194,12 +197,11 @@ async function queryPineconeWithMetadata(userEmbedding, analysis) {
           date: match.metadata.date,
           summary: match.metadata.text_summary || match.metadata.summary,
         }))
-        .filter(match => match.score > 0.3) // Lower threshold
-        .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date DESC to get most recent
-        .slice(0, 15); // Take 15 most recent
+        .filter(match => match.score > 0.3)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 15);
     }
     
-    // Final fallback: get ANY data, sorted by recency
     if (matches.length === 0) {
       console.log('No semantic matches, getting most recent data available...');
       const typeOnlyResponse = await pineconeIndex.query({
@@ -215,8 +217,8 @@ async function queryPineconeWithMetadata(userEmbedding, analysis) {
           date: match.metadata.date,
           summary: match.metadata.text_summary || match.metadata.summary,
         }))
-        .sort((a, b) => new Date(b.date) - new Date(a.date)) // Sort by date DESC
-        .slice(0, 20); // Take 20 most recent regardless of score
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 20);
     }
     
     return {
@@ -237,18 +239,19 @@ function buildPreciseContext(matches, analysis) {
     return "No WHOOP data available for the requested timeframe.";
   }
   
-  // Sort by date for chronological context
   const sortedMatches = matches.sort((a, b) => new Date(a.date) - new Date(b.date));
   
-  // Extract and aggregate key metrics
+  // Extract metrics based on intent
   const recoveryScores = [];
   const sleepScores = [];
   const strainScores = [];
   const hrvValues = [];
   const rhrValues = [];
+  const sleepDebts = [];
+  const deepSleepValues = [];
+  const remSleepValues = [];
   
   sortedMatches.forEach(match => {
-    // Parse the summary to extract numeric values
     const summary = match.summary;
     
     // Extract Recovery score
@@ -270,6 +273,18 @@ function buildPreciseContext(matches, analysis) {
     // Extract RHR
     const rhrMatch = summary.match(/RHR (\d+(?:\.\d+)?) bpm/);
     if (rhrMatch) rhrValues.push(parseFloat(rhrMatch[1]));
+    
+    // Extract Sleep Debt
+    const sleepDebtMatch = summary.match(/Sleep debt (\d+) min/);
+    if (sleepDebtMatch) sleepDebts.push(parseFloat(sleepDebtMatch[1]));
+    
+    // Extract Deep Sleep
+    const deepSleepMatch = summary.match(/Deep sleep (\d+) min/);
+    if (deepSleepMatch) deepSleepValues.push(parseFloat(deepSleepMatch[1]));
+    
+    // Extract REM Sleep
+    const remSleepMatch = summary.match(/REM sleep (\d+) min/);
+    if (remSleepMatch) remSleepValues.push(parseFloat(remSleepMatch[1]));
   });
   
   // Calculate averages
@@ -278,27 +293,50 @@ function buildPreciseContext(matches, analysis) {
   const avgStrain = strainScores.length ? Math.round(strainScores.reduce((a, b) => a + b, 0) / strainScores.length * 10) / 10 : null;
   const avgHRV = hrvValues.length ? Math.round(hrvValues.reduce((a, b) => a + b, 0) / hrvValues.length) : null;
   const avgRHR = rhrValues.length ? Math.round(rhrValues.reduce((a, b) => a + b, 0) / rhrValues.length) : null;
+  const avgSleepDebt = sleepDebts.length ? Math.round(sleepDebts.reduce((a, b) => a + b, 0) / sleepDebts.length) : null;
+  const avgDeepSleep = deepSleepValues.length ? Math.round(deepSleepValues.reduce((a, b) => a + b, 0) / deepSleepValues.length) : null;
+  const avgRemSleep = remSleepValues.length ? Math.round(remSleepValues.reduce((a, b) => a + b, 0) / remSleepValues.length) : null;
   
   // Get date range
   const startDate = sortedMatches[0].date;
   const endDate = sortedMatches[sortedMatches.length - 1].date;
   
-  // Build aggregated context
+  // Build context based on intent
   let context = `WHOOP Data Analysis (${formatDateRange(startDate, endDate)}, ${matches.length} days):\n\n`;
   
   context += `**Aggregated Metrics:**\n`;
-  if (avgRecovery) context += `- Average Recovery: ${avgRecovery}%\n`;
-  if (avgSleep) context += `- Average Sleep Performance: ${avgSleep}%\n`;
-  if (avgStrain) context += `- Average Strain: ${avgStrain}\n`;
-  if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
-  if (avgRHR) context += `- Average RHR: ${avgRHR} bpm\n`;
+  
+  // Focus on relevant metrics based on intent
+  if (analysis.intent.includes('sleep')) {
+    if (avgSleep) context += `- Average Sleep Performance: ${avgSleep}%\n`;
+    if (avgSleepDebt) context += `- Average Sleep Debt: ${avgSleepDebt} minutes\n`;
+    if (avgDeepSleep) context += `- Average Deep Sleep: ${avgDeepSleep} minutes\n`;
+    if (avgRemSleep) context += `- Average REM Sleep: ${avgRemSleep} minutes\n`;
+    if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
+    if (avgRHR) context += `- Average RHR: ${avgRHR} bpm\n`;
+  } else if (analysis.intent.includes('recovery')) {
+    if (avgRecovery) context += `- Average Recovery: ${avgRecovery}%\n`;
+    if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
+    if (avgRHR) context += `- Average RHR: ${avgRHR} bpm\n`;
+    if (avgSleep) context += `- Average Sleep Performance: ${avgSleep}%\n`;
+  } else if (analysis.intent.includes('strain')) {
+    if (avgStrain) context += `- Average Strain: ${avgStrain}\n`;
+    if (avgRecovery) context += `- Average Recovery: ${avgRecovery}%\n`;
+    if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
+  } else {
+    // General - show all available
+    if (avgRecovery) context += `- Average Recovery: ${avgRecovery}%\n`;
+    if (avgSleep) context += `- Average Sleep Performance: ${avgSleep}%\n`;
+    if (avgStrain) context += `- Average Strain: ${avgStrain}\n`;
+    if (avgHRV) context += `- Average HRV: ${avgHRV} ms\n`;
+    if (avgRHR) context += `- Average RHR: ${avgRHR} bpm\n`;
+  }
   
   context += `\n**Daily Details:**\n`;
   sortedMatches.forEach(match => {
     context += `- ${match.summary}\n`;
   });
   
-  // Add analysis focus
   context += `\n**Analysis Focus:** ${analysis.metrics.join(', ')}\n`;
   context += `**Intent:** ${analysis.intent}\n`;
   context += `**Timeframe:** ${analysis.timeframe}\n`;
@@ -315,7 +353,6 @@ function formatDateRange(startDate, endDate) {
   const startStr = start.toLocaleDateString('en-US', formatOptions);
   const endStr = end.toLocaleDateString('en-US', formatOptions);
   
-  // Add year if different from current year
   const currentYear = new Date().getFullYear();
   if (start.getFullYear() !== currentYear || end.getFullYear() !== currentYear) {
     return `${startStr}, ${start.getFullYear()} - ${endStr}, ${end.getFullYear()}`;
@@ -324,42 +361,142 @@ function formatDateRange(startDate, endDate) {
   return `${startStr} - ${endStr}`;
 }
 
-// Create optimized system prompt
-function createOptimizedSystemPrompt(analysis, context) {
-  const basePrompt = `You are WHOOP AI Coach. Answer concisely (150-200 words) matching this EXACT format. Use ONLY the provided context data.
+// Create dynamic system prompt based on intent
+function createDynamicSystemPrompt(analysis, context) {
+  // Sleep improvement prompt
+  if (analysis.intent === 'improve_sleep') {
+    return `You are WHOOP AI Coach specializing in sleep optimization. Answer concisely (150-200 words) using ONLY the provided context data.
 
 Context:
 ${context}
 
-Format your response EXACTLY like this example:
+Format your response for SLEEP IMPROVEMENT exactly like this:
 
-"Your recovery trends over the last [TIMEFRAME] ([START DATE] - [END DATE]) show:
+"Based on your sleep data over [TIMEFRAME] ([START DATE] - [END DATE]):
 
-- **Average Recovery**: [X]% ([COLOR] zone). [Brief interpretation with specific insight].
-- **HRV**: Averaged [X] ms, [specific health note].
-- **RHR**: [X] bpm, [specific fitness indicator].
-- **[Other specific metric]**: [Value], [brief note].
+**Current Sleep Metrics:**
+- Sleep Performance: [X]% (needs improvement/good/excellent)
+- Average Sleep Debt: [X] minutes ([interpretation])
+- Deep Sleep: [X] minutes per night ([assessment])
+- REM Sleep: [X] minutes per night ([assessment])
 
-To improve recovery:
-- [Specific action with actual numbers from data].
-- [Another specific action referencing real metrics].
-- [Third recommendation tied to actual data points].
+**Sleep Improvement Strategies:**
+- [Specific action based on sleep debt data with numbers]
+- [Specific action for deep sleep optimization with actual metrics]
+- [Specific action for REM sleep enhancement with data reference]
+- [Additional recommendation based on patterns in your data]
 
-Want to dive deeper into specific behaviors impacting your recovery?"
+**Expected Outcomes:**
+Target: Increase sleep performance to 85%+ and reduce sleep debt to under 30 minutes.
+
+Ready to create a personalized sleep schedule based on your patterns?"
 
 RULES:
-- Include actual date ranges from context
-- Reference specific numbers from the data
-- Use color zones: Green (80-100%), Yellow (50-79%), Red (0-49%)
-- Make recommendations specific to the actual metrics shown
-- Keep positive tone but be specific about improvements needed`;
+- Focus ONLY on sleep-related metrics and advice
+- Reference actual sleep data from context
+- Be specific with sleep debt, deep sleep, and REM sleep numbers
+- Don't mention recovery or strain unless directly related to sleep impact`;
+  }
+  
+  // Recovery improvement prompt
+  if (analysis.intent === 'improve_recovery') {
+    return `You are WHOOP AI Coach specializing in recovery optimization. Answer concisely (150-200 words) using ONLY the provided context data.
 
-  return basePrompt;
+Context:
+${context}
+
+Format your response for RECOVERY IMPROVEMENT exactly like this:
+
+"Your recovery analysis over [TIMEFRAME] ([START DATE] - [END DATE]):
+
+**Current Recovery Status:**
+- Average Recovery: [X]% ([color] zone - [interpretation])
+- HRV: [X] ms ([assessment of autonomic nervous system])
+- Resting Heart Rate: [X] bpm ([cardiovascular fitness indicator])
+
+**Recovery Enhancement Plan:**
+- [Specific HRV improvement strategy with actual numbers]
+- [RHR optimization technique based on your data]
+- [Sleep quality improvement tied to recovery data]
+- [Stress management approach based on patterns]
+
+**Target Goals:**
+Aim for 70%+ recovery scores and HRV above [X+10] ms consistently.
+
+Want to explore specific recovery protocols based on your worst recovery days?"
+
+RULES:
+- Focus on recovery, HRV, RHR primarily
+- Use color zones: Green (70-100%), Yellow (34-69%), Red (0-33%)
+- Reference specific recovery patterns from data
+- Connect sleep to recovery but keep recovery as main focus`;
+  }
+  
+  // Sleep analysis prompt
+  if (analysis.intent === 'analyze_sleep') {
+    return `You are WHOOP AI Coach providing sleep pattern analysis. Answer concisely (150-200 words) using ONLY the provided context data.
+
+Context:
+${context}
+
+Format your response for SLEEP ANALYSIS exactly like this:
+
+"Sleep Analysis for [TIMEFRAME] ([START DATE] - [END DATE]):
+
+**Sleep Performance Breakdown:**
+- Average Sleep Score: [X]% ([interpretation])
+- Sleep Debt Patterns: [X] minutes average ([trend analysis])
+- Sleep Stage Quality:
+  • Deep Sleep: [X] minutes ([compared to optimal 90-120 min])
+  • REM Sleep: [X] minutes ([compared to optimal 90-120 min])
+
+**Key Insights:**
+- [Pattern observation from best sleep days]
+- [Pattern observation from worst sleep days]
+- [Correlation with recovery/performance if relevant]
+
+**Sleep Trends:**
+[Specific trend about consistency, debt accumulation, or stage distribution]
+
+Need help creating an action plan to optimize these sleep patterns?"
+
+RULES:
+- Analyze sleep data patterns objectively
+- Compare to optimal sleep stage durations
+- Identify best and worst performing days from data
+- Keep analysis factual and data-driven`;
+  }
+  
+  // Default/general prompt for other intents
+  return `You are WHOOP AI Coach. Answer concisely (150-200 words) matching the user's specific question using ONLY the provided context data.
+
+Context:
+${context}
+
+Format your response based on what the user asked about:
+
+For general questions: Provide relevant data analysis with specific numbers from the context.
+For trends: Show patterns over time with actual dates and metrics.
+For strain: Focus on workout performance and strain scores.
+For recovery: Focus on recovery percentages and related metrics.
+
+**Key Guidelines:**
+- Use actual data from the context
+- Reference specific dates and numbers
+- Provide actionable insights based on the data
+- Keep the response focused on what was asked
+- End with a relevant follow-up question
+
+RULES:
+- Match the user's question intent exactly
+- Use specific metrics from the provided data
+- Don't force a particular format if it doesn't match the question
+- Be helpful and specific to their actual query`;
 }
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('🚀 Optimized WHOOP backend with single-call pipeline!');
+  res.send('🚀 Optimized WHOOP backend with dynamic intent-based responses!');
 });
 
 app.get('/callback', (req, res) => {
@@ -377,7 +514,7 @@ app.post('/api/ai-coach', async (req, res) => {
     // Step 2: Create embedding for semantic search
     const embedResponse = await openai.embeddings.create({
       model: "text-embedding-3-large",
-      input: message, // Simplified - just use the original message
+      input: message,
     });
     const userEmbedding = embedResponse.data[0].embedding;
 
@@ -404,8 +541,8 @@ app.post('/api/ai-coach', async (req, res) => {
     // Step 5: Build precise context
     const context = buildPreciseContext(matches, analysis);
 
-    // Step 6: Create optimized system prompt
-    const systemPrompt = createOptimizedSystemPrompt(analysis, context);
+    // Step 6: Create dynamic system prompt based on intent
+    const systemPrompt = createDynamicSystemPrompt(analysis, context);
 
     // Step 7: Final GPT-4o call for accurate response
     const completion = await openai.chat.completions.create({
@@ -429,7 +566,7 @@ app.post('/api/ai-coach', async (req, res) => {
 
     // Step 8: Return structured response
     res.json({
-      response: cleanResponse, // Use cleaned response
+      response: cleanResponse,
       analysis: {
         intent: analysis.intent,
         timeframe: analysis.timeframe,
@@ -458,7 +595,7 @@ app.post('/api/ai-coach', async (req, res) => {
 app.get('/debug/data', async (req, res) => {
   try {
     const testQuery = await pineconeIndex.query({
-      vector: new Array(1536).fill(0.1), // Correct dimension for text-embedding-3-large
+      vector: new Array(1536).fill(0.1),
       topK: 20,
       filter: { type: { "$eq": "day" } },
       includeMetadata: true,
@@ -470,13 +607,13 @@ app.get('/debug/data', async (req, res) => {
         type: m.metadata.type,
         score: m.score.toFixed(3)
       }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date)); // Most recent first
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
     
     res.json({
       totalMatches: testQuery.matches.length,
       mostRecentDate: sortedByDate[0]?.date,
       oldestDate: sortedByDate[sortedByDate.length - 1]?.date,
-      sampleDates: sortedByDate.slice(0, 10) // Show 10 most recent
+      sampleDates: sortedByDate.slice(0, 10)
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -484,5 +621,5 @@ app.get('/debug/data', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Optimized server with single-call pipeline running on port ${PORT}`);
+  console.log(`🚀 Optimized server with dynamic intent-based responses running on port ${PORT}`);
 });

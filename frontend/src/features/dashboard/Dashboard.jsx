@@ -85,17 +85,17 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <Overview selectedDate={selectedDate} />;
+        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
       case 'sleep':
-        return <Sleep selectedDate={selectedDate} />;
+        return <Sleep selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Already has it
       case 'recovery':
-        return <Recovery selectedDate={selectedDate} />;
+        return <Recovery selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
       case 'strain':
-        return <Strain selectedDate={selectedDate} />;
+        return <Strain selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
       case 'ai-coach':
         return <AiCoach selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       default:
-        return <Overview selectedDate={selectedDate} />;
+        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
     }
   };
   
@@ -111,7 +111,7 @@ const Dashboard = () => {
   // AI Coach gets full screen treatment
   if (activeTab === 'ai-coach') {
     return (
-      <div className="h-screen overflow-hidden">
+      <div className="h-screen overflow-hidden" style={{ background: "var(--bg-gradient-main)" }}>
         <AiCoach selectedDate={selectedDate} setActiveTab={setActiveTab} />
       </div>
     );
@@ -119,7 +119,7 @@ const Dashboard = () => {
   
   // Regular dashboard layout for other tabs
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+    <div className="min-h-screen" style={{ background: "var(--bg-gradient-main)" }}>
       {/* TopMetricsCard */}
       <TopMetricsCard 
         selectedDate={selectedDate} 

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronDown, Info, User, Calendar, LayoutDashboard, ChevronLeft, Bot } from 'lucide-react';
+import { ChevronDown, Info, User, Calendar, LayoutDashboard, Bot } from 'lucide-react'; // REMOVED: ChevronLeft import
 import StrainRing from '../../features/strain/components/StrainRing';
 import RecoveryRing from '../../features/recovery/components/RecoveryRing';
 import SleepPerformanceRing from '../../features/sleep/components/SleepPerformanceRing';
@@ -57,24 +57,13 @@ const TopMetricsCard = ({
   const recoveryColor = getRecoveryColor(metrics.recovery);
 
   return (
-    <div className="font-['Plus_Jakarta_Sans']">
+    <div className="font-['Plus_Jakarta_Sans']" style={{ background: 'transparent' }}>
       {/* Header with centered logo and user profile on left - REDUCED PADDING */}
-      <div className="flex items-center bg-[var(--bg-base)] px-4 py-2 relative"> {/* Reduced from px-5 py-3.5 to px-4 py-2 */}
-        {/* Left section - User profile and back button when needed */}
-        <div className="flex items-center space-x-2 flex-1"> {/* Reduced from space-x-3 to space-x-2 */}
-          {/* Back to overview button - only visible when not on overview page */}
-          {activeTab !== 'overview' && (
-            <button
-              onClick={() => setActiveTab('overview')}
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-[var(--card-bg)] hover:bg-[var(--bg-hover)] transition-colors" // Reduced from w-8 h-8 to w-7 h-7
-              title="Back to Overview"
-            >
-              <ChevronLeft size={16} /> {/* Reduced from size={18} to size={16} */}
-            </button>
-          )}
-          
+      <div className="flex items-center px-4 py-2 relative" style={{ background: 'transparent' }}>
+        {/* Left section - User profile only */} {/* REMOVED: Back button logic */}
+        <div className="flex items-center space-x-2 flex-1">
           {/* User avatar - SMALLER */}
-          <div className="w-7 h-7 rounded-full overflow-hidden border border-[rgba(255,255,255,0.15)] flex-shrink-0 bg-[var(--card-bg)]"> {/* Reduced from w-8 h-8 to w-7 h-7 */}
+          <div className="w-7 h-7 rounded-full overflow-hidden border border-[rgba(255,255,255,0.15)] flex-shrink-0 bg-[var(--card-bg)]">
             {userData.profileImage ? (
               <img 
                 src={userData.profileImage} 
@@ -83,15 +72,15 @@ const TopMetricsCard = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full">
-                <User size={14} className="text-[var(--text-muted)]" /> {/* Reduced from size={16} to size={14} */}
+                <User size={14} className="text-[var(--text-muted)]" />
               </div>
             )}
           </div>
           
           {/* Name and username - stacked - SMALLER TEXT */}
           <div>
-            <div className="text-xs font-semibold text-[var(--text-primary)] leading-tight">{userData.fullName}</div> {/* Reduced from text-sm to text-xs */}
-            <div className="text-[9px] text-[var(--text-muted)] leading-tight">@{userData.username}</div> {/* Reduced from text-[10px] to text-[9px] */}
+            <div className="text-xs font-semibold text-[var(--text-primary)] leading-tight">{userData.fullName}</div>
+            <div className="text-[9px] text-[var(--text-muted)] leading-tight">@{userData.username}</div>
           </div>
         </div>
         
@@ -100,7 +89,7 @@ const TopMetricsCard = ({
           <img 
             src={whoopLogo} 
             alt="WHOOP" 
-            className="h-5 text-white cursor-pointer" // Reduced from h-6 to h-5
+            className="h-5 text-white cursor-pointer"
             style={{ filter: 'brightness(0) invert(1)' }}
             onClick={() => setActiveTab('overview')}
             title="Return to Overview" 
@@ -111,7 +100,7 @@ const TopMetricsCard = ({
         <div className="flex-1 flex justify-end">
           <button
             onClick={() => setActiveTab('ai-coach')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-colors ${  // Reduced gap and padding
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-colors ${
               activeTab === 'ai-coach' 
                 ? 'bg-purple-600 text-white' 
                 : 'bg-[var(--card-bg)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
@@ -122,15 +111,15 @@ const TopMetricsCard = ({
             }}
             title="Chat with your AI Coach"
           >
-            <Bot size={14} className={activeTab === 'ai-coach' ? 'text-white' : 'text-purple-400'} /> {/* Reduced from size={16} to size={14} */}
-            <span className="text-xs font-medium">AI Coach</span> {/* Reduced from text-sm to text-xs */}
+            <Bot size={14} className={activeTab === 'ai-coach' ? 'text-white' : 'text-purple-400'} />
+            <span className="text-xs font-medium">AI Coach</span>
           </button>
         </div>
       </div>
       
       {/* Metrics section - SIGNIFICANTLY REDUCED PADDING */}
-      <div className="bg-[var(--bg-base)] px-20 py-6"> {/* Removed mt-2 to reduce space */}
-        <div className="flex justify-center items-start gap-80"> {/* Changed from justify-between to justify-center and added gap-8 */}
+      <div className="px-20 py-6" style={{ background: 'transparent' }}>
+        <div className="flex justify-center items-start gap-80">
           {/* Strain Ring - SLIGHTLY BIGGER */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
@@ -139,12 +128,12 @@ const TopMetricsCard = ({
             onMouseLeave={() => setHoveredRing(null)}
             style={{
               transform: activeTab === 'strain' 
-                ? 'translateY(-8px) scale(1.06)' // Reduced animation scale
+                ? 'translateY(-8px) scale(1.06)'
                 : hoveredRing === 'strain' 
-                  ? 'translateY(-4px) scale(1.03)' // Reduced hover scale
+                  ? 'translateY(-4px) scale(1.03)'
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'strain' 
-                ? 'drop-shadow(0 6px 12px rgba(0, 147, 231, 0.25))' // Reduced shadow
+                ? 'drop-shadow(0 6px 12px rgba(0, 147, 231, 0.25))'
                 : hoveredRing === 'strain'
                   ? 'drop-shadow(0 4px 8px rgba(0, 147, 231, 0.15))'
                   : 'none',
@@ -155,7 +144,7 @@ const TopMetricsCard = ({
               <StrainRing 
                 value={metrics.strain} 
                 max={21} 
-                size={120} // Increased from 110 to 120
+                size={120}
                 isInteractive={activeTab !== 'strain'}
               />
               
@@ -165,7 +154,7 @@ const TopMetricsCard = ({
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
                     background: 'radial-gradient(circle, rgba(0, 147, 231, 0.08) 0%, rgba(0, 147, 231, 0) 70%)',
-                    transform: 'scale(1.1)', // Reduced from 1.12
+                    transform: 'scale(1.1)',
                     animation: 'pulse 2s infinite'
                   }}
                 ></div>
@@ -181,12 +170,12 @@ const TopMetricsCard = ({
             onMouseLeave={() => setHoveredRing(null)}
             style={{
               transform: activeTab === 'recovery' 
-                ? 'translateY(-8px) scale(1.06)' // Reduced animation scale
+                ? 'translateY(-8px) scale(1.06)'
                 : hoveredRing === 'recovery' 
-                  ? 'translateY(-4px) scale(1.03)' // Reduced hover scale
+                  ? 'translateY(-4px) scale(1.03)'
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'recovery' 
-                ? `drop-shadow(0 6px 12px ${recoveryColor}40)` // Reduced shadow
+                ? `drop-shadow(0 6px 12px ${recoveryColor}40)`
                 : hoveredRing === 'recovery'
                   ? `drop-shadow(0 4px 8px ${recoveryColor}30)`
                   : 'none',
@@ -196,7 +185,7 @@ const TopMetricsCard = ({
             <div className="relative">
               <RecoveryRing 
                 value={metrics.recovery} 
-                size={120} // Increased from 110 to 120
+                size={120}
                 isInteractive={activeTab !== 'recovery'}
               />
               
@@ -206,7 +195,7 @@ const TopMetricsCard = ({
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
                     background: `radial-gradient(circle, ${recoveryColor}14 0%, ${recoveryColor}00 70%)`,
-                    transform: 'scale(1.1)', // Reduced from 1.12
+                    transform: 'scale(1.1)',
                     animation: 'pulse 2s infinite'
                   }}
                 ></div>
@@ -222,12 +211,12 @@ const TopMetricsCard = ({
             onMouseLeave={() => setHoveredRing(null)}
             style={{
               transform: activeTab === 'sleep' 
-                ? 'translateY(-8px) scale(1.06)' // Reduced animation scale
+                ? 'translateY(-8px) scale(1.06)'
                 : hoveredRing === 'sleep' 
-                  ? 'translateY(-4px) scale(1.03)' // Reduced hover scale
+                  ? 'translateY(-4px) scale(1.03)'
                   : 'translateY(0) scale(1)',
               filter: activeTab === 'sleep' 
-                ? 'drop-shadow(0 6px 12px rgba(123, 161, 187, 0.25))' // Reduced shadow
+                ? 'drop-shadow(0 6px 12px rgba(123, 161, 187, 0.25))'
                 : hoveredRing === 'sleep'
                   ? 'drop-shadow(0 4px 8px rgba(123, 161, 187, 0.15))'
                   : 'none',
@@ -238,7 +227,7 @@ const TopMetricsCard = ({
               <SleepPerformanceRing 
                 value={metrics.sleep.score} 
                 max={100} 
-                size={120} // Increased from 110 to 120
+                size={120}
                 isInteractive={activeTab !== 'sleep'}
               />
               
@@ -248,7 +237,7 @@ const TopMetricsCard = ({
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
                   style={{
                     background: 'radial-gradient(circle, rgba(123, 161, 187, 0.08) 0%, rgba(123, 161, 187, 0) 70%)',
-                    transform: 'scale(1.1)', // Reduced from 1.12
+                    transform: 'scale(1.1)',
                     animation: 'pulse 2s infinite'
                   }}
                 ></div>

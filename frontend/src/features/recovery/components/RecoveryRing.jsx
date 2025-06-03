@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 
 const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
   // SVG parameters
-  const strokeWidth = size * 0.067; // Scaling stroke width proportionally
+  const strokeWidth = size * 0.067;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const percentage = Math.min(value / 100, 1);
@@ -12,18 +12,17 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
   // Calculate display sizes
   const displaySize = size <= 120 ? 'w-24 h-24' : 'w-32 h-32';
   const fontSize = size <= 120 ? 'text-4xl' : 'text-5xl';
-  const percentSize = size <= 120 ? 'text-xl' : 'text-2xl';
+  const percentSize = size <= 120 ? 'text-lg' : 'text-xl'; // REDUCED: text-xl → text-lg, text-2xl → text-xl
   
   // Recovery color based on value range
   const getRecoveryColor = (value) => {
-    if (value >= 67) return "#16EC06"; // High Recovery: 100-67%
-    if (value >= 34) return "#FFDE00"; // Medium Recovery: 66-34%
-    return "#FF0026"; // Low Recovery: 33-0%
+    if (value >= 67) return "#16EC06";
+    if (value >= 34) return "#FFDE00";
+    return "#FF0026";
   };
   
   const recoveryColor = getRecoveryColor(value);
   
-  // Recovery level text
   const getRecoveryLevelText = (value) => {
     if (value >= 67) return "High";
     if (value >= 34) return "Medium";
@@ -54,7 +53,7 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
             strokeWidth={strokeWidth}
           />
           
-          {/* Progress ring with gradient - flat ends */}
+          {/* Progress ring with gradient - slightly rounded ends */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -62,27 +61,39 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
             fill="transparent"
             stroke="url(#recoveryGradient)"
             strokeWidth={strokeWidth}
-            strokeLinecap="butt"
+            strokeLinecap="round" // CHANGED: butt → round for slightly curved ends
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         </svg>
 
-        {/* Center value - responsive size */}
+        {/* Center value - Use DINPro for numbers */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`${fontSize} font-bold font-sans`}>{value}</span>
-          <span className={`${percentSize} font-bold font-sans`}>%</span>
+          <span 
+            className={`${fontSize} font-bold`}
+            style={{ fontFamily: 'DINPro, system-ui, sans-serif' }}
+          >
+            {value}
+          </span>
+          <span 
+            className={`${percentSize} font-bold`} // Now smaller
+            style={{ fontFamily: 'DINPro, system-ui, sans-serif' }}
+          >
+            %
+          </span>
         </div>
       </div>
 
-      {/* Label with interactive indicator */}
+      {/* Label with Proxima Nova - Updated */}
       <div className="flex flex-col items-center">
-        <div 
-          className="flex items-center text-sm font-medium mt-1 group"
-          style={{ color: recoveryColor }}
-        >
-          Recovery
+        <div className="flex items-center mt-1 group" style={{ color: recoveryColor }}>
+          <span 
+            className="text-sm font-bold uppercase tracking-[0.1em]"
+            style={{ fontFamily: 'Proxima Nova, system-ui, sans-serif' }}
+          >
+            Recovery
+          </span>
           {isInteractive && (
             <ChevronRight 
               size={14} 

@@ -6,7 +6,7 @@ import RecoveryComparisonChart from './charts/RecoveryComparisonChart';
 import AiInsightCard from '../../components/cards/AiInsightCard';
 import whoopData from '../../data/day_wise_whoop_data.json';
 
-const Recovery = ({ selectedDate = new Date() }) => {
+const Recovery = ({ selectedDate = new Date(), setActiveTab }) => { // ADDED: setActiveTab prop
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   const [timePeriod, setTimePeriod] = useState('1d');
   
@@ -33,11 +33,15 @@ const Recovery = ({ selectedDate = new Date() }) => {
   };
 
   return (
-    <div className="p-1 max-w-5xl mx-auto"> {/* REDUCED: max-w-screen-xl → max-w-5xl */}
+    <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
       {/* AI Insight Card - ULTRA REDUCED MARGIN */}
       <div className="flex justify-center mb-2">
-        <div className="w-full max-w-4xl"> {/* REDUCED: max-w-6xl → max-w-4xl */}
-          <AiInsightCard type="recovery" />
+        <div className="w-full max-w-4xl">
+          <AiInsightCard 
+            type="recovery" 
+            setActiveTab={setActiveTab} // ADDED: Pass setActiveTab
+            selectedDate={selectedDate} // ADDED: Pass selectedDate
+          />
         </div>
       </div>
       
@@ -61,7 +65,7 @@ const Recovery = ({ selectedDate = new Date() }) => {
       {/* Split layout with sidebar and chart - REDUCED SIDEBAR WIDTH */}
       <div className="flex flex-col md:flex-row gap-2 mb-2">
         {/* Sidebar with recovery metrics - REDUCED WIDTH: 25%/20% → 18%/15% */}
-        <div className="md:w-[18%] lg:w-[15%]"> {/* REDUCED: md:w-[25%] lg:w-[20%] → md:w-[18%] lg:w-[15%] */}
+        <div className="md:w-[18%] lg:w-[15%]">
           <RecoveryStatistics
             selectedDate={selectedDate} 
             dayData={dayData}
@@ -72,7 +76,7 @@ const Recovery = ({ selectedDate = new Date() }) => {
         </div>
          
         {/* Chart area - INCREASED WIDTH: 75%/80% → 82%/85% */}
-        <div className="md:w-[82%] lg:w-[85%]"> {/* INCREASED: md:w-[75%] lg:w-[80%] → md:w-[82%] lg:w-[85%] */}
+        <div className="md:w-[82%] lg:w-[85%]">
           {renderRecoveryChart()}
         </div>
       </div>

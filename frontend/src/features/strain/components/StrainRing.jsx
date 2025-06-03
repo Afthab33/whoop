@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 
 const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }) => {
   // SVG parameters
-  const strokeWidth = size * 0.067; // Scaling stroke width proportionally
+  const strokeWidth = size * 0.067;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const percentage = Math.min(value / max, 1);
@@ -35,7 +35,7 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }
             strokeWidth={strokeWidth}
           />
           
-          {/* Progress ring with gradient - flat ends */}
+          {/* Progress ring with gradient - slightly rounded ends */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -43,22 +43,32 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }
             fill="transparent"
             stroke="url(#strainGradient)"
             strokeWidth={strokeWidth}
-            strokeLinecap="butt"
+            strokeLinecap="round" // CHANGED: butt → round for slightly curved ends
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         </svg>
 
-        {/* Center value - responsive size */}
+        {/* Center value - Use DINPro for numbers */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`${fontSize} font-bold font-sans`}>{value}</span>
+          <span 
+            className={`${fontSize} font-bold`}
+            style={{ fontFamily: 'DINPro, system-ui, sans-serif' }}
+          >
+            {value}
+          </span>
         </div>
       </div>
 
-      {/* Label with interactive indicator */}
-      <div className="flex items-center text-sm font-medium mt-1 group" style={{ color: "#0093E7" }}>
-        Strain
+      {/* Label with Proxima Nova - Updated */}
+      <div className="flex items-center mt-1 group" style={{ color: "#0093E7" }}>
+        <span 
+          className="text-sm font-bold uppercase tracking-[0.1em]"
+          style={{ fontFamily: 'Proxima Nova, system-ui, sans-serif' }}
+        >
+          Strain
+        </span>
         {isInteractive && (
           <ChevronRight 
             size={14} 
