@@ -366,8 +366,6 @@ export const loadTrendData = (whoopData, selectedDate, timePeriod) => {
       avgBpm,
     };
   });
-  
-  console.log(`Generated trend data for ${timePeriod}:`, result.length);
   return result;
 };
 
@@ -379,11 +377,6 @@ export const loadTrendData = (whoopData, selectedDate, timePeriod) => {
  */
 export const generateTrendChartData = (trendData, chartRef) => {
   if (!trendData || trendData.length === 0 || !chartRef.current) {
-    console.log("Missing data for trend chart:", { 
-      trendDataExists: !!trendData, 
-      trendDataLength: trendData?.length,
-      chartRefExists: !!chartRef.current 
-    });
     return null;
   }
   
@@ -418,8 +411,6 @@ export const generateTrendChartData = (trendData, chartRef) => {
     barWidth *= scaleFactor;
     barSpacing *= scaleFactor;
   }
-  
-  console.log("Bar dimensions:", { barWidth, barSpacing, totalBars, containerWidth, totalCalculatedWidth: (barWidth + barSpacing) * totalBars });
   
   // Generate bars for each day
   const bars = trendData.map((day, index) => {

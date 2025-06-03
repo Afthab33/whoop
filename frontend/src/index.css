@@ -7,9 +7,9 @@
   /* Background colors */
   --bg-base: #283339;         /* Page background 242D34 283339*/
   --bg-overlay: #1E242C;      /* Modal overlays */
-  --card-bg: rgba(80, 90, 100, 0.18);         /* Card/widget background - Semi-transparent foggy look */
-  --bg-subcard: rgba(80, 90, 100, 0.15);      /* Sub-card/inner card background - Slightly more transparent */
-  --stats-card-bg: rgba(80, 90, 100, 0.18);   /* Statistics card background - Same as main cards */
+  --card-bg: #2F373D;         /* Card/widget background - Professional gray */
+  --bg-subcard: #2A3137;      /* Sub-card/inner card background - Slightly darker */
+  --stats-card-bg: #2F373D;   /* Statistics card background - Same as main cards */
   --ring-bg: #2B2F34;         /* Chart/ring track background */
 
   /* Add background gradients */
@@ -109,36 +109,30 @@ body {
   min-height: 100vh;
 }
 
-/* Card components - Updated for foggy/matte look */
+/* Card components - Updated for solid dark gray look */
 .whoops-card {
-  background: var(--card-bg); /* Now uses rgba(80, 90, 100, 0.18) */
+  background: var(--card-bg); /* Now uses solid #2A3138 */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
   box-shadow: var(--shadow-whoop-card);
-  backdrop-filter: blur(10px); /* Adds glassmorphism effect */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Keep subtle border for definition */
 }
 
 .stats-card {
-  background: var(--stats-card-bg); /* Now uses rgba(80, 90, 100, 0.18) */
+  background: var(--stats-card-bg); /* Now uses solid #2A3138 */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(10px); /* Adds glassmorphism effect */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border for definition */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Keep subtle border for definition */
 }
 
 .whoops-card-secondary {
-  background: var(--bg-subcard); /* Now uses rgba(80, 90, 100, 0.15) */
+  background: var(--bg-subcard); /* Now uses solid #252B32 */
   border-radius: var(--radius-card);
   padding: var(--card-padding);
-  backdrop-filter: blur(8px); /* Slightly less blur for secondary cards */
-  -webkit-backdrop-filter: blur(8px); /* Safari support */
-  border: 1px solid rgba(255, 255, 255, 0.08); /* Even more subtle border */
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Keep subtle border */
 }
 
 /* Typography components */
@@ -249,19 +243,11 @@ body {
 }
 
 .secondary-button {
-  background: var(--card-bg); /* Now uses the foggy semi-transparent look */
+  background: var(--card-bg); /* Now uses the solid dark gray look */
   color: white;
   border: 1px solid var(--strain-blue);
   border-radius: var(--radius-button);
   padding: 0.5rem 1rem;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pill-tag {
-  border-radius: 9999px;
-  padding: 0.25rem 0.75rem;
-  font-size: var(--font-small);
 }
 
 /* Trend indicators */

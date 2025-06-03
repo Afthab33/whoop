@@ -183,7 +183,7 @@ async function queryPineconeWithMetadata(userEmbedding, analysis) {
     matches = matches.filter(match => match.score > 0.4);
     
     if (matches.length === 0 && dateFilter.filter) {
-      console.log('No matches with date filter, trying to get most recent data...');
+      
       const fallbackResponse = await pineconeIndex.query({
         vector: userEmbedding,
         topK: 30,
@@ -203,7 +203,7 @@ async function queryPineconeWithMetadata(userEmbedding, analysis) {
     }
     
     if (matches.length === 0) {
-      console.log('No semantic matches, getting most recent data available...');
+      
       const typeOnlyResponse = await pineconeIndex.query({
         vector: userEmbedding,
         topK: 50,
@@ -621,5 +621,5 @@ app.get('/debug/data', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Optimized server with dynamic intent-based responses running on port ${PORT}`);
+  
 });

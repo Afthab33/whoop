@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { ChevronLeft, RotateCcw, Calendar, ThumbsUp, ThumbsDown, MessageSquare, ChevronUp, Copy, Check } from 'lucide-react';
+import { ChevronLeft, RotateCcw, ThumbsUp, ThumbsDown, MessageSquare, ChevronUp, Copy, Check } from 'lucide-react';
 import whoopData from '../../data/day_wise_whoop_data.json';
-import WhoopLogo from '../../assets/WHOOP Circle White.svg';
+import WhoopLogo from '../../assets/Whoop White Symbol.svg';
 
-// Professional streaming text animation like ChatGPT/Claude
+// Professional streaming text animation
 const TypingText = ({ text, onComplete, speed = 15 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,7 +43,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [expandedSuggestions, setExpandedSuggestions] = useState({});
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [ratedMessages, setRatedMessages] = useState({});
   const messagesEndRef = useRef(null);
@@ -60,64 +59,9 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
   // Check if data is available for this date
   const hasDataForSelectedDate = !!userData;
 
-  // Initialize messages with welcome message or preloaded response
+  // Initialize with welcome message
   useEffect(() => {
-    // Check for preloaded response from AI Insight Card
-    const preloadedData = sessionStorage.getItem('aiCoachPreloadedResponse');
-    
-    if (preloadedData) {
-      try {
-        const { type, response, timestamp } = JSON.parse(preloadedData);
-        
-        // Only use if timestamp is recent (within last 5 seconds)
-        if (Date.now() - timestamp < 5000) {
-          const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
-          
-          setMessages([
-            { 
-              id: 1, 
-              role: 'ai', 
-              content: `Hi! I'm your WHOOP AI Coach. I see you're interested in your ${capitalizedType} insights. Let me break down your data:`,
-              isTyping: false,
-              isComplete: true
-            },
-            { 
-              id: 2, 
-              role: 'ai', 
-              content: response,
-              isTyping: true,
-              isComplete: false
-            }
-          ]);
-          
-          // Clear the preloaded data
-          sessionStorage.removeItem('aiCoachPreloadedResponse');
-          return;
-        }
-      } catch (error) {
-        console.error('Error parsing preloaded AI response:', error);
-      }
-      
-      // Clear invalid/old preloaded data
-      sessionStorage.removeItem('aiCoachPreloadedResponse');
-    }
-    
-    // Default welcome message
-    let welcomeMessage = 'Hi! I\'m your WHOOP AI Coach. How can I help you today?';
-    
-    if (formattedDate) {
-      const dateDisplay = new Date(formattedDate).toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      
-      if (hasDataForSelectedDate) {
-        welcomeMessage = `Hi! I'm your WHOOP AI Coach. I can see you have data for ${dateDisplay}. What would you like to know about your performance, recovery, or sleep?`;
-      } else {
-        welcomeMessage = `Hi! I'm your WHOOP AI Coach. I don't see any data for ${dateDisplay}, but I can still answer general fitness and wellness questions.`;
-      }
-    }
+    const welcomeMessage = "Hi! I'm your WHOOP AI Coach. How can I help you today?";
     
     setMessages([{ 
       id: 1, 
@@ -165,10 +109,9 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
       ...prev,
       [messageId]: rating
     }));
-    console.log(`Message ${messageId} rated: ${rating}`);
   };
 
-  // Send message function
+  // Simple send message function
   const sendMessage = async (messageText) => {
     if (!messageText.trim()) return;
     
@@ -183,24 +126,8 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     setIsLoading(true);
     
     try {
-      let trimmedUserData = null;
-      if (userData) {
-        trimmedUserData = {
-          physiological_summary: userData.physiological_summary || {},
-          sleep_summary: userData.sleep_summary || {},
-          workouts: userData.workouts ? userData.workouts.map(workout => ({
-            sport: workout.sport,
-            duration_min: workout.duration_min,
-            strain: workout.strain
-          })) : []
-        };
-      }
-      
       const response = await axios.post('http://localhost:8080/api/ai-coach', {
-        message: messageText,
-        userData: trimmedUserData,
-        date: formattedDate,
-        hasData: hasDataForSelectedDate
+        message: messageText
       });
       
       const aiMessage = { 
@@ -244,14 +171,11 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
   };
   
   const handleClearChat = () => {
-    // Clear any preloaded data
-    sessionStorage.removeItem('aiCoachPreloadedResponse');
-    
     setMessages([
       { 
         id: 1, 
         role: 'ai', 
-        content: 'Hi! I\'m your WHOOP AI Coach. How can I help you today?',
+        content: "Hi! I'm your WHOOP AI Coach. How can I help you today?",
         isTyping: false,
         isComplete: true
       }
@@ -346,12 +270,13 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
               <div key={message.id} className="mb-5">
                 {message.role === 'ai' ? (
                   <div className="flex items-start space-x-3">
-                    <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5">
+                    {/* Updated AI Avatar with smaller circle and new logo */}
+                    <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5">
                       <div 
                         className="w-full h-full rounded-full flex items-center justify-center"
                         style={{ background: 'var(--bg-base)' }}
                       >
-                        <img src={WhoopLogo} alt="WHOOP" className="w-4 h-4" />
+                        <img src={WhoopLogo} alt="WHOOP" className="w-5 h-5" />
                       </div>
                     </div>
                     <div className="flex-1 max-w-2xl">
@@ -473,7 +398,8 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
 
             {isLoading && (
               <div className="flex items-center space-x-3 mb-5">
-                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5">
+                {/* Updated Loading Avatar with smaller circle and new logo */}
+                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5">
                   <div 
                     className="w-full h-full rounded-full flex items-center justify-center"
                     style={{ background: 'var(--bg-base)' }}
@@ -583,8 +509,16 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
                   background: 'transparent',
                   color: 'var(--strain-blue)'
                 }}
-                onMouseEnter={(e) => !e.target.disabled && (e.target.style.background = 'var(--strain-blue)', e.target.style.color = 'white')}
-                onMouseLeave={(e) => (e.target.style.background = 'transparent', e.target.style.color = 'var(--strain-blue)')}
+                onMouseEnter={(e) => {
+                  if (!e.target.disabled) {
+                    e.target.style.background = 'var(--strain-blue)';
+                    e.target.style.color = 'white';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = 'var(--strain-blue)';
+                }}
               >
                 <ChevronUp className="w-4 h-4 rotate-90" />
               </button>

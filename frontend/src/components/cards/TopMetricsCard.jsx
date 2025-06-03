@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronDown, Info, User, Calendar, LayoutDashboard, Bot } from 'lucide-react'; // REMOVED: ChevronLeft import
+import { ChevronDown, Info, User, Calendar, LayoutDashboard, Menu } from 'lucide-react'; // ADDED: Menu import, REMOVED: Bot import
 import StrainRing from '../../features/strain/components/StrainRing';
 import RecoveryRing from '../../features/recovery/components/RecoveryRing';
 import SleepPerformanceRing from '../../features/sleep/components/SleepPerformanceRing';
@@ -18,6 +18,7 @@ const TopMetricsCard = ({
   activeTab = 'overview'
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showMenu, setShowMenu] = useState(false); // NEW: Menu state
   const calendarButtonRef = useRef(null);
   const [hoveredRing, setHoveredRing] = useState(null);
   
@@ -58,11 +59,21 @@ const TopMetricsCard = ({
 
   return (
     <div className="font-['Plus_Jakarta_Sans']" style={{ background: 'transparent' }}>
-      {/* Header with centered logo and user profile on left - REDUCED PADDING */}
+      {/* Header with centered logo and user profile on left */}
       <div className="flex items-center px-4 py-2 relative" style={{ background: 'transparent' }}>
-        {/* Left section - User profile only */} {/* REMOVED: Back button logic */}
-        <div className="flex items-center space-x-2 flex-1">
-          {/* User avatar - SMALLER */}
+        {/* Left section - Menu and user profile */}
+        <div className="flex items-center space-x-3 flex-1">
+          {/* Menu button */}
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-lg transition-colors hover:bg-[var(--bg-hover)] relative"
+            style={{ background: 'transparent' }}
+            title="Menu"
+          >
+            <Menu size={20} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]" />
+          </button>
+          
+          {/* User avatar */}
           <div className="w-7 h-7 rounded-full overflow-hidden border border-[rgba(255,255,255,0.15)] flex-shrink-0 bg-[var(--card-bg)]">
             {userData.profileImage ? (
               <img 
@@ -77,14 +88,14 @@ const TopMetricsCard = ({
             )}
           </div>
           
-          {/* Name and username - stacked - SMALLER TEXT */}
+          {/* Name and username - stacked */}
           <div>
             <div className="text-xs font-semibold text-[var(--text-primary)] leading-tight">{userData.fullName}</div>
             <div className="text-[9px] text-[var(--text-muted)] leading-tight">@{userData.username}</div>
           </div>
         </div>
         
-        {/* Center - WHOOP logo - SMALLER */}
+        {/* Center - WHOOP logo */}
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <img 
             src={whoopLogo} 
@@ -96,31 +107,16 @@ const TopMetricsCard = ({
           />
         </div>
         
-        {/* Right section - AI Coach button - SMALLER */}
+        {/* Right section - Empty now that Overview moved */}
         <div className="flex-1 flex justify-end">
-          <button
-            onClick={() => setActiveTab('ai-coach')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-full transition-colors ${
-              activeTab === 'ai-coach' 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-[var(--card-bg)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-            }`}
-            style={{
-              background: activeTab === 'ai-coach' ? '#8754e0' : 'var(--card-bg)',
-              boxShadow: activeTab === 'ai-coach' ? '0 2px 8px rgba(135, 84, 224, 0.3)' : 'none'
-            }}
-            title="Chat with your AI Coach"
-          >
-            <Bot size={14} className={activeTab === 'ai-coach' ? 'text-white' : 'text-purple-400'} />
-            <span className="text-xs font-medium">AI Coach</span>
-          </button>
+          {/* Overview button removed - now in Dashboard beside calendar */}
         </div>
       </div>
       
-      {/* Metrics section - SIGNIFICANTLY REDUCED PADDING */}
+      {/* Metrics section */}
       <div className="px-20 py-6" style={{ background: 'transparent' }}>
         <div className="flex justify-center items-start gap-80">
-          {/* Strain Ring - SLIGHTLY BIGGER */}
+          {/* Strain Ring */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('strain')}
@@ -148,7 +144,6 @@ const TopMetricsCard = ({
                 isInteractive={activeTab !== 'strain'}
               />
               
-              {/* Interactive pulse effect on hover when not active */}
               {activeTab !== 'strain' && hoveredRing === 'strain' && (
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
@@ -162,7 +157,7 @@ const TopMetricsCard = ({
             </div>
           </div>
           
-          {/* Recovery Ring - SLIGHTLY BIGGER */}
+          {/* Recovery Ring */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('recovery')}
@@ -189,7 +184,6 @@ const TopMetricsCard = ({
                 isInteractive={activeTab !== 'recovery'}
               />
               
-              {/* Interactive pulse effect on hover when not active */}
               {activeTab !== 'recovery' && hoveredRing === 'recovery' && (
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
@@ -203,7 +197,7 @@ const TopMetricsCard = ({
             </div>
           </div>
           
-          {/* Sleep Performance Ring - SLIGHTLY BIGGER */}
+          {/* Sleep Performance Ring */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('sleep')}
@@ -231,7 +225,6 @@ const TopMetricsCard = ({
                 isInteractive={activeTab !== 'sleep'}
               />
               
-              {/* Interactive pulse effect on hover when not active */}
               {activeTab !== 'sleep' && hoveredRing === 'sleep' && (
                 <div 
                   className="absolute inset-0 rounded-full opacity-50 animate-pulse"
@@ -247,7 +240,7 @@ const TopMetricsCard = ({
         </div>
       </div>
       
-      {/* CSS for animation - UPDATED */}
+      {/* CSS for animation */}
       <style jsx>{`
         @keyframes pulse {
           0% { transform: scale(1.06); opacity: 0.2; }

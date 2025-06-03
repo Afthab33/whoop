@@ -14,9 +14,6 @@ const stageColors = {
 const ChartTooltip = ({ hoveredTime }) => {
   if (!hoveredTime) return null;
   
-  // For debugging
-  console.log("Rendering tooltip with:", hoveredTime);
-  
   return (
     <div className="absolute pointer-events-none z-10" 
          style={{ 
