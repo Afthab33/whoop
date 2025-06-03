@@ -6,8 +6,8 @@
 :root {
   /* Background colors */
   --bg-base: #283339;         /* Page background 242D34 283339*/
-  --bg-overlay: #1E242C;      /* Modal overlays */
-  --card-bg: #2F373D;         /* Card/widget background - Professional gray */
+  --bg-overlay: #1E242C;      /* Modal overlays 2F373D*/
+  --card-bg: #42474c;         /* Card/widget background - Professional gray */
   --bg-subcard: #2A3137;      /* Sub-card/inner card background - Slightly darker */
   --stats-card-bg: #2F373D;   /* Statistics card background - Same as main cards */
   --ring-bg: #2B2F34;         /* Chart/ring track background */
