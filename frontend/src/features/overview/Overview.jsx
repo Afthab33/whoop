@@ -38,8 +38,8 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'transparent' }}>
-      <div className="p-1 max-w-5xl mx-auto">
+    <div className="min-h-screen flex flex-col" style={{ background: 'transparent' }}>
+      <div className="p-1 max-w-5xl mx-auto flex-1">
         <div className="flex flex-col gap-1">
 
           {/* AI Coach Prompt Card - MOBILE RESPONSIVE */}
@@ -93,7 +93,14 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Made by Aftab Footer - Fixed at bottom edge */}
+      <div className="mt-auto">
+          <p className="text-center sm:text-sm text-gray-500">
+            Developed by Aftab Hussain
+          </p>
+        </div>
+      </div>
   );
 };
 
