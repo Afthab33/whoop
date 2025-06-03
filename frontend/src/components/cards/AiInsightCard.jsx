@@ -25,7 +25,7 @@ const AiInsightCard = ({
 
   return (
     <div className="w-full mb-2">
-      <div className="relative p-3 rounded-lg overflow-hidden bg-transparent cursor-pointer transition-all duration-200 hover:scale-[1.01]" onClick={handleAiCoachClick}>
+      <div className="relative p-3 sm:p-4 rounded-lg overflow-hidden bg-transparent cursor-pointer transition-all duration-200 hover:scale-[1.01]" onClick={handleAiCoachClick}>
         {/* Gradient border effect */}
         <div 
           className="absolute inset-0 rounded-lg border border-transparent bg-transparent transition-opacity duration-200 hover:opacity-80" 
@@ -45,14 +45,14 @@ const AiInsightCard = ({
           }}
         />
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           {/* Main insight text */}
-          <p className="text-white text-sm font-medium mb-2 md:mb-0 md:mr-4 leading-tight md:max-w-[70%]">
+          <p className="text-white text-sm font-medium mb-3 sm:mb-0 sm:mr-4 leading-tight sm:max-w-[70%]">
             {displayInsight}
           </p>
           
           {/* Call to action button */}
-          <div className="flex items-center flex-shrink-0 group">
+          <div className="flex items-center justify-center sm:justify-end flex-shrink-0 group">
             <span 
               className="text-xs font-bold tracking-wide mr-1 uppercase whitespace-nowrap transition-all duration-200 group-hover:tracking-wider"
               style={{

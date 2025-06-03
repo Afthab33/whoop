@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ChevronDown, Info, User, Calendar, LayoutDashboard, Menu } from 'lucide-react'; // ADDED: Menu import, REMOVED: Bot import
+import { ChevronDown, Info, User, Calendar, LayoutDashboard, Menu } from 'lucide-react';
 import StrainRing from '../../features/strain/components/StrainRing';
 import RecoveryRing from '../../features/recovery/components/RecoveryRing';
 import SleepPerformanceRing from '../../features/sleep/components/SleepPerformanceRing';
@@ -18,7 +18,7 @@ const TopMetricsCard = ({
   activeTab = 'overview'
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [showMenu, setShowMenu] = useState(false); // NEW: Menu state
+  const [showMenu, setShowMenu] = useState(false);
   const calendarButtonRef = useRef(null);
   const [hoveredRing, setHoveredRing] = useState(null);
   
@@ -59,22 +59,22 @@ const TopMetricsCard = ({
 
   return (
     <div className="font-['Plus_Jakarta_Sans']" style={{ background: 'transparent' }}>
-      {/* Header with centered logo and user profile on left */}
-      <div className="flex items-center px-4 py-2 relative" style={{ background: 'transparent' }}>
+      {/* Header with centered logo and user profile on left - MOBILE RESPONSIVE */}
+      <div className="flex items-center px-2 sm:px-4 py-2 relative" style={{ background: 'transparent' }}>
         {/* Left section - Menu and user profile */}
-        <div className="flex items-center space-x-3 flex-1">
+        <div className="flex items-center space-x-2 sm:space-x-3 flex-1">
           {/* Menu button */}
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 rounded-lg transition-colors hover:bg-[var(--bg-hover)] relative"
+            className="p-1.5 sm:p-2 rounded-lg transition-colors hover:bg-[var(--bg-hover)] relative"
             style={{ background: 'transparent' }}
             title="Menu"
           >
-            <Menu size={20} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]" />
+            <Menu size={18} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:w-5 sm:h-5" />
           </button>
           
           {/* User avatar */}
-          <div className="w-7 h-7 rounded-full overflow-hidden border border-[rgba(255,255,255,0.15)] flex-shrink-0 bg-[var(--card-bg)]">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-[rgba(255,255,255,0.15)] flex-shrink-0 bg-[var(--card-bg)]">
             {userData.profileImage ? (
               <img 
                 src={userData.profileImage} 
@@ -83,15 +83,22 @@ const TopMetricsCard = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full">
-                <User size={14} className="text-[var(--text-muted)]" />
+                <User size={12} className="text-[var(--text-muted)] sm:w-3.5 sm:h-3.5" />
               </div>
             )}
           </div>
           
-          {/* Name and username - stacked */}
-          <div>
+          {/* Name and username - stacked - MOBILE RESPONSIVE */}
+          <div className="hidden sm:block">
             <div className="text-xs font-semibold text-[var(--text-primary)] leading-tight">{userData.fullName}</div>
             <div className="text-[9px] text-[var(--text-muted)] leading-tight">@{userData.username}</div>
+          </div>
+          
+          {/* Mobile: Show only first name */}
+          <div className="block sm:hidden">
+            <div className="text-xs font-semibold text-[var(--text-primary)] leading-tight">
+              {userData.fullName.split(' ')[0]}
+            </div>
           </div>
         </div>
         
@@ -100,7 +107,7 @@ const TopMetricsCard = ({
           <img 
             src={whoopLogo} 
             alt="WHOOP" 
-            className="h-5 text-white cursor-pointer"
+            className="h-4 sm:h-5 text-white cursor-pointer"
             style={{ filter: 'brightness(0) invert(1)' }}
             onClick={() => setActiveTab('overview')}
             title="Return to Overview" 
@@ -113,10 +120,10 @@ const TopMetricsCard = ({
         </div>
       </div>
       
-      {/* Metrics section */}
-      <div className="px-20 py-6" style={{ background: 'transparent' }}>
-        <div className="flex justify-center items-start gap-80">
-          {/* Strain Ring */}
+      {/* Metrics section - MOBILE RESPONSIVE */}
+      <div className="px-4 sm:px-8 md:px-12 lg:px-20 py-4 sm:py-6" style={{ background: 'transparent' }}>
+        <div className="flex justify-center items-start gap-8 sm:gap-16 md:gap-32 lg:gap-80">
+          {/* Strain Ring - MOBILE RESPONSIVE */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('strain')}
@@ -140,7 +147,7 @@ const TopMetricsCard = ({
               <StrainRing 
                 value={metrics.strain} 
                 max={21} 
-                size={120}
+                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
                 isInteractive={activeTab !== 'strain'}
               />
               
@@ -157,7 +164,7 @@ const TopMetricsCard = ({
             </div>
           </div>
           
-          {/* Recovery Ring */}
+          {/* Recovery Ring - MOBILE RESPONSIVE */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('recovery')}
@@ -180,7 +187,7 @@ const TopMetricsCard = ({
             <div className="relative">
               <RecoveryRing 
                 value={metrics.recovery} 
-                size={120}
+                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
                 isInteractive={activeTab !== 'recovery'}
               />
               
@@ -197,7 +204,7 @@ const TopMetricsCard = ({
             </div>
           </div>
           
-          {/* Sleep Performance Ring */}
+          {/* Sleep Performance Ring - MOBILE RESPONSIVE */}
           <div 
             className="flex flex-col items-center relative cursor-pointer transition-all duration-300"
             onClick={() => setActiveTab('sleep')}
@@ -221,7 +228,7 @@ const TopMetricsCard = ({
               <SleepPerformanceRing 
                 value={metrics.sleep.score} 
                 max={100} 
-                size={120}
+                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
                 isInteractive={activeTab !== 'sleep'}
               />
               

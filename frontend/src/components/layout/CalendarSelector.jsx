@@ -253,62 +253,51 @@ const CalendarSelector = ({
         left: '50%',
         transform: 'translateX(-50%)',
         marginTop: '8px',
-        width: 'min(90vw, 580px)' // Reduced from 650px to 580px
+        width: 'min(95vw, 580px)' // Changed from 90vw to 95vw for mobile
       }}
     >
-      {/* Calendar Header with navigation - MORE COMPACT */}
-      <div className="flex items-center justify-between border-b border-gray-700 px-3 py-2"> {/* Reduced padding from px-4 py-3 to px-3 py-2 */}
-        <div className="flex-1 text-center text-sm font-medium text-white">Calendar</div>
+      {/* Calendar Header with navigation - MOBILE RESPONSIVE */}
+      <div className="flex items-center justify-between border-b border-gray-700 px-2 sm:px-3 py-2">
+        <div className="flex-1 text-center text-xs sm:text-sm font-medium text-white">Calendar</div>
         
-        <div className="flex items-center space-x-1"> {/* Reduced space from space-x-2 to space-x-1 */}
+        <div className="flex items-center space-x-1">
           <button 
             onClick={goToPreviousMonths}
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10 hover:bg-opacity-15 transition-colors" // Reduced from w-8 h-8 to w-7 h-7
+            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full bg-gray-600 bg-opacity-40 hover:bg-opacity-60 transition-colors"
           >
-            <ChevronLeft size={16} className="text-white" /> {/* Reduced from size={18} to size={16} */}
+            <ChevronLeft size={14} className="text-white sm:w-4 sm:h-4" />
           </button>
           
           <button 
             onClick={goToNextMonths}
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-10 hover:bg-opacity-15 transition-colors" // Reduced from w-8 h-8 to w-7 h-7
+            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full bg-gray-600 bg-opacity-40 hover:bg-opacity-60 transition-colors"
           >
-            <ChevronRight size={16} className="text-white" /> {/* Reduced from size={18} to size={16} */}
+            <ChevronRight size={14} className="text-white sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
       
-      {/* Calendar Grid - MORE COMPACT */}
-      <div className="flex border-b border-gray-700">
+      {/* Calendar Grid - MOBILE RESPONSIVE */}
+      <div className="flex border-b border-gray-700 overflow-x-auto sm:overflow-x-visible">
         {months.map((month, index) => (
-          <div key={index} className="flex-1 py-2"> {/* Reduced from py-3 to py-2 */}
+          <div key={index} className="flex-shrink-0 w-full sm:flex-1 py-1 sm:py-2 min-w-[120px]">
             {generateCalendarMonth(month)}
           </div>
         ))}
       </div>
       
-      {/* Footer with legend - UPDATED FOR NEW LOGIC */}
-      <div className="flex justify-between px-3 py-2 items-center">
-        <div className="text-xs text-gray-400">
+      {/* Footer with legend - MOBILE RESPONSIVE */}
+      <div className="flex flex-col sm:flex-row sm:justify-between px-2 sm:px-3 py-2 items-start sm:items-center space-y-1 sm:space-y-0">
+        <div className="text-xs text-gray-400 text-center sm:text-left w-full sm:w-auto">
           {activeTab !== 'overview' ? 'Select a date or return to Overview' : 'Select a date'}
         </div>
         
-        <div className="flex items-center">
+        <div className="flex items-center justify-center sm:justify-end w-full sm:w-auto">
           {(() => {
             switch (activeTab) {
-              case 'strain':
-                return (
-                  <>
-                    <div 
-                      className="w-2 h-2 rounded-full mr-1.5"
-                      style={{ backgroundColor: '#0093E7' }}
-                    ></div>
-                    <span className="text-xs text-gray-300">Strain 10.0+</span>
-                  </>
-                );
-              
               case 'recovery':
                 return (
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     {/* High Recovery */}
                     <div className="flex items-center">
                       <div 
@@ -336,6 +325,17 @@ const CalendarSelector = ({
                       <span className="text-xs text-gray-300">Low</span>
                     </div>
                   </div>
+                );
+              
+              case 'strain':
+                return (
+                  <>
+                    <div 
+                      className="w-2 h-2 rounded-full mr-1.5"
+                      style={{ backgroundColor: '#0093E7' }}
+                    ></div>
+                    <span className="text-xs text-gray-300">Strain 10.0+</span>
+                  </>
                 );
               
               case 'sleep':

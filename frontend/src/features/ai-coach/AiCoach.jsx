@@ -126,7 +126,7 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:8080/api/ai-coach', {
+      const response = await axios.post('https://whoopapp-795777136792.europe-west1.run.app/api/ai-coach', {
         message: messageText
       });
       

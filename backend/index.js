@@ -1,16 +1,44 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import { Pinecone } from '@pinecone-database/pinecone';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+
+// Use PORT from environment or default to 8080 (Cloud Run requirement)
+const PORT = process.env.PORT || 8080;
+
+// Enhanced CORS for production
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://whoopapp.vercel.app'] // Replace with your frontend URL
+    : ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Health check endpoint (required for Cloud Run)
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'WHOOP AI Coach API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -22,8 +50,6 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY
 });
 const pineconeIndex = pinecone.Index("whoop-ai-coach");
-
-const PORT = process.env.PORT || 8080;
 
 // Single GPT-4o call for intent + metadata identification
 async function analyzeUserQuery(message) {
@@ -620,6 +646,8 @@ app.get('/debug/data', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 WHOOP AI Coach API running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

@@ -5,7 +5,7 @@ import SleepStatistics from './components/SleepStatistics';
 import AiInsightCard from '../../components/cards/AiInsightCard';
 import { format } from 'date-fns';
 
-const Sleep = ({ selectedDate = new Date(), setActiveTab }) => { // Add setActiveTab prop
+const Sleep = ({ selectedDate = new Date(), setActiveTab }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   const [activeStage, setActiveStage] = useState(null);
   const [timePeriod, setTimePeriod] = useState('1d');
@@ -32,39 +32,39 @@ const Sleep = ({ selectedDate = new Date(), setActiveTab }) => { // Add setActiv
   };
 
   return (
-    <div className="p-1 max-w-5xl mx-auto"> {/* MATCH RECOVERY: Changed from p-4 max-w-screen-xl → p-1 max-w-5xl */}
-      {/* AI Insight Card - MATCH RECOVERY ULTRA REDUCED MARGIN */}
-      <div className="flex justify-center mb-2"> {/* MATCH RECOVERY: Changed from mb-8 → mb-2 */}
-        <div className="w-full max-w-4xl"> {/* MATCH RECOVERY: Changed from max-w-6xl → max-w-4xl */}
+    <div className="p-1 max-w-5xl mx-auto">
+      {/* AI Insight Card - MOBILE RESPONSIVE */}
+      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
+        <div className="w-full max-w-4xl">
           <AiInsightCard 
             type="sleep" 
-            setActiveTab={setActiveTab} // Pass setActiveTab
-            selectedDate={selectedDate} // Pass selectedDate
+            setActiveTab={setActiveTab}
+            selectedDate={selectedDate}
           />
         </div>
       </div>
       
-      {/* Header with date display - MATCH RECOVERY ULTRA REDUCED MARGIN */}
-      <div className="mb-1"> {/* MATCH RECOVERY: Changed from mb-4 → mb-1 */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-bold text-[var(--text-primary)]"> {/* MATCH RECOVERY: Changed from text-2xl → text-lg */}
+      {/* Header with date display - MOBILE RESPONSIVE */}
+      <div className="mb-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-1 sm:space-y-0"> {/* MOBILE: Stacked layout */}
+          <h1 className="text-base sm:text-lg font-bold text-[var(--text-primary)] text-center sm:text-left"> {/* MOBILE: Smaller text, centered */}
             Sleep
           </h1>
-          <div className="flex items-center">
-            <p className="text-[var(--text-secondary)] mr-1.5 text-xs"> {/* MATCH RECOVERY: Changed from mr-2 → mr-1.5 and added text-xs */}
+          <div className="flex items-center justify-center sm:justify-end"> {/* MOBILE: Centered */}
+            <p className="text-[var(--text-secondary)] mr-1 sm:mr-1.5 text-xs">
               Insights for
             </p>
-            <span className="bg-[var(--card-bg)] text-white px-2 py-0.5 rounded-full text-xs font-medium"> {/* MATCH RECOVERY: Changed from px-3 py-1 text-sm → px-2 py-0.5 text-xs */}
-              {format(selectedDate, 'EEEE, MMMM d')} {/* MATCH RECOVERY: Use same date format */}
+            <span className="bg-[var(--card-bg)] text-white px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium"> {/* MOBILE: Smaller padding */}
+              {format(selectedDate, window.innerWidth < 640 ? 'MMM d' : 'EEEE, MMMM d')} {/* MOBILE: Abbreviated date */}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Split layout with sidebar and chart - MATCH RECOVERY REDUCED SIDEBAR WIDTH */}
-      <div className="flex flex-col md:flex-row gap-2 mb-2"> {/* MATCH RECOVERY: Removed h-[420px] */}
-        {/* Sidebar with sleep statistics - MATCH RECOVERY REDUCED WIDTH: 18%/15% */}
-        <div className="md:w-[18%] lg:w-[15%]"> {/* MATCH RECOVERY: Changed from md:w-[25%] lg:w-[22%] → md:w-[18%] lg:w-[15%] and removed h-full */}
+      {/* Split layout with sidebar and chart - MOBILE RESPONSIVE */}
+      <div className="flex flex-col md:flex-row gap-1 sm:gap-2 mb-1 sm:mb-2"> {/* MOBILE: Smaller gaps and margins */}
+        {/* Sidebar with sleep statistics - MOBILE RESPONSIVE */}
+        <div className="w-full md:w-[18%] lg:w-[15%] order-2 md:order-1"> {/* MOBILE: Full width, reordered */}
           {/* Only show SleepStatistics if there is sleep data */}
           {hasSleepData && (
             <SleepStatistics
@@ -76,21 +76,21 @@ const Sleep = ({ selectedDate = new Date(), setActiveTab }) => { // Add setActiv
             />
           )}
           
-          {/* Show a message when no sleep data - MATCH RECOVERY STYLING */}
+          {/* Show a message when no sleep data - MOBILE RESPONSIVE */}
           {!hasSleepData && (
-            <div className="bg-[var(--card-bg)] rounded-xl p-3 text-center h-full flex flex-col justify-center">
-              <div className="text-[var(--text-secondary)] text-xs mb-1.5">
+            <div className="bg-[var(--card-bg)] rounded-xl p-2 sm:p-3 text-center h-full flex flex-col justify-center"> {/* MOBILE: Smaller padding */}
+              <div className="text-[var(--text-secondary)] text-[10px] sm:text-xs mb-1 sm:mb-1.5"> {/* MOBILE: Smaller text and margin */}
                 No sleep data available
               </div>
-              <div className="text-[var(--text-muted)] text-[10px]">
+              <div className="text-[var(--text-muted)] text-[8px] sm:text-[10px]"> {/* MOBILE: Smaller text */}
                 Metrics will appear when sleep data is recorded
               </div>
             </div>
           )}
         </div>
          
-        {/* Chart area - MATCH RECOVERY INCREASED WIDTH: 82%/85% */}
-        <div className="md:w-[82%] lg:w-[85%]"> {/* MATCH RECOVERY: Changed from md:w-[75%] lg:w-[78%] → md:w-[82%] lg:w-[85%] and removed h-full */}
+        {/* Chart area - MOBILE RESPONSIVE */}
+        <div className="w-full md:w-[82%] lg:w-[85%] order-1 md:order-2"> {/* MOBILE: Full width, reordered */}
           <SleepChart 
             selectedDate={selectedDate}
             activeStageFromParent={activeStage}

@@ -128,14 +128,14 @@ const Dashboard = () => {
         activeTab={activeTab}
       />
       
-      {/* Calendar and Navigation Button Group */}
-      <div className="flex justify-center mt-3">
-        <div className="flex items-center relative">
-          {/* Overview button - Left of calendar group - Only when not on overview */}
+      {/* Calendar and Navigation Button Group - MOBILE RESPONSIVE */}
+      <div className="flex justify-center mt-2 sm:mt-3 px-2 sm:px-0"> {/* MOBILE: Added padding and reduced margin */}
+        <div className="flex items-center relative w-full sm:w-auto justify-center">
+          {/* Overview button - Left of calendar group - MOBILE RESPONSIVE */}
           {activeTab !== 'overview' && (
             <button
               onClick={() => setActiveTab('overview')}
-              className="flex items-center px-4 py-1.5 rounded-full mr-3 transition-colors text-sm font-medium"
+              className="flex items-center px-3 sm:px-4 py-1.5 rounded-full mr-2 sm:mr-3 transition-colors text-sm font-medium" // MOBILE: Smaller padding and margin
               style={{
                 background: "var(--card-bg)",
                 color: "var(--text-primary)",
@@ -153,55 +153,58 @@ const Dashboard = () => {
               }}
               title="Return to Overview"
             >
-              <span>Overview</span>
+              <span className="hidden sm:inline">Overview</span> {/* MOBILE: Hide text on mobile */}
+              <span className="sm:hidden">
+                <LayoutDashboard size={16} /> {/* MOBILE: Show icon only */}
+              </span>
             </button>
           )}
           
-          {/* Date Navigation Group */}
-          <div className="flex items-center">
-            {/* Previous date button */}
+          {/* Date Navigation Group - MOBILE RESPONSIVE */}
+          <div className="flex items-center flex-1 sm:flex-initial justify-center">
+            {/* Previous date button - MOBILE RESPONSIVE */}
             <button
               onClick={() => navigateDate('prev')}
               disabled={!hasPrevDate}
-              className={`flex items-center justify-center w-8 h-8 rounded-full mr-1.5 transition-colors ${
+              className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full mr-1 sm:mr-1.5 transition-colors ${ // MOBILE: Smaller buttons
                 hasPrevDate ? 'hover:bg-gray-700 text-white' : 'text-gray-600 cursor-not-allowed'
               }`}
               style={{
                 background: "var(--card-bg)",
               }}
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={14} className="sm:w-4 sm:h-4" /> {/* MOBILE: Smaller icon */}
             </button>
             
-            {/* Calendar button */}
+            {/* Calendar button - MOBILE RESPONSIVE */}
             <button
               ref={calendarButtonRef}
               onClick={toggleCalendar}
-              className="flex items-center px-4 py-1.5 rounded-full transition-colors"
+              className="flex items-center px-3 sm:px-4 py-1.5 rounded-full transition-colors flex-1 sm:flex-initial justify-center" // MOBILE: Flex-1 for mobile, smaller padding
               style={{
                 background: "var(--card-bg)",
                 color: "var(--text-primary)",
               }}
             >
-              <Calendar size={14} className="mr-1.5 text-[var(--strain-blue)]" />
-              <span className="font-medium text-sm">{formatDate(selectedDate)}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 ml-1.5 text-[var(--text-muted)] transition-transform ${showCalendar ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <Calendar size={12} className="mr-1.5 text-[var(--strain-blue)] sm:w-3.5 sm:h-3.5" /> {/* MOBILE: Smaller icon */}
+              <span className="font-medium text-xs sm:text-sm">{formatDate(selectedDate)}</span> {/* MOBILE: Smaller text */}
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 sm:h-4 sm:w-4 ml-1.5 text-[var(--text-muted)] transition-transform ${showCalendar ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"> {/* MOBILE: Smaller chevron */}
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             
-            {/* Next date button */}
+            {/* Next date button - MOBILE RESPONSIVE */}
             <button
               onClick={() => navigateDate('next')}
               disabled={!hasNextDate}
-              className={`flex items-center justify-center w-8 h-8 rounded-full ml-1.5 transition-colors ${
+              className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full ml-1 sm:ml-1.5 transition-colors ${ // MOBILE: Smaller buttons
                 hasNextDate ? 'hover:bg-gray-700 text-white' : 'text-gray-600 cursor-not-allowed'
               }`}
               style={{
                 background: "var(--card-bg)",
               }}
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={14} className="sm:w-4 sm:h-4" /> {/* MOBILE: Smaller icon */}
             </button>
           </div>
           
@@ -219,8 +222,8 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Main Content Area - REDUCED TOP MARGIN */}
-      <div className="p-4 mt-2"> {/* Reduced from mt-4 to mt-2 */}
+      {/* Main Content Area - MOBILE RESPONSIVE */}
+      <div className="p-2 sm:p-4 mt-1 sm:mt-2"> {/* MOBILE: Smaller padding and margin */}
         {renderContent()}
       </div>
     </div>
