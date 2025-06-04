@@ -25,6 +25,11 @@ const Index = () => {
   const [hoveredSleep, setHoveredSleep] = useState(null);
   const [showLineChart, setShowLineChart] = useState(false);
   
+  // NEW: Add cursor indicator state
+  const [cursorPosition, setCursorPosition] = useState(null);
+  const [hoveredDataPoint, setHoveredDataPoint] = useState(null);
+  const chartRef = useRef(null);
+
   // Date helper functions
   const formatDate = (date, formatStr) => {
     if (formatStr === 'yyyy-MM-dd') {
@@ -772,8 +777,52 @@ setSleepData(sleepPeriods);
     }
   };
 
+  // NEW: Handle mouse move over chart
+  const handleChartMouseMove = (e) => {
+    if (!chartRef.current || !fullData.length) return;
+    
+    const rect = chartRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const svgMouseX = (mouseX / rect.width) * 1320; // Scale to SVG viewBox
+    
+    // Check if mouse is within chart area (60 to 1260 on x-axis)
+    if (svgMouseX >= 60 && svgMouseX <= 1260) {
+      const relativeX = (svgMouseX - 60) / 1200; // 0 to 1
+      const dataIndex = Math.round(relativeX * (fullData.length - 1));
+      const dataPoint = fullData[dataIndex];
+      
+      if (dataPoint) {
+        setCursorPosition(svgMouseX);
+        setHoveredDataPoint(dataPoint);
+      }
+    } else {
+      setCursorPosition(null);
+      setHoveredDataPoint(null);
+    }
+  };
+
+  // NEW: Handle mouse leave chart
+  const handleChartMouseLeave = () => {
+    setCursorPosition(null);
+    setHoveredDataPoint(null);
+  };
+
+  // NEW: Format time for display
+  const formatTimeForDisplay = (timestamp) => {
+    if (!timestamp) return '';
+    
+    const totalMinutes = Math.round(timestamp * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    return `${hour12}:${minutes.toString().padStart(2, '0')}${ampm}`;
+  };
+
   return (
-    <div className="space-y-2"> {/* MATCH: Same space-y-2 as Recovery components */}
+    <div className="space-y-2">
       {/* Header Section - Moved TimePeriodSelector to right */}
       <div className="flex justify-between items-start">
         <div className="flex items-center space-x-4">
@@ -789,33 +838,33 @@ setSleepData(sleepPeriods);
 
       {/* Conditional Display - Only show LineChart for weekly/monthly periods */}
       {showLineChart ? (
-        <div className="space-y-2"> {/* MATCH: Same space-y-2 as Recovery */}
+        <div className="space-y-2">
           <LineChart selectedPeriod={selectedPeriod} />
         </div>
       ) : (
         <>
           {/* Main Chart Card - MATCH Recovery card dimensions exactly */}
-          <div className="whoops-card min-h-[380px]" style={{ // MATCH: Same min-height as RecoveryComparisonChart
+          <div className="whoops-card min-h-[380px]" style={{
             background: 'var(--card-bg)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2)',
             border: '1px solid rgba(255, 255, 255, 0.05)'
           }}>
             {isLoading ? (
-              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]"> {/* MATCH: Same placeholder height as Recovery */}
+              <div className="flex items-center justify-center h-72 text-[var(--text-secondary)]">
                 <div className="text-center space-y-4">
                   <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--strain-blue)] mx-auto"></div>
                   <div className="space-y-2">
-                    <div className="text-base font-medium text-[var(--text-primary)] mb-2">Loading heart rate data...</div> {/* MATCH: Same text styling as Recovery */}
-                    <div className="text-xs mb-2 max-w-md mx-auto">Processing daily patterns and workouts</div> {/* MATCH: Same text styling as Recovery */}
+                    <div className="text-base font-medium text-[var(--text-primary)] mb-2">Loading heart rate data...</div>
+                    <div className="text-xs mb-2 max-w-md mx-auto">Processing daily patterns and workouts</div>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="relative">
                 {/* Chart Title with Workout Summary - MATCH Recovery header structure */}
-                <div className="flex justify-between items-start mb-2"> {/* MATCH: Same mb-2 as Recovery */}
+                <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)] mt-1"> {/* MATCH: Same structure as Recovery */}
+                    <div className="flex flex-wrap items-center gap-1 text-sm text-[var(--text-muted)] mt-1">
                       <span>
                         24-hour analysis for {formatDate(selectedDate, 'EEE MMM d')}
                         {workoutData.length > 0 && (
@@ -827,24 +876,32 @@ setSleepData(sleepPeriods);
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-1 ml-2"> {/* MATCH: Same gap and margin as Recovery */}
+                  <div className="flex items-center gap-1 ml-2">
                     <div className="flex items-center space-x-2">
                       <div className="w-3 h-0.5 bg-[var(--strain-blue)]"></div>
-                      <span className="text-xs text-[var(--text-muted)]">Heart Rate (BPM)</span> {/* REDUCED: text size to match Recovery */}
+                      <span className="text-xs text-[var(--text-muted)]">Heart Rate (BPM)</span>
                     </div>
                     {workoutData.length > 0 && (
                       <div className="flex items-center space-x-2">
                         <Dumbbell size={12} className="text-[#0093E7]" />
-                        <span className="text-xs text-[var(--text-muted)]">Workouts</span> {/* REDUCED: text size to match Recovery */}
+                        <span className="text-xs text-[var(--text-muted)]">Workouts</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Chart content area - MATCH Recovery chart area */}
-                <div className="flex-1 min-h-0 pt-1"> {/* MATCH: Same pt-1 as Recovery */}
-                  <div className="w-full" style={{ height: '340px' }}> {/* MATCH: Same height as Recovery chart */}
-                    <svg width="100%" height="100%" viewBox="0 0 1320 350" className="overflow-visible">
+                {/* Chart content area */}
+                <div className="flex-1 min-h-0 pt-1">
+                  <div className="w-full" style={{ height: '340px' }}>
+                    <svg 
+                      ref={chartRef}
+                      width="100%" 
+                      height="100%" 
+                      viewBox="0 0 1320 350" 
+                      className="overflow-visible"
+                      onMouseMove={handleChartMouseMove}
+                      onMouseLeave={handleChartMouseLeave}
+                    >
                       <defs>
                         <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="var(--strain-blue)" stopOpacity="0.4" />
@@ -1000,6 +1057,72 @@ setSleepData(sleepPeriods);
                         strokeLinecap="round"
                         filter="url(#hrGlow)"
                       />
+
+                      {/* NEW: Cursor indicator */}
+                      {cursorPosition && hoveredDataPoint && (
+                        <g>
+                          {/* Vertical cursor line */}
+                          <line
+                            x1={cursorPosition}
+                            y1={60}
+                            x2={cursorPosition}
+                            y2={300}
+                            stroke="rgba(255, 255, 255, 0.8)"
+                            strokeWidth="2"
+                            strokeDasharray="4,4"
+                            opacity="0.9"
+                          />
+                          
+                          {/* Cursor dot on line */}
+                          <circle
+                            cx={cursorPosition}
+                            cy={300 - (hoveredDataPoint.hr / 200) * 240}
+                            r="6"
+                            fill="var(--strain-blue)"
+                            stroke="white"
+                            strokeWidth="3"
+                            style={{
+                              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'
+                            }}
+                          />
+                          
+                          {/* Tooltip */}
+                          <g transform={`translate(${cursorPosition}, ${300 - (hoveredDataPoint.hr / 200) * 240 - 60})`}>
+                            <rect
+                              x="-35"
+                              y="-25"
+                              width="70"
+                              height="40"
+                              rx="8"
+                              fill="rgba(20, 20, 20, 0.95)"
+                              stroke="var(--strain-blue)"
+                              strokeWidth="2"
+                              style={{
+                                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))'
+                              }}
+                            />
+                            <text
+                              x="0"
+                              y="-8"
+                              textAnchor="middle"
+                              fontSize="12"
+                              fontWeight="bold"
+                              fill="white"
+                            >
+                              {Math.round(hoveredDataPoint.hr)} BPM
+                            </text>
+                            <text
+                              x="0"
+                              y="6"
+                              textAnchor="middle"
+                              fontSize="10"
+                              fill="#E0E0E0"
+                            >
+                              {formatTimeForDisplay(hoveredDataPoint.timestamp)}
+                            </text>
+                          </g>
+                        </g>
+                      )}
 
                       {/* Workout labels and markers */}
                       {workoutData.map((workout, index) => {
@@ -1310,8 +1433,8 @@ setSleepData(sleepPeriods);
                     
                     {sleepData.length > 0 && sleepData[0].performance && (
                       <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full" style={{ // REDUCED: gap-1.5 → gap-1, px-2 → px-1.5, py-1 → py-0.5
-                        background: 'rgba(123, 161, 187, 0.1)',
-                        border: '1px solid rgba(123, 161, 187, 0.2)'
+                        background: 'rgba(123,161,187,0.1)',
+                        border: '1px solid rgba(123,161,187,0.2)'
                       }}>
                         <Moon size={10} className="text-[#7BA1BB]" /> {/* REDUCED: size={12} → size={10} */}
                         <span className="text-[#7BA1BB] font-medium text-xs">

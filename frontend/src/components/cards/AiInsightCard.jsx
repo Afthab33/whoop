@@ -10,7 +10,7 @@ const AiInsightCard = ({
   // Page-specific AI insights based on the current page
   const pageSpecificInsights = {
     sleep: "Your Sleep Performance is sufficient, but there's room to improve - Sleep Consistency could use attention to help you get to optimal sleep.",
-    recovery: "Your HRV (64 ms) and RHR (58 bpm) are within their usual ranges which resulted in a solid recovery. Stay on track with your fitness goals by building moderate Strain today.",
+    recovery: "Your HRV and RHR are within their usual ranges which resulted in a solid recovery. Stay on track with your fitness goals by building moderate Strain today.",
     strain: "You've made solid progress on your Strain today. A moderate activity could bring you closer to your optimal Strain range and improve overall fitness."
   };
 
