@@ -40,8 +40,8 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
   return (
     <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
       {/* AI Coach Prompt Card - MOBILE RESPONSIVE */}
-      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
-        <div className="w-full max-w-4xl">
+      <div className="mb-0.5 sm:mb-1"> {/* REDUCED: Changed from mb-1 sm:mb-2 to mb-0.5 sm:mb-1 */}
+        <div className="w-full"> {/* Changed: Removed max-w-4xl to match chart width */}
           <div 
             className="whoops-card flex items-center justify-between rounded-3xl py-0.5 px-3 cursor-pointer group hover:scale-[1.01] transition-all duration-200"
             onClick={handleAiCoachClick}
@@ -52,14 +52,14 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
             }}
           >
             {/* Left section with W logo - UPDATED TO MATCH AICOACH */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
               {/* W Logo with same style as AiCoach */}
               <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 group-hover:from-purple-400 group-hover:via-blue-400 group-hover:to-cyan-300 transition-all duration-200">
                 <div 
                   className="w-full h-full rounded-full flex items-center justify-center"
                   style={{ background: 'var(--bg-base)' }}
                 >
-                  <img src={WhoopLogo} alt="WHOOP" className="w-4 h-4" />
+                  <img src={WhoopLogo} alt="WHOOP" className="w-5 h-5" />
                 </div>
               </div>
 
@@ -85,15 +85,6 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               </svg>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Header - MOBILE RESPONSIVE */}
-      <div className="mb-1">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-1 sm:space-y-0"> {/* MOBILE: Stacked layout */}
-          <h1 className="text-base sm:text-lg font-bold text-[var(--text-primary)] text-center sm:text-left"> {/* MOBILE: Smaller text, centered */}
-            Heart Rate Analysis
-          </h1>
         </div>
       </div>
 
