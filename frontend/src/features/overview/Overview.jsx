@@ -38,11 +38,10 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'transparent' }}>
-      <div className="flex-1 p-1 max-w-5xl mx-auto">
-        <div className="flex flex-col gap-1"> {/* Changed from gap-2 to gap-1 */}
-
-          {/* AI Coach Prompt Card - ENGAGING & CLICKABLE */}
+    <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
+      {/* AI Coach Prompt Card - MOBILE RESPONSIVE */}
+      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
+        <div className="w-full max-w-4xl">
           <div 
             className="whoops-card flex items-center justify-between rounded-3xl py-0.5 px-3 cursor-pointer group hover:scale-[1.01] transition-all duration-200"
             onClick={handleAiCoachClick}
@@ -86,8 +85,22 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               </svg>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Header - MOBILE RESPONSIVE */}
+      <div className="mb-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-1 sm:space-y-0"> {/* MOBILE: Stacked layout */}
+          <h1 className="text-base sm:text-lg font-bold text-[var(--text-primary)] text-center sm:text-left"> {/* MOBILE: Smaller text, centered */}
+            Heart Rate Analysis
+          </h1>
+        </div>
+      </div>
 
-          {/* Heart Rate Analysis Section */}
+      {/* Main layout - MOBILE RESPONSIVE */}
+      <div className="flex flex-col md:flex-row gap-1 sm:gap-2 mb-1 sm:mb-2"> {/* MOBILE: Smaller gaps and margins */}
+        {/* Chart area - MOBILE RESPONSIVE */}
+        <div className="w-full order-1"> {/* MOBILE: Full width */}
           <div className="space-y-1"> {/* Changed from space-y-2 to space-y-1 */}     
             <IndexChart />
           </div>
@@ -101,7 +114,6 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
         </p>
       </div>
     </div>
-    
   );
 };
 
