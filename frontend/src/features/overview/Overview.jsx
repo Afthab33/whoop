@@ -39,12 +39,12 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'transparent' }}>
-      <div className="p-1 max-w-5xl mx-auto flex-1">
-        <div className="flex flex-col gap-1">
+      <div className="flex-1 p-1 max-w-5xl mx-auto">
+        <div className="flex flex-col gap-1"> {/* Changed from gap-2 to gap-1 */}
 
-          {/* AI Coach Prompt Card - MOBILE RESPONSIVE */}
+          {/* AI Coach Prompt Card - ENGAGING & CLICKABLE */}
           <div 
-            className="whoops-card flex items-center justify-between rounded-2xl sm:rounded-3xl py-1 sm:py-0.5 px-2 sm:px-3 cursor-pointer group hover:scale-[1.01] transition-all duration-200" // MOBILE: Smaller padding and border radius
+            className="whoops-card flex items-center justify-between rounded-3xl py-0.5 px-3 cursor-pointer group hover:scale-[1.01] transition-all duration-200"
             onClick={handleAiCoachClick}
             style={{
               background: 'var(--card-bg)',
@@ -52,23 +52,23 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               border: '1px solid rgba(255, 255, 255, 0.05)'
             }}
           >
-            {/* Left section with W logo - MOBILE RESPONSIVE */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2"> {/* MOBILE: Smaller spacing */}
-              {/* W Logo - MOBILE RESPONSIVE */}
-              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 group-hover:from-purple-400 group-hover:via-blue-400 group-hover:to-cyan-300 transition-all duration-200"> {/* MOBILE: Smaller logo */}
+            {/* Left section with W logo - UPDATED TO MATCH AICOACH */}
+            <div className="flex items-center space-x-2">
+              {/* W Logo with same style as AiCoach */}
+              <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 group-hover:from-purple-400 group-hover:via-blue-400 group-hover:to-cyan-300 transition-all duration-200">
                 <div 
                   className="w-full h-full rounded-full flex items-center justify-center"
                   style={{ background: 'var(--bg-base)' }}
                 >
-                  <img src={WhoopLogo} alt="WHOOP" className="w-3 h-3 sm:w-4 sm:h-4" /> {/* MOBILE: Smaller logo */}
+                  <img src={WhoopLogo} alt="WHOOP" className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* AI Chat icon and engaging text - MOBILE RESPONSIVE */}
+              {/* AI Chat icon and engaging text */}
               <div className="flex items-center space-x-2">
-                {/* Engaging text that changes on hover - MOBILE RESPONSIVE */}
+                {/* Engaging text that changes on hover */}
                 <div className="flex flex-col">
-                  <h2 className="text-white text-sm sm:text-base font-medium group-hover:text-blue-100 transition-colors"> {/* MOBILE: Smaller text */}
+                  <h2 className="text-white text-base font-medium group-hover:text-blue-100 transition-colors">
                     <span className="group-hover:hidden">Ask your AI Coach anything</span>
                     <span className="hidden group-hover:inline">Get personalized insights now</span>
                   </h2>
@@ -79,28 +79,29 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               </div>
             </div>
 
-            {/* Enhanced Right arrow - MOBILE RESPONSIVE */}
+            {/* Enhanced Right arrow with subtle animation */}
             <div className="text-gray-400 group-hover:text-blue-300 group-hover:translate-x-1 transition-all duration-200">
-              <svg width="14" height="14" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> {/* MOBILE: Smaller arrow */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           </div>
 
-          {/* Heart Rate Analysis Section - MOBILE RESPONSIVE */}
-          <div className="space-y-1">
+          {/* Heart Rate Analysis Section */}
+          <div className="space-y-1"> {/* Changed from space-y-2 to space-y-1 */}     
             <IndexChart />
           </div>
         </div>
       </div>
-
+      
       {/* Made by Aftab Footer - Fixed at bottom edge */}
       <div className="mt-auto">
-          <p className="text-center sm:text-sm text-gray-500">
-            Developed by Aftab Hussain
-          </p>
-        </div>
+        <p className="text-center sm:text-sm text-gray-500">
+          Developed by Aftab Hussain
+        </p>
       </div>
+    </div>
+    
   );
 };
 
