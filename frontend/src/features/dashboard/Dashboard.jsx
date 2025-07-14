@@ -1,4 +1,3 @@
-// src/components/dashboard/Dashboard.jsx
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, LayoutDashboard } from 'lucide-react';
 import TopMetricsCard from '../../components/cards/TopMetricsCard';
@@ -18,16 +17,13 @@ const Dashboard = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarButtonRef = useRef(null);
   
-  // Get dates that have data in the Whoop dataset
   const datesWithData = Object.keys(whoopData).sort();
   
-  // Format date for display (e.g., "THU, APR 17")
   const formatDate = (date) => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('en-US', options).toUpperCase();
   };
   
-  // Handle date selection from calendar
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setShowCalendar(false);
@@ -85,30 +81,27 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
+        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       case 'sleep':
-        return <Sleep selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Already has it
+        return <Sleep selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       case 'recovery':
-        return <Recovery selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
+        return <Recovery selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       case 'strain':
-        return <Strain selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
+        return <Strain selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       case 'ai-coach':
         return <AiCoach selectedDate={selectedDate} setActiveTab={setActiveTab} />;
       default:
-        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />; // Added setActiveTab
+        return <Overview selectedDate={selectedDate} setActiveTab={setActiveTab} />;
     }
   };
   
-  // Close the calendar
   const handleCloseCalendar = () => {
     setShowCalendar(false);
   };
   
-  // Check if there are previous/next dates available
   const hasPrevDate = datesWithData.indexOf(selectedDate.toISOString().split('T')[0]) > 0;
   const hasNextDate = datesWithData.indexOf(selectedDate.toISOString().split('T')[0]) < datesWithData.length - 1;
   
-  // AI Coach gets full screen treatment
   if (activeTab === 'ai-coach') {
     return (
       <div className="h-screen overflow-hidden" style={{ background: "var(--bg-gradient-main)" }}>

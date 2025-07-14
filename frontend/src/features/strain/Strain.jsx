@@ -1,4 +1,3 @@
-// src/components/dashboard/strain/Strain.jsx
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import DetailedHeartRateChart from './charts/DetailedHeartRateChart';
@@ -12,7 +11,6 @@ const Strain = ({ selectedDate = new Date(), setActiveTab }) => {
   const [chartType] = useState('detailed');
   const [timePeriod, setTimePeriod] = useState('1d');
 
-  // Get real data from whoopData
   const dateStr = useMemo(() => {
     return selectedDate.toLocaleDateString('en-CA');
   }, [selectedDate]);
@@ -21,7 +19,6 @@ const Strain = ({ selectedDate = new Date(), setActiveTab }) => {
     return whoopData[dateStr] || null;
   }, [dateStr]);
 
-  // Check if there are activities for the selected date
   const hasActivities = useMemo(() => {
     if (!dayData || !dayData.workouts) return false;
     
@@ -37,8 +34,7 @@ const Strain = ({ selectedDate = new Date(), setActiveTab }) => {
 
   return (
     <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
-      {/* AI Insight Card - MOBILE RESPONSIVE */}
-      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
+          <div className="flex justify-center mb-1 sm:mb-2">
         <div className="w-full max-w-4xl">
           <AiInsightCard 
             type="strain" 

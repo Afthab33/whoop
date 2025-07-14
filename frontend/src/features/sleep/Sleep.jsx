@@ -10,31 +10,26 @@ const Sleep = ({ selectedDate = new Date(), setActiveTab }) => {
   const [activeStage, setActiveStage] = useState(null);
   const [timePeriod, setTimePeriod] = useState('1d');
   
-  // Get the selected day's data
   const dayData = useMemo(() => {
     if (!dateStr || !whoopData[dateStr]) return null;
     return whoopData[dateStr];
   }, [dateStr]);
 
-  // Check if there are sleep activities for the selected date
   const hasSleepData = useMemo(() => {
     return dayData && dayData.sleep_summary && Object.keys(dayData.sleep_summary).length > 0;
   }, [dayData]);
 
-  // Add this function to track time period changes from the chart
   const handleTimePeriodChange = (newPeriod) => {
     setTimePeriod(newPeriod);
   };
 
-  // Handle stage changes from either chart
   const handleStageChange = (stage) => {
     setActiveStage(stage);
   };
 
   return (
     <div className="p-1 max-w-5xl mx-auto">
-      {/* AI Insight Card - MOBILE RESPONSIVE */}
-      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
+        <div className="flex justify-center mb-1 sm:mb-2">
         <div className="w-full max-w-4xl">
           <AiInsightCard 
             type="sleep" 

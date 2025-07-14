@@ -1,4 +1,3 @@
-// src/components/dashboard/overview/Overview.jsx
 import React from 'react';
 import { ChevronRight, Plus, Clock, Check, ArrowUp, ArrowDown, Info, Activity, Heart, Sun } from 'lucide-react';
 import IndexChart from './charts/Index'; // Import the Index chart component
@@ -30,7 +29,6 @@ const MetricCard = ({ title, value, baseline, icon, trend, color }) => {
 
 const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
   
-  // Handle AI Coach card click
   const handleAiCoachClick = () => {
     if (setActiveTab) {
       setActiveTab('ai-coach');
@@ -39,8 +37,7 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
 
   return (
     <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
-      {/* AI Coach Prompt Card - MOBILE RESPONSIVE */}
-      <div className="mb-0.5 sm:mb-1"> {/* REDUCED: Changed from mb-1 sm:mb-2 to mb-0.5 sm:mb-1 */}
+      <div className="mb-0.5 sm:mb-1">
         <div className="w-full"> {/* Changed: Removed max-w-4xl to match chart width */}
           <div 
             className="whoops-card flex items-center justify-between rounded-3xl py-0.5 px-3 cursor-pointer group hover:scale-[1.01] transition-all duration-200"
@@ -51,9 +48,7 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               border: '1px solid rgba(255, 255, 255, 0.05)'
             }}
           >
-            {/* Left section with W logo - UPDATED TO MATCH AICOACH */}
             <div className="flex items-center space-x-4">
-              {/* W Logo with same style as AiCoach */}
               <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-400 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 group-hover:from-purple-400 group-hover:via-blue-400 group-hover:to-cyan-300 transition-all duration-200">
                 <div 
                   className="w-full h-full rounded-full flex items-center justify-center"
@@ -63,9 +58,7 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
                 </div>
               </div>
 
-              {/* AI Chat icon and engaging text */}
               <div className="flex items-center space-x-2">
-                {/* Engaging text that changes on hover */}
                 <div className="flex flex-col">
                   <h2 className="text-white text-base font-medium group-hover:text-blue-100 transition-colors">
                     <span className="group-hover:hidden">Ask your AI Coach anything</span>
@@ -78,7 +71,6 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
               </div>
             </div>
 
-            {/* Enhanced Right arrow with subtle animation */}
             <div className="text-gray-400 group-hover:text-blue-300 group-hover:translate-x-1 transition-all duration-200">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -88,17 +80,14 @@ const Overview = ({ setActiveTab }) => { // Add setActiveTab prop
         </div>
       </div>
 
-      {/* Main layout - MOBILE RESPONSIVE */}
-      <div className="flex flex-col md:flex-row gap-1 sm:gap-2 mb-1 sm:mb-2"> {/* MOBILE: Smaller gaps and margins */}
-        {/* Chart area - MOBILE RESPONSIVE */}
-        <div className="w-full order-1"> {/* MOBILE: Full width */}
-          <div className="space-y-1"> {/* Changed from space-y-2 to space-y-1 */}     
+      <div className="flex flex-col md:flex-row gap-1 sm:gap-2 mb-1 sm:mb-2">
+        <div className="w-full order-1">
+          <div className="space-y-1">     
             <IndexChart />
           </div>
         </div>
       </div>
       
-      {/* Made by Aftab Footer - Fixed at bottom edge */}
       <div className="mt-auto">
         <p className="text-center sm:text-sm text-gray-500">
           Developed by Aftab Hussain

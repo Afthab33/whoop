@@ -7,7 +7,6 @@ const AiInsightCard = ({
   setActiveTab,
   selectedDate
 }) => {
-  // Page-specific AI insights based on the current page
   const pageSpecificInsights = {
     sleep: "Your Sleep Performance is sufficient, but there's room to improve - Sleep Consistency could use attention to help you get to optimal sleep.",
     recovery: "Your HRV and RHR are within their usual ranges which resulted in a solid recovery. Stay on track with your fitness goals by building moderate Strain today.",
@@ -16,7 +15,6 @@ const AiInsightCard = ({
 
   const displayInsight = insights.length > 0 ? insights[0] : pageSpecificInsights[type] || "";
 
-  // Simple navigation to AI Coach
   const handleAiCoachClick = () => {
     if (setActiveTab) {
       setActiveTab('ai-coach');

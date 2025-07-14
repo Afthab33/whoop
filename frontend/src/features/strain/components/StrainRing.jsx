@@ -43,7 +43,7 @@ const StrainRing = ({ value = 7.6, max = 21, size = 120, isInteractive = false }
             fill="transparent"
             stroke="url(#strainGradient)"
             strokeWidth={strokeWidth}
-            strokeLinecap="round" // CHANGED: butt → round for slightly curved ends
+            strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}

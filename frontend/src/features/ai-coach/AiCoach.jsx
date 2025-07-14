@@ -4,7 +4,6 @@ import { ChevronLeft, RotateCcw, ThumbsUp, ThumbsDown, MessageSquare, ChevronUp,
 import whoopData from '../../data/day_wise_whoop_data.json';
 import WhoopLogo from '../../assets/Whoop White Symbol.svg';
 
-// Professional streaming text animation
 const TypingText = ({ text, onComplete, speed = 15 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,18 +47,14 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   
-  // Format selected date to match data format
   const formattedDate = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   
-  // Get user data for the selected date
   const userData = formattedDate && whoopData[formattedDate] 
     ? whoopData[formattedDate] 
     : null;
   
-  // Check if data is available for this date
   const hasDataForSelectedDate = !!userData;
 
-  // Initialize with welcome message
   useEffect(() => {
     const welcomeMessage = "Hi! I'm your WHOOP AI Coach. How can I help you today?";
     
@@ -72,7 +67,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     }]);
   }, [formattedDate, hasDataForSelectedDate]);
   
-  // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -81,7 +75,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     scrollToBottom();
   }, [messages]);
   
-  // Handle message typing completion
   const handleTypingComplete = (messageId) => {
     setMessages(prev => prev.map(msg => 
       msg.id === messageId 
@@ -90,7 +83,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     ));
   };
 
-  // Copy message to clipboard
   const handleCopyMessage = async (messageContent, messageId) => {
     try {
       await navigator.clipboard.writeText(messageContent);
@@ -103,7 +95,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     }
   };
 
-  // Handle thumbs up/down
   const handleRating = (messageId, rating) => {
     setRatedMessages(prev => ({
       ...prev,
@@ -111,7 +102,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     }));
   };
 
-  // Simple send message function
   const sendMessage = async (messageText) => {
     if (!messageText.trim()) return;
     

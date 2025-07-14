@@ -1,4 +1,3 @@
-// src/components/dashboard/other/CalendarSelector.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import whoopData from '../../data/day_wise_whoop_data.json';
@@ -50,7 +49,7 @@ const CalendarSelector = ({
   
   // Format month name - MORE COMPACT
   const formatMonth = (date) => {
-    return `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`; // Changed from 'long' to 'short'
+    return `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
   };
   
   // Navigation functions
@@ -253,7 +252,7 @@ const CalendarSelector = ({
         left: '50%',
         transform: 'translateX(-50%)',
         marginTop: '8px',
-        width: 'min(95vw, 580px)' // Changed from 90vw to 95vw for mobile
+        width: 'min(95vw, 580px)'
       }}
     >
       {/* Calendar Header with navigation - MOBILE RESPONSIVE */}

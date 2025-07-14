@@ -116,7 +116,6 @@ const TopMetricsCard = ({
         
         {/* Right section - Empty now that Overview moved */}
         <div className="flex-1 flex justify-end">
-          {/* Overview button removed - now in Dashboard beside calendar */}
         </div>
       </div>
       
@@ -147,7 +146,7 @@ const TopMetricsCard = ({
               <StrainRing 
                 value={metrics.strain} 
                 max={21} 
-                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
+                size={window.innerWidth < 640 ? 85 : 120}
                 isInteractive={activeTab !== 'strain'}
               />
               
@@ -187,7 +186,7 @@ const TopMetricsCard = ({
             <div className="relative">
               <RecoveryRing 
                 value={metrics.recovery} 
-                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
+                size={window.innerWidth < 640 ? 85 : 120}
                 isInteractive={activeTab !== 'recovery'}
               />
               
@@ -228,7 +227,7 @@ const TopMetricsCard = ({
               <SleepPerformanceRing 
                 value={metrics.sleep.score} 
                 max={100} 
-                size={window.innerWidth < 640 ? 85 : 120} // MOBILE: Smaller rings
+                size={window.innerWidth < 640 ? 85 : 120}
                 isInteractive={activeTab !== 'sleep'}
               />
               

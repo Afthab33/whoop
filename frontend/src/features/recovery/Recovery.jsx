@@ -1,4 +1,3 @@
-// src/components/dashboard/recovery/Recovery.jsx
 import React, { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import RecoveryStatistics from './components/RecoveryStatistics';
@@ -10,13 +9,11 @@ const Recovery = ({ selectedDate = new Date(), setActiveTab }) => {
   const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : null;
   const [timePeriod, setTimePeriod] = useState('1d');
   
-  // Get the selected day's data
   const dayData = useMemo(() => {
     if (!dateStr || !whoopData[dateStr]) return null;
     return whoopData[dateStr];
   }, [dateStr]);
 
-  // Handle time period change
   const handleTimePeriodChange = (newPeriod) => {
     setTimePeriod(newPeriod);
   };
@@ -34,8 +31,7 @@ const Recovery = ({ selectedDate = new Date(), setActiveTab }) => {
 
   return (
     <div className="p-1 max-w-5xl mx-auto" style={{ background: 'transparent' }}>
-      {/* AI Insight Card - MOBILE RESPONSIVE */}
-      <div className="flex justify-center mb-1 sm:mb-2"> {/* MOBILE: Smaller margin */}
+          <div className="flex justify-center mb-1 sm:mb-2">
         <div className="w-full max-w-4xl">
           <AiInsightCard 
             type="recovery" 

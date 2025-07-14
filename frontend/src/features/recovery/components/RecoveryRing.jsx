@@ -12,7 +12,7 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
   // Calculate display sizes
   const displaySize = size <= 120 ? 'w-24 h-24' : 'w-32 h-32';
   const fontSize = size <= 120 ? 'text-4xl' : 'text-5xl';
-  const percentSize = size <= 120 ? 'text-lg' : 'text-xl'; // REDUCED: text-xl → text-lg, text-2xl → text-xl
+  const percentSize = size <= 120 ? 'text-lg' : 'text-xl';
   
   // Recovery color based on value range
   const getRecoveryColor = (value) => {
@@ -61,7 +61,7 @@ const RecoveryRing = ({ value = 67, size = 120, isInteractive = false }) => {
             fill="transparent"
             stroke="url(#recoveryGradient)"
             strokeWidth={strokeWidth}
-            strokeLinecap="round" // CHANGED: butt → round for slightly curved ends
+            strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}

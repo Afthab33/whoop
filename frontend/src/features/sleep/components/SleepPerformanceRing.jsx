@@ -12,7 +12,7 @@ const SleepPerformanceRing = ({ value = 81, max = 100, size = 120, isInteractive
   // Calculate display sizes
   const displaySize = size <= 120 ? 'w-24 h-24' : 'w-32 h-32';
   const fontSize = size <= 120 ? 'text-4xl' : 'text-5xl';
-  const percentSize = size <= 120 ? 'text-lg' : 'text-xl'; // REDUCED: text-xl → text-lg, text-2xl → text-xl
+  const percentSize = size <= 120 ? 'text-lg' : 'text-xl';
 
   return (
     <div className="flex flex-col items-center justify-center text-white">
@@ -44,7 +44,7 @@ const SleepPerformanceRing = ({ value = 81, max = 100, size = 120, isInteractive
             fill="transparent"
             stroke="url(#sleepGradient)"
             strokeWidth={strokeWidth}
-            strokeLinecap="round" // CHANGED: butt → round for slightly curved ends
+            strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}

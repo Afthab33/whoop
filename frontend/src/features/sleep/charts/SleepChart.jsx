@@ -86,7 +86,7 @@ const SleepChart = ({ selectedDate, activeStageFromParent, onStageChange, onTime
 
     switch (duration) {
       case '1w':
-        startDate = new Date(endDate); // FIXED: Added missing line
+        startDate = new Date(endDate);
         startDate.setDate(endDate.getDate() - 6);
         break;
       case '2w':
@@ -167,7 +167,7 @@ const SleepChart = ({ selectedDate, activeStageFromParent, onStageChange, onTime
                    sleepMetrics.totalSleep > 300 ? 'Fair' : 'Poor'
       };
 
-      // Add Sunday indexing for 6m view exactly like RecoveryComparisonChart
+    
       if (duration === '6m' && currentDate.getDay() === 0) {
         dataPoint.sundayIndex = globalSundayIndex;
         dataPoint.isSunday = true;
@@ -217,7 +217,7 @@ const SleepChart = ({ selectedDate, activeStageFromParent, onStageChange, onTime
     return `${hours}:${mins.toString().padStart(2, '0')}`;
   };
 
-  // Enhanced X-Axis Tick Component exactly like RecoveryComparisonChart
+  
   const CustomSleepXAxisTick = ({ x, y, payload }) => {
     // For 3m and 6m periods - only show Sundays
     if (['3m', '6m'].includes(timePeriod)) {
