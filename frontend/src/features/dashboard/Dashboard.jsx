@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, LayoutDashboard } from 'lucide-react';
 import TopMetricsCard from '../../components/cards/TopMetricsCard';
 import CalendarSelector from '../../components/layout/CalendarSelector';
-import whoopData from '../../data/day_wise_whoop_data.json';
+import AuthButton from '../../components/auth/AuthButton';
+import DataDisclaimer from '../../components/ui/DataDisclaimer';
+import { useWhoop } from '../../context/WhoopContext';
 
 // Import content components
 import Overview from '../overview/Overview';
@@ -13,11 +15,19 @@ import AiCoach from '../ai-coach/AiCoach';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedDate, setSelectedDate] = useState(new Date(2025, 3, 17)); // April 17, 2025
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Start with today
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarButtonRef = useRef(null);
   
-  const datesWithData = Object.keys(whoopData).sort();
+  const { availableDates, isAuthenticated } = useWhoop();
+  const datesWithData = availableDates.sort().reverse(); // Most recent first
+  
+  // Set initial date to most recent available date when authenticated
+  useEffect(() => {
+    if (isAuthenticated && datesWithData.length > 0) {
+      setSelectedDate(new Date(datesWithData[0]));
+    }
+  }, [isAuthenticated, datesWithData]);
   
   const formatDate = (date) => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
@@ -113,6 +123,9 @@ const Dashboard = () => {
   // Regular dashboard layout for other tabs
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-gradient-main)" }}>
+      {/* Data Disclaimer Popup */}
+      <DataDisclaimer context="dashboard" />
+      
       {/* TopMetricsCard */}
       <TopMetricsCard 
         selectedDate={selectedDate} 
@@ -120,6 +133,11 @@ const Dashboard = () => {
         setActiveTab={setActiveTab}
         activeTab={activeTab}
       />
+      
+      {/* Authentication Button */}
+      <div className="flex justify-center mt-2 mb-2">
+        <AuthButton />
+      </div>
       
       {/* Calendar and Navigation Button Group */}
       <div className="flex justify-center mt-3">

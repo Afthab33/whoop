@@ -3,6 +3,7 @@ import axios from 'axios';
 import { ChevronLeft, RotateCcw, ThumbsUp, ThumbsDown, MessageSquare, ChevronUp, Copy, Check } from 'lucide-react';
 import whoopData from '../../data/day_wise_whoop_data.json';
 import WhoopLogo from '../../assets/Whoop White Symbol.svg';
+import DataDisclaimer from '../../components/ui/DataDisclaimer';
 
 const TypingText = ({ text, onComplete, speed = 15 }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -190,6 +191,8 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
         color: 'var(--text-primary)'
       }}
     >
+      {/* Data Disclaimer Popup for AI Coach */}
+      <DataDisclaimer context="ai-coach" />
       {/* Header */}
       <div 
         className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
