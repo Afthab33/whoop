@@ -3,7 +3,6 @@ import axios from 'axios';
 import { ChevronLeft, RotateCcw, ThumbsUp, ThumbsDown, MessageSquare, ChevronUp, Copy, Check } from 'lucide-react';
 import whoopData from '../../data/day_wise_whoop_data.json';
 import WhoopLogo from '../../assets/Whoop White Symbol.svg';
-import DataDisclaimer from '../../components/ui/DataDisclaimer';
 
 const TypingText = ({ text, onComplete, speed = 15 }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -191,8 +190,6 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
         color: 'var(--text-primary)'
       }}
     >
-      {/* Data Disclaimer Popup for AI Coach */}
-      <DataDisclaimer context="ai-coach" />
       {/* Header */}
       <div 
         className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0"
@@ -220,24 +217,21 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
           <h1 className="text-lg font-bold tracking-wide" style={{ color: 'var(--text-primary)' }}>
             WHOOP COACH
           </h1>
-          <div className="flex items-center justify-center gap-2">
-            <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-              BETA V1.0
-            </p>
-            {formattedDate && (
-              <>
-                <span style={{ color: 'var(--text-muted)' }}>•</span>
-                <div className="flex items-center gap-1">
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Synthetic data • Cutoff: June 3, 2025
+          </p>
+          {formattedDate && (
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <div className="flex items-center gap-1">
                   <div 
                     className={`w-1.5 h-1.5 rounded-full ${hasDataForSelectedDate ? 'bg-green-500' : 'bg-yellow-500'}`}
                   ></div>
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     {hasDataForSelectedDate ? 'Data Available' : 'No Data'}
                   </span>
-                </div>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
         
         <button

@@ -8,20 +8,12 @@ const DataDisclaimer = ({
   const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
-    // Check if user has already seen this disclaimer today
-    const storageKey = `disclaimer-${context}-dismissed`;
-    const dismissedDate = localStorage.getItem(storageKey);
-    const today = new Date().toISOString().split('T')[0];
-    
-    if (dismissedDate !== today) {
-      setIsVisible(true);
-    }
-  }, [context]);
+    // Always show popup on every refresh/load
+    setIsVisible(true);
+  }, []);
 
   const handleDismiss = () => {
     setIsVisible(false);
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem(`disclaimer-${context}-dismissed`, today);
     onClose();
   };
 
