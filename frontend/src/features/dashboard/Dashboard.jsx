@@ -2,9 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, LayoutDashboard } from 'lucide-react';
 import TopMetricsCard from '../../components/cards/TopMetricsCard';
 import CalendarSelector from '../../components/layout/CalendarSelector';
-import AuthButton from '../../components/auth/AuthButton';
 import DataDisclaimer from '../../components/ui/DataDisclaimer';
-import { useWhoop } from '../../context/WhoopContext';
+import whoopData from '../../data/day_wise_whoop_data.json';
 
 // Import content components
 import Overview from '../overview/Overview';
@@ -19,15 +18,8 @@ const Dashboard = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarButtonRef = useRef(null);
   
-  const { availableDates, isAuthenticated } = useWhoop();
-  const datesWithData = availableDates.sort().reverse(); // Most recent first
-  
-  // Set initial date to most recent available date when authenticated
-  useEffect(() => {
-    if (isAuthenticated && datesWithData.length > 0) {
-      setSelectedDate(new Date(datesWithData[0]));
-    }
-  }, [isAuthenticated, datesWithData]);
+  // Get available dates from static data
+  const datesWithData = Object.keys(whoopData).sort().reverse(); // Most recent first
   
   const formatDate = (date) => {
     const options = { weekday: 'short', month: 'short', day: 'numeric' };
@@ -134,10 +126,7 @@ const Dashboard = () => {
         activeTab={activeTab}
       />
       
-      {/* Authentication Button */}
-      <div className="flex justify-center mt-2 mb-2">
-        <AuthButton />
-      </div>
+      {/* Authentication Button removed - component not available */}
       
       {/* Calendar and Navigation Button Group */}
       <div className="flex justify-center mt-3">
