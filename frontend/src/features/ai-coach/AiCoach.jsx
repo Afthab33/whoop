@@ -116,7 +116,10 @@ const AiCoach = ({ selectedDate, setActiveTab }) => {
     setIsLoading(true);
     
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      if (!API_BASE_URL) {
+        throw new Error('Backend URL not configured. Please set VITE_API_URL in your environment variables.');
+      }
       const response = await axios.post(`${API_BASE_URL}/api/ai-coach`, {
         message: messageText
       });

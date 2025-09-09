@@ -14,7 +14,8 @@ import AiCoach from '../ai-coach/AiCoach';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Start with today
+  // Set default date to April 9, 2025 where we have good data
+  const [selectedDate, setSelectedDate] = useState(new Date('2025-04-09'));
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarButtonRef = useRef(null);
   
